@@ -1,0 +1,25 @@
+{
+    "name": "transdb-backend",
+    "version": "0.1.0",
+    "description": "The backend of the TransDB site",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/TransDB-de/backend.git"
+    },
+    "author": "Feuerhamster",
+    "bugs": {
+        "url": "https://github.com/TransDB-de/backend/issues"
+    },
+    "homepage": "https://github.com/TransDB-de/backend#readme",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "helmet": "^4.2.0",
+        "mongodb": "^3.6.3",
+        "node-cleanup": "^2.1.2"
+    }
+}

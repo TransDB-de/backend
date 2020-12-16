@@ -102,3 +102,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Config file
+config.json
+
+# Exclude IDE's
+.idea
+.vs
+.vscode
