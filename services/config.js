@@ -22,7 +22,15 @@ class Config{
             frontEndURL: "http://localhost:8080/",
             enableCORS: true,
             CORSOrigins: ["http://localhost:8080"]
-        }
+        },
+        osm: {
+            apiUrl: "https://nominatim.openstreetmap.org/search",
+            userAgent: "transdb.de/0.1.0 (axios)"
+        },
+        jwt: {
+            secret: "",
+            expiresIn: "16d"
+        },
     };
 
     static initConfig(){

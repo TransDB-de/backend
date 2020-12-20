@@ -16,10 +16,15 @@
     },
     "homepage": "https://github.com/TransDB-de/backend#readme",
     "dependencies": {
+        "axios": "^0.21.0",
         "cors": "^2.8.5",
         "express": "^4.17.1",
+        "express-jwt": "^6.0.0",
         "helmet": "^4.2.0",
+        "jsonwebtoken": "^8.5.1",
         "mongodb": "^3.6.3",
-        "node-cleanup": "^2.1.2"
+        "nanoid": "^3.1.20",
+        "node-cleanup": "^2.1.2",
+        "validate.js": "^0.13.1"
     }
 }
