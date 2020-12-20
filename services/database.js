@@ -36,7 +36,16 @@ class Database{
     /*
 	* User management
 	* */
-    static createUser(username, email, password, admin = false){
+
+    /**
+     * Create a user and save them into the database
+     * @param username
+     * @param email
+     * @param password
+     * @param admin
+     * @returns {Promise<object>} A user object
+     */
+    static async createUser(username, email, password, admin = false){
 
         let user = {
             username,
@@ -47,23 +56,33 @@ class Database{
             admin
         };
 
-        return new Promise((resolve, reject) => {
+        let res = await Database.db
+            .collection("users")
+            .insertOne(user);
 
-            Database.db
-                .collection("users")
-                .insertOne(user)
-                .then(res => {
-                    resolve(res.ops[0]);
-                })
-                .catch(err => {
-                    reject(err);
-                })
-
-        });
+        return res.ops[0];
 
     }
 
-    static getUser(query){
+    /**
+     * Get a user by id
+     * @param userId
+     * @returns {object} The user object
+     */
+    static getUser(userId){
+
+        return Database.db
+            .collection("users")
+            .findOne({ _id: MongoDB.ObjectId(userId) });
+
+    }
+
+    /**
+     * Find a user with a custom mongodb query
+     * @param query
+     * @returns {object} The user object
+     */
+    static findUser(query) {
 
         return Database.db
             .collection("users")
@@ -71,6 +90,10 @@ class Database{
 
     }
 
+    /**
+     * Get an array with all users
+     * @returns {Promise<object[]>} Array with all users
+     */
     static getAllUsers() {
 
         return Database.db
@@ -86,32 +109,148 @@ class Database{
             }).toArray();
     }
 
-    static updateUser(query, values){
+    /**
+     * Update userdata by user id
+     * @param userId
+     * @param updater Fields to update
+     * @returns {Promise<Boolean>} Boolean indicating the success of the update
+     */
+    static async updateUser(userId, updater){
 
-        return Database.db
+        let res = await Database.db
             .collection("users")
-            .updateOne(query, values, { returnOriginal: false });
+            .updateOne({ _id: MongoDB.ObjectId(userId) }, { $set: updater }, { returnOriginal: false });
+
+        return !!res.modifiedCount;
 
     }
 
-    static async deleteUser(query){
+    /**
+     * Delete a user by id
+     * @param userId
+     * @returns {Promise<boolean>} Boolean indicating the success of the delete
+     */
+    static async deleteUser(userId){
 
-        await Database.db
+        let res = await Database.db
             .collection("users")
-            .deleteOne(query);
+            .deleteOne({ _id: MongoDB.ObjectId(userId) });
 
-        return true;
+        return !!res.deletedCount;
 
     }
 
     /*
 	* Entry management
 	* */
-    static addEntry(entry) {
+
+    /**
+     * Add an entry to the database
+     * @param entry A full entry object
+     * @returns {object} The new entry
+     */
+    static async addEntry(entry) {
+
+        let res = await Database.db
+            .collection("entries")
+            .insertOne(entry);
+
+        return res.ops[0];
+
+    }
+
+    /**
+     * Get an entry by id
+     * @param entryId
+     * @returns {object|null} The entry
+     */
+    static getEntry(entryId) {
 
         return Database.db
             .collection("entries")
-            .insertOne(entry)
+            .findOne({ _id: MongoDB.ObjectId(entryId) });
+
+    }
+
+    /**
+     * Find entries with a custom mongodb query
+     * @param query
+     * @param page
+     * @returns {object[]} Array with entry objects
+     */
+    static findEntries(query, page) {
+
+        let limit = Config.config.mongodb.itemsPerPage;
+        let skip = limit * page;
+
+        return Database.db
+            .collection("entries")
+            .find(query).skip(skip).limit(limit).toArray();
+
+    }
+
+    /**
+     *
+     * @param lat Latitude
+     * @param long Longitude
+     * @param query MongoDB Query
+     * @param page
+     * @returns {Promise<object[]>} Array with entry objects
+     */
+    static findEntriesWithLocation(lat, long, query = {}, page = 0) {
+
+        let limit = Config.config.mongodb.itemsPerPage;
+        let skip = limit * page;
+
+        return Database.db
+            .collection("entries")
+            .aggregate([
+                {
+                    $geoNear: {
+                        near: [ long , lat ],
+                        distanceField: "distance",
+                        spherical: true,
+                        distanceMultiplier: 6371,
+                        query: query
+                    }
+                },
+                { $sort: { distance: 1 } },
+                { $skip: skip },
+                { $limit: limit },
+                { $set: { distance: { $round: [ "$distance", 2 ] } } },
+                { $unset: ["location", "approved"] }
+            ]).toArray();
+
+    }
+
+    /**
+     * Update an entry by id
+     * @param id
+     * @param updater
+     * @returns {Promise<boolean>} Boolean indicating the success of the update
+     */
+    static async updateEntry(id, updater) {
+
+        let res = await Database.db
+            .collection("entries")
+            .updateOne({ _id: MongoDB.ObjectId(id) }, { $set: updater }, { returnOriginal: false });
+
+        return !!res.modifiedCount;
+
+    }
+
+    /**
+     * Delete an entry by id
+     * @param id
+     * @returns {Promise<boolean>} Boolean indicating the success of the delete
+     */
+    static async deleteEntry(id) {
+
+        let res = await Database.db
+            .collection("entries")
+            .deleteOne({ _id: MongoDB.ObjectId(id) });
+
+        return !!res.deletedCount;
 
     }
 

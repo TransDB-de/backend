@@ -1,4 +1,5 @@
 const validate = require("validate.js");
+const objectId = require("../models/objectID");
 
 // Custom validator for checking if an array contains only elements from options array
 validate.validators.exclusively = function (value, options) {
@@ -17,6 +18,24 @@ validate.validators.exclusively = function (value, options) {
 
 }
 
+// Custom validator for checking if another value also exist
+validate.validators.requires = function (value, options, key, attributes) {
+
+    if(!Array.isArray(options)) {
+        options = new Array(options);
+    }
+
+    for(let required of options) {
+
+        if(!(required in attributes) && value) {
+            return "requires " + options.join(" and ");
+        }
+
+    }
+
+    return null;
+
+}
 
 // Middleware to validate custom fields in body
 function validationMiddleware(req, res, next, schema){

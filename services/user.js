@@ -20,14 +20,14 @@ class UserService {
     static async addUser(username, email, admin) {
 
         // Get possible user from database to check if the user already exist
-        let user = await Database.getUser({ $or: [ { username }, { email } ] });
+        let user = await Database.findUser({ $or: [ { username }, { email } ] });
 
         if(user !== null) {
             return false;
         }
 
         // Generate random password
-        let password = nanoid(8);
+        let password = nanoid();
 
         // Do a secure password hashing with scrypt
         let pwObject = await UserService.encryptPassword(password);
@@ -49,7 +49,7 @@ class UserService {
     static async login(identifier, password) {
 
         // Get the user
-        let user = await Database.getUser({ $or: [ {username: identifier }, { email: identifier } ] });
+        let user = await Database.findUser({ $or: [ {username: identifier }, { email: identifier } ] });
 
         if(!user) {
             return false;
@@ -65,7 +65,7 @@ class UserService {
         let token = jwt.sign({ id: user._id, admin: user.admin }, Config.config.jwt.secret, { expiresIn: Config.config.jwt.expiresIn });
 
         // Set users last login date
-        await Database.updateUser({ _id: new Mongo.ObjectID(user._id) }, { $set: { lastLogin: new Date() } });
+        await Database.updateUser(user._id, { $set: { lastLogin: new Date() } });
 
         delete user.password;
         delete user.token;
@@ -83,7 +83,7 @@ class UserService {
      */
     static async resetPassword(userId, oldPassword, newPassword) {
 
-        let user = await Database.getUser({ _id: new Mongo.ObjectID(userId) });
+        let user = await Database.getUser(userId);
 
         // Cancel if user not found
         if(!user) {
@@ -99,9 +99,7 @@ class UserService {
 
         let password = await UserService.encryptPassword(newPassword);
 
-        let updated = await Database.updateUser({ _id: new Mongo.ObjectID(userId) }, { $set: { password } });
-
-        return !!updated.modifiedCount;
+        return await Database.updateUser({_id: new Mongo.ObjectID(userId)}, {$set: {password}});
 
     }
 

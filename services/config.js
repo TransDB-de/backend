@@ -15,7 +15,8 @@ class Config{
             host: "localhost",
             username: "transdb",
             password: "",
-            database: "transdb"
+            database: "transdb",
+            itemsPerPage: 10
         },
         web: {
             port: 1300,
