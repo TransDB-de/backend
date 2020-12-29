@@ -57,7 +57,9 @@ class EntryService {
         let data;
         let page = filters.page ? filters.page : 0;
 
-        let query = {};
+        let query = {
+            approved: true
+        };
 
         if(filters.type) {
             query.type = filters.type;
@@ -90,6 +92,12 @@ class EntryService {
         }
 
         return data;
+
+    }
+
+    static getUnapproved(page = 0) {
+
+        return Database.findEntries({approved: false}, page);
 
     }
 

@@ -65,7 +65,7 @@ class UserService {
         let token = jwt.sign({ id: user._id, admin: user.admin }, Config.config.jwt.secret, { expiresIn: Config.config.jwt.expiresIn });
 
         // Set users last login date
-        await Database.updateUser(user._id, { $set: { lastLogin: new Date() } });
+        await Database.updateUser(user._id, { lastLogin: new Date() });
 
         delete user.password;
         delete user.token;

@@ -37,6 +37,17 @@ router.get("/", queryNumberParser, async (req, res) => {
 });
 
 /**
+ * Route to get unapproved entries
+ */
+router.get("/unapproved", auth(), async (req, res) => {
+
+    let entries = await Entry.getUnapproved(req.query.page ? req.query.page : 0);
+
+    res.send(entries);
+
+});
+
+/**
  * Route to create an entry
  */
 router.post("/", validate(baseForm), async (req, res) => {
