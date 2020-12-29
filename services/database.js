@@ -25,6 +25,7 @@ class Database{
 
             // Add index for genoear queries
             Database.db.collection("entries").createIndex({ location: "2dsphere" });
+            Database.db.collection("geodata").createIndex({ name: "text", plz: "text" });
 
             // Call connected method (specified in main.js)
             Database.connected();
@@ -251,6 +252,33 @@ class Database{
             .deleteOne({ _id: MongoDB.ObjectId(id) });
 
         return !!res.deletedCount;
+
+    }
+
+    /*
+    * Geodata management
+    * Base on: http://opengeodb.giswiki.org/wiki/OpenGeoDB
+    * */
+
+    /**
+     * Find geo data by city name or postal code
+     * @param search Either postalcode or city name
+     * @returns {Promise<object[]>} Array with objects of cityname, lat and long
+     */
+    static async findGeoData(search) {
+
+        return Database.db
+            .collection("geodata")
+            .find({ $text: { $search: search }, level: { $nin: ["1", "2", "3", "4", "5"] } })
+            .limit(6)
+            .sort({ score: { $meta: "textScore"  }, name: 1 })
+            .project({
+                lat: { $toDouble: "$lat" },
+                lon: { $toDouble: "$lon" },
+                name: true,
+                _id: false
+            })
+            .toArray();
 
     }
 
