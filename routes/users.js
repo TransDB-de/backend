@@ -85,7 +85,7 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 
     if(!user){
 
-        await Database.updateUser(req.user.id, { $set: { email: req.body.email } });
+        await Database.updateUser(req.user.id, { email: req.body.email });
         res.status(200).end();
 
     }else{
@@ -101,11 +101,11 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 router.put("/me/username", auth(), validate(resetUsername), async (req, res) => {
 
 
-    let user = await Database.getUser({ username: req.body.username });
+    let user = await Database.findUser({ username: req.body.username });
 
     if(!user){
 
-        await Database.updateUser(req.user.id, { $set: { username: req.body.username } });
+        await Database.updateUser(req.user.id, { username: req.body.username });
         res.status(200).end();
 
     }else{

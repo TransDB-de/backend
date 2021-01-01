@@ -267,6 +267,8 @@ class Database{
      */
     static async findGeoData(search) {
 
+        search = search.toString();
+
         return Database.db
             .collection("geodata")
             .find({ $text: { $search: search }, level: { $nin: ["1", "2", "3", "4", "5"] } })

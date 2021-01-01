@@ -65,24 +65,24 @@ class EntryService {
             query.type = filters.type;
         }
 
-        if((filters.city || filters.plz) && !query.address) {
-            query.address = {};
-        }
-
-        if(filters.city) {
-            query.address.city = new RegExp(filters.city, "i");
-        }
-
-        if(filters.plz) {
-            query.address.plz = filters.plz;
-        }
-
         if(filters.search) {
             query.$or = [
                 { name: new RegExp(filters.search, "i") },
                 { firstName: new RegExp(filters.search, "i") },
                 { lastName: new RegExp(filters.search, "i") },
             ]
+        }
+
+        // Not searched with geolocation
+        if(!(filters.lat && filters.long)) {
+
+            // Add geolocation by plz or city
+            if(filters.plz || filters.city) {
+                let geodata = await Database.findGeoData(filters.city ? filters.city : filters.plz);
+                filters.lat = geodata[0].lat;
+                filters.long = geodata[0].lon;
+            }
+
         }
 
         if(filters.lat && filters.long) {

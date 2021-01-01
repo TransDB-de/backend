@@ -97,7 +97,7 @@ let groupMeta = {
     },
 
     specials: {
-        presence: true,
+        presence: false,
         type: "string",
         length: {
             minimum: 0,

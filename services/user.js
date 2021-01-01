@@ -1,6 +1,5 @@
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const Mongo = require("mongodb");
 const { customAlphabet } = require("nanoid");
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqurstuvxyz', 8);
 
@@ -99,7 +98,7 @@ class UserService {
 
         let password = await UserService.encryptPassword(newPassword);
 
-        return await Database.updateUser({_id: new Mongo.ObjectID(userId)}, {$set: {password}});
+        return await Database.updateUser(userId, { password });
 
     }
 

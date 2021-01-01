@@ -37,6 +37,22 @@ router.get("/", queryNumberParser, async (req, res) => {
 });
 
 /**
+ * Route to get a single entry
+ */
+router.get("/:id", validateId, async (req, res) => {
+
+   let entry = await Database.getEntry(req.params.id);
+
+   if(!entry) {
+       res.status(404).send({ error: "not_found" }).end();
+       return;
+   }
+
+   res.send(entry);
+
+});
+
+/**
  * Route to get unapproved entries
  */
 router.get("/unapproved", auth(), async (req, res) => {
@@ -55,14 +71,23 @@ router.post("/", validate(baseForm), async (req, res) => {
     // Validation of metadata
     let valRes;
 
-    if(req.body.type === "group") {
-        valRes = validate.validate(req.body, groupMeta);
-    } else if(req.body.type === "therapist") {
-        valRes = validate.validate(req.body, therapistMeta);
-    } else if(req.body.type === "surgeon") {
-        valRes = validate.validate(req.body, surgeonMeta);
-    } else if(req.body.type === "hairremoval") {
-        valRes = validate.validate(req.body, hairRemovalMeta);
+    switch(req.body.type) {
+
+        case "group":
+            valRes = validate.validate(req.body, groupMeta);
+            break;
+
+        case "therapist":
+            valRes = validate.validate(req.body, therapistMeta);
+            break;
+
+        case "surgeon":
+            valRes = validate.validate(req.body, surgeonMeta);
+            break;
+
+        case "hairremoval":
+            valRes = validate.validate(req.body, hairRemovalMeta);
+            break;
     }
 
     if(valRes !== true) {

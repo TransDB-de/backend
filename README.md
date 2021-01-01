@@ -37,7 +37,21 @@ It provides functions to get, insert and update data. This service is also somet
 3. Run `npm start`
 4. On first start the application will exit. A `config.json` file will now be in the root directory.
 5. Fill out all config fields.
-6. Run `npm start` again.
+6. Open your mongodb, create a collection named "geodata" and import the DE.tab file from http://www.fa-technik.adfc.de/code/opengeodb/ into the collection as tab seperated csv.
+8. Run `npm start` again.
+
+## Hosting for production
+**Requirements:**
+- NodeJS 14 or higher
+- NPM (automatically installed with NodeJS)
+- A MongoDB server
+- A reverse proxy with SSL
+
+## Geodata
+TransDB offers the functionality to filter by location and calculate the distance.
+But if you search by city or postalcode and not by coordinates (user's geolocation) the backend has no coordinates to calculate the distance.
+To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/OpenGeoDB) to get the coordinates of cities.
+*The OpenStreetMaps API is not used because of rate limits.*
 
 ## Contribution
 
