@@ -12,7 +12,7 @@ let baseForm = {
         presence: { allowEmpty: false },
         type: "string",
         length: {
-            minimum: 5,
+            minimum: 1,
             maximum: 50
         }
     },
@@ -46,8 +46,8 @@ let baseForm = {
         url: true,
         type: "string",
         length: {
-            minimum: 8,
-            maximum: 100
+            minimum: 3,
+            maximum: 500
         }
     },
 
@@ -67,7 +67,7 @@ let baseForm = {
 
     plz: {
         presence: { allowEmpty: false },
-        type: "integer"
+        type: "string"
     },
 
     street: {
@@ -80,7 +80,7 @@ let baseForm = {
         type: "string",
         length: {
             minimum: 1,
-            maximum: 4
+            maximum: 10
         }
     },
 
@@ -101,7 +101,7 @@ let groupMeta = {
         type: "string",
         length: {
             minimum: 0,
-            maximum: 100
+            maximum: 280
         }
     },
 
@@ -188,7 +188,7 @@ let filterQuery = {
 
     plz: {
         presence: false,
-        type: "integer"
+        type: "string"
     },
 
     search: {
