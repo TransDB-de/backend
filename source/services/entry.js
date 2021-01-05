@@ -50,7 +50,6 @@ class EntryService {
     /**
      * Filter and get all entry objects
      * @param filters
-     * @returns {Promise<void>}
      */
     static async filter(filters) {
 

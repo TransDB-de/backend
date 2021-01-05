@@ -110,3 +110,7 @@ config.json
 .idea
 .vs
 .vscode
+
+# Compiled Javascript
+
+js/

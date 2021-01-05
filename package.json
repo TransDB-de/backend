@@ -25,5 +25,8 @@
         "nanoid": "^3.1.20",
         "node-cleanup": "^2.1.2",
         "validate.js": "^0.13.1"
+    },
+    "devDependencies": {
+        "@types/node": "^14.14.20"
     }
 }

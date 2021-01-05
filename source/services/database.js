@@ -8,6 +8,9 @@ class Database{
 
     static connected;
 
+    static client;
+    static db;
+
     static connect(){
 
         Database.client = new MongoDB.MongoClient(Config.getMongoUrl(), { tls: false, useUnifiedTopology: true });
@@ -148,7 +151,7 @@ class Database{
     /**
      * Add an entry to the database
      * @param entry A full entry object
-     * @returns {object} The new entry
+     * @returns The new entry
      */
     static async addEntry(entry) {
 
