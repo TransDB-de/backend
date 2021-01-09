@@ -38,7 +38,7 @@ type Config = typeof defaultConfig;
 
 export const configPath = "./config.json";
 
-export let config: Config;
+export let config: Config = defaultConfig;
 
 /**
  * Loads the config from disk, or creates a template config file if none was found

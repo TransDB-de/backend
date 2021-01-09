@@ -10,22 +10,28 @@ const distDir = "./dist/";
 const tmpDir = "temp/"
 
 const scripts = {
-    start: "npm main.js"
+    start: "node main.js"
 }
 
-let pkgFile = fs.readFileSync("package.json");
-let package = JSON.parse(pkgFile);
+var pkgFile = fs.readFileSync("package.json");
 
-const name = package.name;
-const version = package.version;
+var packageObj = JSON.parse(pkgFile);
 
-const path = distDir + name + " " + version;
+const name = packageObj.name;
+const version = packageObj.version;
 
-fs.renameSync(distDir + tmpDir, path);
+const path = distDir + name + "-" + version;
 
-package.scripts = scripts;
+try {
+    fs.renameSync(distDir + tmpDir, path);
+} catch(e) {
+    console.error("Could not rename temp folder! If a release with this version already exists, delete it first");
+    process.exit();
+}
 
-delete package.devDependencies;
+packageObj.scripts = scripts;
 
-let pkgFile = JSON.stringify(package);
-fs.writeFileSync(path + "package.json");
+delete packageObj.devDependencies;
+
+pkgFile = JSON.stringify(packageObj);
+fs.writeFileSync(path + "/package.json", pkgFile);
