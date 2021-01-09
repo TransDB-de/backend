@@ -5,12 +5,11 @@ import { customAlphabet } from "nanoid";
 import * as Database from "../services/database.js";
 import { config } from "../services/config.js";
 
-// Data model Interfaces
+// Data Interfaces
 import { 
-    CreateUser, User, NewApiUser, ResUser,
-    ResetUsername, LoginBody, UpdatePassword, ResetEmail,
-    Password
-} from "../models/user";
+    CreateUser, User, NewUser,
+    ResetUsername, LoginBody, UpdatePassword, ResetEmail
+} from "../api/users";
 
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqurstuvxyz', 8);
 
@@ -33,11 +32,11 @@ export async function addUser({ username, email, admin }: CreateUser) {
     // Do a secure password hashing with scrypt
     let pwObject = await encryptPassword(password);
 
-    let newUser = await Database.createUser(username, email, pwObject, admin) as User | NewApiUser;
+    let newUser = await Database.createUser(username, email, pwObject, admin) as Database.User | NewUser;
 
     newUser.password = password;
 
-    return newUser as NewApiUser;
+    return newUser as NewUser;
 }
 
 /**
@@ -47,27 +46,28 @@ export async function addUser({ username, email, admin }: CreateUser) {
 export async function login({ username, password }: LoginBody) {
 
     // Get the user
-    let user = await Database.findUser({ $or: [ { username: username }, { email: username } ] });
+    let dbUser = await Database.findUser({ $or: [ { username: username }, { email: username } ] }) as Database.User;
 
-    if (!user) {
+    if (!dbUser) {
         return false;
     }
 
-    let pw = await encryptPassword(password, user.password.salt);
+    let pw = await encryptPassword(password, dbUser.password.salt);
 
     // Cancel on wrong password
-    if (pw.key !== user.password.key) {
+    if (pw.key !== dbUser.password.key) {
         return false;
     }
 
-    let token = jwt.sign({ id: user._id, admin: user.admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+    let token = jwt.sign({ id: dbUser._id, admin: dbUser.admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 
     // Set users last login date
-    await Database.updateUser(user._id, { lastLogin: new Date() });
+    await Database.updateUser(dbUser._id, { lastLogin: new Date() });
 
-    delete user.password;
+    // type-safe deletion
+    let {password: deletedPassword, ...user} = dbUser;
 
-    return { user, token } as { user: ResUser, token: string };
+    return { user, token } as { user: User, token: string };
 
 }
 
@@ -103,7 +103,7 @@ export async function resetPassword(userId: string, updatePasswordBody: UpdatePa
 /**
  * Encrypt a password (string) with a 128 length key scrypt and a 16 bytes salt
  */
-function encryptPassword(password: string, salt?: string): Promise<Password> {
+function encryptPassword(password: string, salt?: string): Promise<Database.Password> {
 
     return new Promise((resolve, reject) => {
 
