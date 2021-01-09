@@ -39,9 +39,8 @@ It provides functions to get, insert and update data. This service is also somet
 
 **Requirements:** NodeJS 14.15.4 or higher, NPM, a running MongoDB server.
 
-1. Download and extract latest release from [releases], or download this repository (requires typescript).
+1. Download and extract latest release from [releases].
 2. Run `npm install`.
-    - If you downloaded the repository, run `npm dist`.
 3. Run `npm start`.
 4. On first start the application will exit. A `config.json` file will now be in the root directory.
 5. Fill out all config fields.
