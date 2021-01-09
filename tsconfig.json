@@ -3,14 +3,8 @@
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 
     "target": "es2020",
-    "module": "es2020",
-
+    "module": "esnext",
     "moduleResolution": "node",
-
-    /* Javascript files are allowed for now, so changes can be made incrementally */
-    "allowJs": true,
-    //"checkJs": true,
-
     "sourceMap": true,
     "outDir": "./js",
     "rootDir": "./source",

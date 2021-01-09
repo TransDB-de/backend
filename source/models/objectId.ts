@@ -1,4 +1,4 @@
-let objectID = {
+export const objectID = {
 
     id: {
         presence: { allowEmpty: false },
@@ -8,5 +8,3 @@ let objectID = {
     }
 
 }
-
-module.exports = objectID;
