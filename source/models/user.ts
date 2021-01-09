@@ -1,4 +1,5 @@
-let createUser = {
+/** validate.js create user post request validation schema */
+export const createUser = {
 
     username: {
         presence: { allowEmpty: false },
@@ -22,7 +23,8 @@ let createUser = {
 
 }
 
-let loginBody = {
+/** validate.js user login post request validation schema */
+export const loginBody = {
 
     username: {
         presence: { allowEmpty: false },
@@ -36,7 +38,8 @@ let loginBody = {
 
 }
 
-let updatePassword = {
+/** validate.js password post request validation schema */
+export const updatePassword = {
 
     old: {
         type: "string",
@@ -57,7 +60,8 @@ let updatePassword = {
 
 }
 
-let resetEmail = {
+/** validate.js reset email post request validation schema */
+export const resetEmail = {
 
     email: {
         presence: { allowEmpty: false },
@@ -67,7 +71,8 @@ let resetEmail = {
 
 }
 
-let resetUsername = {
+/** validate.js reset username post request validation schema */
+export const resetUsername = {
 
     username: {
         presence: { allowEmpty: false },
@@ -79,5 +84,3 @@ let resetUsername = {
     }
 
 }
-
-module.exports = { createUser, loginBody, resetEmail, resetUsername, updatePassword };

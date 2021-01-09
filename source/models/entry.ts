@@ -1,4 +1,4 @@
-let baseForm = {
+export const baseForm = {
 
     type: {
         presence: { allowEmpty: false },
@@ -84,9 +84,9 @@ let baseForm = {
         }
     },
 
-};
+}
 
-let groupMeta = {
+export const groupMeta = {
 
     attributes: {
         presence: { allowEmpty: false },
@@ -112,7 +112,7 @@ let groupMeta = {
 
 }
 
-let therapistMeta = {
+export const therapistMeta = {
 
     subject: {
         presence: { allowEmpty: false },
@@ -132,7 +132,7 @@ let therapistMeta = {
 
 }
 
-let surgeonMeta = {
+export const surgeonMeta = {
 
     offers: {
         presence: { allowEmpty: false },
@@ -144,7 +144,7 @@ let surgeonMeta = {
 
 }
 
-let hairRemovalMeta = {
+export const hairRemovalMeta = {
 
     attributes: {
         type: "array",
@@ -161,7 +161,7 @@ let hairRemovalMeta = {
 
 }
 
-let filterQuery = {
+export const filterQuery = {
 
     lat: {
         presence: false,
@@ -206,5 +206,3 @@ let filterQuery = {
     }
 
 }
-
-module.exports = { baseForm, groupMeta, therapistMeta, surgeonMeta, hairRemovalMeta, filterQuery };

@@ -1,19 +1,23 @@
-// Import modules
-const express = require("express");
-const router = express.Router();
+// third-party modules
+import express from "express";
 
-// Require services
-const Database = require("../services/database");
-const User = require("../services/user");
+import * as Api from "../api/api.js";
 
-// Require utils
-const validate = require("../utils/validate");
-const auth = require("../utils/auth");
+// services
+import * as Database from "../services/database.js";
+import * as User from "../services/user.js";
 
-const { createUser, loginBody, resetEmail, resetUsername, updatePassword } = require("../models/user");
+// utils
+import validate from "../utils/validate.js";
+import auth from "../utils/auth.js";
+import { ResponseCode } from "../utils/restResponseCodes.js";
+
+import { createUser, loginBody, resetEmail, resetUsername, updatePassword } from "../models/user.js";
+
+export const router = express.Router() as IRouter<Api.Users>;
 
 // Path in URL
-router.path = "/users";
+export const path = "/users";
 
 /*
 * Route to list all users
@@ -31,11 +35,11 @@ router.get("/", auth({ admin: true }), async (req, res) => {
 * */
 router.post("/", auth({ admin: true }), validate(createUser), async (req, res) => {
 
-    let register = await User.addUser(req.body.username, req.body.email, req.body.admin);
+    let register = await User.addUser(req.body);
 
     // Return an error if the user already exist
     if(register === false) {
-        res.status(409).send({ error: "user_exist" });
+        res.status(ResponseCode.Conflict).send({ error: "user_exist" });
         return;
     }
 
@@ -49,10 +53,10 @@ router.post("/", auth({ admin: true }), validate(createUser), async (req, res) =
 * */
 router.post("/me/login", validate(loginBody), async (req, res) => {
 
-    let login = await User.login(req.body.username, req.body.password);
+    let login = await User.login(req.body);
 
-    if(!login) {
-        res.status(401).send({ error: "wrong_credentials" });
+    if (!login) {
+        res.status(ResponseCode.Unauthorized).send({ error: "wrong_credentials" });
         return;
     }
 
@@ -65,12 +69,12 @@ router.post("/me/login", validate(loginBody), async (req, res) => {
 * */
 router.put("/me/password", auth(), validate(updatePassword), async (req, res) => {
 
-    let reset = await User.resetPassword(req.user.id, req.body.old, req.body.new);
+    let reset = await User.resetPassword(req.user.id, req.body);
 
     if(reset) {
-        res.status(200).end();
+        res.status(ResponseCode.OK).end();
     } else {
-        res.status(400).send({ error: "invalid_verification" });
+        res.status(ResponseCode.BadRequest).send({ error: "invalid_verification" });
     }
 
 });
@@ -83,13 +87,13 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 
     let user = await Database.findUser({ email: req.body.email });
 
-    if(!user){
+    if (!user) {
 
         await Database.updateUser(req.user.id, { email: req.body.email });
-        res.status(200).end();
+        res.status(ResponseCode.OK).end();
 
-    }else{
-        res.status(409).send({ error: "user_exist" });
+    } else {
+        res.status(ResponseCode.Unauthorized).send({ error: "user_exist" });
     }
 
 
@@ -106,10 +110,10 @@ router.put("/me/username", auth(), validate(resetUsername), async (req, res) => 
     if(!user){
 
         await Database.updateUser(req.user.id, { username: req.body.username });
-        res.status(200).end();
+        res.status(ResponseCode.OK).end();
 
     }else{
-        res.status(409).send({ error: "user_exist" });
+        res.status(ResponseCode.Unauthorized).send({ error: "user_exist" });
     }
 
 
@@ -123,14 +127,12 @@ router.delete("/:id", auth({ admin: true }), async (req, res) => {
     let user = await Database.getUser(req.params.id);
 
     if(!user) {
-        res.status(404).send({ error: "not_found" });
+        res.status(ResponseCode.NotFound).send({ error: "not_found" });
         return;
     }
 
     await Database.deleteUser(req.params.id);
-    res.status(200).end();
+    res.status(ResponseCode.OK).end();
 
 
 });
-
-module.exports = router;

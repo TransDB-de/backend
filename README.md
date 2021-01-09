@@ -1,7 +1,9 @@
 # TransDB Backend & API
+
 The backend of the TransDB site
 
 ## Dependencies
+
 - [ExpressJS](https://expressjs.com/) Node.js web framework.
 - [Axios](https://www.npmjs.com/package/axios) Library to send web requests.
 - [mongodb](https://mongodb.github.io/node-mongodb-native/) MongoDB database driver.
@@ -11,16 +13,21 @@ The backend of the TransDB site
 - [cors](https://www.npmjs.com/package/cors) Middleware to enable cors in ExpressJS.
 - [nanoid](https://www.npmjs.com/package/nanoid) Library to generate random unique strings. Used for random user passwords.
 - [node-cleanup](https://www.npmjs.com/package/node-cleanup) Function to run cleanup operations (close server connections etc.) on application shutdown.
+- [axios-rate-limit](https://www.npmjs.com/package/axios-rate-limit) Rate limits axios requests.
 
 ## Project structure
 
 ### Directories
-- `/models` Contain files with javascript objects which represents [validate.js](https://validatejs.org/) validators.
-- `/routes` Contain files with [express routers](https://expressjs.com/en/4x/api.html#router).
-- `/services` Contain files with static javascript classes that provides functionality.
-- `/utils` Contain files with javascript functions and [express middlewares](https://expressjs.com/en/guide/writing-middleware.html).
+
+- `/api` Typescript api documentation. `api.ts` documents the api itself. The other files contain all types avalible to the api. Documentation is generic, and can be used for backend and frontend puproses.
+- `/models` Contains modules with javascript objects that represent [validate.js](https://validatejs.org/) validation schemas.
+- `/routes` Contains modules with [express routers](https://expressjs.com/en/4x/api.html#router).
+- `/services` Modules that provide most of the backends funtionality.
+- `/utils` Modules with javascript functions and [express middlewares](https://expressjs.com/en/guide/writing-middleware.html).
+- `/types` Custom express types, to ensure route type safety.
 
 ### Services
+
 - `config.js` The config service is responsible for the application configuration.
 It creates a new config file on startup if no one exist and load the config if one exist.
 - `database.js` A Service to interact with the MongoDB database.
@@ -30,24 +37,38 @@ It provides functions to get, insert and update data. This service is also somet
 - `user.js` This service contains methods for user management. Such as password generation and user registration.
 
 ## Setup
-**Requirements:** NodeJS 14 or higher, NPM, a running MongoDB server.
 
-1. Download and extract the files to your destination directory
-2. Run `npm install`
-3. Run `npm start`
+**Requirements:** NodeJS 14.15.4 or higher, NPM, a running MongoDB server.
+
+1. Download and extract latest release from [releases](/releases/latest).
+2. Run `npm install`.
+3. Run `npm start`.
 4. On first start the application will exit. A `config.json` file will now be in the root directory.
 5. Fill out all config fields.
-6. Open your mongodb, create a collection named "geodata" and import the DE.tab file from http://www.fa-technik.adfc.de/code/opengeodb/ into the collection as tab seperated csv.
-8. Run `npm start` again.
+6. Open your mongodb, create a collection named "geodata" and import the DE.tab file from [OpenGeoDb Downloads](http://www.fa-technik.adfc.de/code/opengeodb/) into the collection as tab seperated csv.
+7. Run `npm start` again.
+
+**Development Setup:**
+
+**Requirements:**  In addition to all requirements above: Typescript 4.1.2+
+
+1. Clone the repository.
+2. Run `npm install`.
+
+To make build that is suitable for production (no dev dependencies, no typescript files), use `npm run build`.
+A new folder will be created in `./dist` with it's own `package.json` and compiled javascript files.
 
 ## Hosting for production
+
 **Requirements:**
-- NodeJS 14 or higher
+
+- NodeJS 14.15.4 LTS or higher
 - NPM (automatically installed with NodeJS)
 - A MongoDB server
 - A reverse proxy with SSL
 
 ## Geodata
+
 TransDB offers the functionality to filter by location and calculate the distance.
 But if you search by city or postalcode and not by coordinates (user's geolocation) the backend has no coordinates to calculate the distance.
 To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/OpenGeoDB) to get the coordinates of cities.
@@ -56,11 +77,28 @@ To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/O
 ## Contribution
 
 ### Coding conventions
+
 - Use 4 spaces indent and camelCase
+- Also camelCase filenames
+- Use es6 `import`/`export`, instead of `require`
 - Always leave enough empty lines in bigger code blocks
 - Comment your code (in english)
-- Use JSDoc comments above functions
+- Use JSDoc comments above exported functions
 - Stick to the structure
 - Test your changes
 - Update the documentation
-- Use async/await instead of callbacks
+- Use async/await instead of callbacks, when possible
+
+### Maintain Type Safety
+
+- Do define parameter and return types for custom functions
+- When you make changes to the api, make sure to document them in `/api`
+- Do not use the types `'express.Router'` `'express.Request'` `'express.Response'` `'express.RequestHandler'`.
+    Use the custom global types `'IRouter<baseRoute>'` `'IRequest'` `'IResponse'` `'IMiddleware'`, instead. They link to the api documentation to provide type safety for routes.
+- Do not use `.js` files, or set tsc to accept `.js` files
+
+### A Note On Types
+
+This project uses custom definitions to bind the api documentation to the routes.
+If a code change leads to a typescript error, make sure your code is compatible with the routes defined in api.ts and vice-versa.
+The project is set-up in such a way that most types are automatically infered, and do not have to be specifically set.
