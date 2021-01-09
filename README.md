@@ -13,6 +13,7 @@ The backend of the TransDB site
 - [cors](https://www.npmjs.com/package/cors) Middleware to enable cors in ExpressJS.
 - [nanoid](https://www.npmjs.com/package/nanoid) Library to generate random unique strings. Used for random user passwords.
 - [node-cleanup](https://www.npmjs.com/package/node-cleanup) Function to run cleanup operations (close server connections etc.) on application shutdown.
+- [axios-rate-limit](https://www.npmjs.com/package/axios-rate-limit) Rate limits axios requests.
 
 ## Project structure
 
@@ -53,6 +54,9 @@ It provides functions to get, insert and update data. This service is also somet
 
 1. Clone the repository.
 2. Run `npm install`.
+
+To make build that is suitable for production (no dev dependencies, no typescript files), use `npm run build`.
+A new folder will be created in `./dist` with it's own `package.json` and compiled javascript files.
 
 ## Hosting for production
 
