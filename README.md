@@ -39,7 +39,7 @@ It provides functions to get, insert and update data. This service is also somet
 
 **Requirements:** NodeJS 14.15.4 or higher, NPM, a running MongoDB server.
 
-1. Download and extract latest release from [releases].
+1. Download and extract latest release from [releases](/releases/latest).
 2. Run `npm install`.
 3. Run `npm start`.
 4. On first start the application will exit. A `config.json` file will now be in the root directory.
@@ -75,20 +75,26 @@ To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/O
 ### Coding conventions
 
 - Use 4 spaces indent and camelCase
-- camelCase filenames
-- use es6 `import`/`export`, instead of `require`
+- Also camelCase filenames
+- Use es6 `import`/`export`, instead of `require`
 - Always leave enough empty lines in bigger code blocks
 - Comment your code (in english)
 - Use JSDoc comments above exported functions
 - Stick to the structure
 - Test your changes
 - Update the documentation
-- Use async/await instead of callbacks, where possible
+- Use async/await instead of callbacks, when possible
 
 ### Maintain Type Safety
 
-- Do not use `any` or `unkown` for parameters or returns, unless you mean it
+- Do define parameter and return types for custom functions
 - When you make changes to the api, make sure to document them in `/api`
-- Do not use the types `express.Router` `express.Request` `express.Response` `express.RequestHandler`
-    Use the custom global types `Router<path>` `Request` `Response` `Middleware`, instead. They link to the api documentation to provide type safety for routes.
-- Do not write `.js` files
+- Do not use the types `'express.Router'` `'express.Request'` `'express.Response'` `'express.RequestHandler'`.
+    Use the custom global types `'IRouter<baseRoute>'` `'IRequest'` `'IResponse'` `'IMiddleware'`, instead. They link to the api documentation to provide type safety for routes.
+- Do not use `.js` files, or set tsc to accept `.js` files
+
+### A Note On Types
+
+This project uses custom definitions to bind the api documentation to the routes.
+If a code change leads to a typescript error, make sure your code is compatible with the routes defined in api.ts and vice-versa.
+The project is set-up in such a way that most types are automatically infered, and do not have to be specifically set.

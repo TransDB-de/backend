@@ -2,6 +2,8 @@ import * as express from "express"
 import * as Api from "../api/api"
 
 // This type definition file maps the api definition to custom express.js Interfaces, to ensure type safety
+// It has no harcoded definitions, and instead completly infers the api structure from api.ts
+
 // Author @ElectronicBlueberry
 
 // Extract all avalible methods from route base type
@@ -53,13 +55,13 @@ declare global {
      * Typechecks according to the api.ts definitions.
      * 'baseRoute' can be any interface extending 'Route'
      */
-    interface IRouter< baseRoute extends Api.Route > extends Omit< express.IRouter, keyof { get, post, put, patch, delete } > {
+    interface IRouter< baseRoute extends Api.Route > extends Omit< express.IRouter, Methods > {
 
         get: RouteMatcher<this, "get", baseRoute>
         post: RouteMatcher<this, "post", baseRoute>
         put: RouteMatcher<this, "put", baseRoute>
-        patch: RouteMatcher<this, "patch", baseRoute>
         delete: RouteMatcher<this, "delete", baseRoute>
+        patch: RouteMatcher<this, "patch", baseRoute>
 
     }
 }
