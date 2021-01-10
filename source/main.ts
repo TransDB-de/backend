@@ -22,7 +22,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 Config.initConfig();
 
-Database.event.connected = async () => {
+Database.events.connected = async () => {
     await User.generateDefaultUserIfRequired();
 };
 
@@ -38,6 +38,7 @@ app.use( cors({ origin: Config.config.web.CORSOrigins }) );
 let files = fs.readdirSync( path.resolve(__dirname, "./routes/") );
 
 for (let file of files) {
+    // If its not a .js file, skip this file
     if ( !file.match(/^.*\.js$/) ) continue;
 
     let routeModule = await import("./routes/" + file);

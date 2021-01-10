@@ -33,12 +33,9 @@ const defaultConfig = {
     },
 };
 
-// define type based on default config, so that all configs match this type in code
-type Config = typeof defaultConfig;
+const configPath = "./config.json";
 
-export const configPath = "./config.json";
-
-export let config: Config = defaultConfig;
+export let config = defaultConfig;
 
 /**
  * Loads the config from disk, or creates a template config file if none was found

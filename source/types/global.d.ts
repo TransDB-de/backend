@@ -7,7 +7,7 @@ import * as Api from "../api/api"
 // Author @ElectronicBlueberry
 
 // Extract all avalible methods from route base type
-type Methods = keyof Api.Route;
+type Methods = keyof Api.BaseRoute;
 
 // This helper type makes sure something is either defined, or undefined
 // Prevents types from defaulting to unkown, when insufficiently defined.
@@ -15,7 +15,7 @@ type MustExtend<T, U> = T extends U ? T : undefined;
 
 // Overrides express router method definition
 // Types are now infered from the router methods path
-interface RouteMatcher<T, method extends Methods, baseRoute extends Api.Route> {
+interface RouteMatcher<T, method extends Methods, baseRoute extends Api.BaseRoute> {
 
     <Path extends keyof baseRoute[method]> // Path the user enters into the function  
     (path: Path,...handlers: Array<express.RequestHandler< // set types for used request handlers
@@ -55,7 +55,7 @@ declare global {
      * Typechecks according to the api.ts definitions.
      * 'baseRoute' can be any interface extending 'Route'
      */
-    interface IRouter< baseRoute extends Api.Route > extends Omit< express.IRouter, Methods > {
+    interface IRouter< baseRoute extends Api.BaseRoute > extends Omit< express.IRouter, Methods > {
 
         get: RouteMatcher<this, "get", baseRoute>
         post: RouteMatcher<this, "post", baseRoute>

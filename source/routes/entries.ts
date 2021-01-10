@@ -94,7 +94,7 @@ router.post("/", validate(Models.baseForm), async (req, res) => {
             break;
     }
 
-    if(valRes !== true) {
+    if (valRes !== true) {
         res.status(ResponseCode.UnprocessableEntity).json(valRes).end();
         return;
     }

@@ -13,7 +13,7 @@ export type NewDbEntry = Omit<Entry, keyof { _id }>
 
 /** User object as stored in database */
 export type User = {
-    _id: string | number | MongoDB.ObjectID,
+    _id: string | number
     password: Password,
 } & Omit<UserApiTypes.User, keyof { password }>
 
@@ -26,12 +26,7 @@ export interface Password {
     salt: string
 }
 
-export type ID = string | number | MongoDB.ObjectID
-
-export interface DatabaseCallbacks {
-    connected?: () => {}
-}
-
+// ------ Globals ------
 
 export let client: MongoDB.MongoClient;
 
@@ -41,7 +36,11 @@ let db: MongoDB.Db;
  * callbak event functions.
  * register callback functions here
  */
-export const event: DatabaseCallbacks = {};
+export const events = {
+    connected: () => {}
+};
+
+// ------ Functions ------
 
 export function connect() {
 
@@ -65,7 +64,7 @@ export function connect() {
         // Resolve all db promises in parallel, then callback sucessfull connection
         Promise.all([ entryPromise, geodataPromise ]).then(() => {
             // Call connected method (specified in main.js)
-            event?.connected();
+            events.connected();
         });
 
     });
@@ -103,7 +102,7 @@ export async function createUser(username: string, email: string, password: Pass
  * Get a user by id
  * @returns The user object
  */
-export async function getUser(userId: ID): Promise<User | null> {
+export async function getUser(userId: string | number): Promise<User | null> {
 
     return await db
         .collection("users")
@@ -156,7 +155,7 @@ export async function getAllUsers() {
  * @param updater Fields to update
  * @returns {Promise<Boolean>} Boolean indicating the success of the update
  */
-export async function updateUser(userId: ID, updater: Partial<User> ): Promise<boolean> {
+export async function updateUser(userId: string | number, updater: Partial<User> ): Promise<boolean> {
 
     let res = await db
         .collection("users")
@@ -171,7 +170,7 @@ export async function updateUser(userId: ID, updater: Partial<User> ): Promise<b
  * @param userId
  * @returns {Promise<boolean>} Boolean indicating the success of the delete
  */
-export async function deleteUser(userId: ID) {
+export async function deleteUser(userId: string | number) {
 
     let res = await db
         .collection("users")
@@ -203,7 +202,7 @@ export async function addEntry(entry: NewDbEntry) {
  * @param entryId
  * @returns The entry
  */
-export async function getEntry(entryId: ID): Promise<Entry | null> {
+export async function getEntry(entryId: string | number): Promise<Entry | null> {
 
     return await db
         .collection("entries")
@@ -299,7 +298,7 @@ export async function updateEntry(entry: Entry, updater: Partial<Entry>) {
  * @param id
  * @returns Boolean indicating the success of the delete
  */
-export async function deleteEntry(id: ID) {
+export async function deleteEntry(id: string | number) {
 
     let res = await db
         .collection("entries")
@@ -342,7 +341,7 @@ export async function findGeoData(search: string): Promise<GeoData[]> {
  * Sets or updates the geolocation field of an entry, based on the entries adress
  * Due to rate limits, this is not immediate, and may take a while.
  * As the potential execution time might be very high, do not await this in API routes
- * @param entryId The id of the entry to update the geoloaction for
+ * @param entry The entry to update the geoloaction for
  */
 export async function setGeolocation(entry: Entry) {
 

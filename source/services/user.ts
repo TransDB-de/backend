@@ -15,9 +15,12 @@ const nanoid = customAlphabet('0123456789abcdefghijklmnopqurstuvxyz', 8);
 
 /**
  * Function to add a new user
+ * @param createUser The body of the user creation request
  * @returns A new user, or false if the user allready exists
  */
-export async function addUser({ username, email, admin }: CreateUser) {
+export async function addUser(createUser: CreateUser) {
+
+    const { username, email, admin } = createUser;
 
     // Get possible user from database to check if the user already exist
     let user = await Database.findUser({ $or: [ { username }, { email } ] });
@@ -41,9 +44,12 @@ export async function addUser({ username, email, admin }: CreateUser) {
 
 /**
  * Function to log in a user
+ * @param loginBody The body of the login request
  * @returns user object and token, or false if login failed
  */
-export async function login({ username, password }: LoginBody) {
+export async function login(loginBody: LoginBody) {
+
+    const { username, password } = loginBody;
 
     // Get the user
     let dbUser = await Database.findUser({ $or: [ { username: username }, { email: username } ] }) as Database.User;
@@ -73,6 +79,8 @@ export async function login({ username, password }: LoginBody) {
 
 /**
  * Reset the password of a user
+ * @param userId The id of the user whos password to reset
+ * @param updatePasswordBody The body of the update password request
  * @returns sucess
  */
 export async function resetPassword(userId: string, updatePasswordBody: UpdatePassword) {

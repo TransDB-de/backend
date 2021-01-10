@@ -7,6 +7,7 @@ import { NewApiEntry, Entry, Address, FilterQuery } from "../api/entries.js";
 
 /**
  * Add an entry
+ * @param object body of the new entry request
  * @returns The new entry object
  */
 export async function addEntry(object: NewApiEntry) {

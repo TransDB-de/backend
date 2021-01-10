@@ -60,7 +60,7 @@ export type PossibleQuery =
 
 // ------ API ------
 
-export type Route = {
+export type BaseRoute = {
     [method in "get" | "post" | "put" | "patch" | "delete"]: {
         [route: string]: {
             params?
@@ -71,7 +71,10 @@ export type Route = {
     }
 }
 
-export interface Default extends Route {
+/**
+ * Requests avalible in the apis default route
+ */
+export interface Default extends BaseRoute {
     get: {
         "/": {
             response: DefaultResponse
@@ -80,7 +83,10 @@ export interface Default extends Route {
     }
 }
 
-export interface Users extends Route {
+/**
+ * Requests avalible in the apis "/users" route
+ */
+export interface Users extends BaseRoute {
     get: {
         "/": {
             response: users.User[]
@@ -125,7 +131,10 @@ export interface Users extends Route {
     }
 }
 
-export interface Entries extends Route {
+/**
+ * Requests avalible in the apis "/entries" route
+ */
+export interface Entries extends BaseRoute {
     get: {
         "/": {
             response: entries.Entry[] | Error
@@ -167,7 +176,10 @@ export interface Entries extends Route {
     }
 }
 
-export interface GeoData extends Route {
+/**
+ * Requests avalible in the apis "/geodata" route
+ */
+export interface GeoData extends BaseRoute {
     get: {
         "/": {
             response: entries.GeoData[],
@@ -175,12 +187,3 @@ export interface GeoData extends Route {
         }
     }
 }
-
-export interface Api {
-    "/": Default
-    "/users": Users
-    "/entries": Entries
-    "/geodata": GeoData
-}
-
-export default Api
