@@ -21,7 +21,7 @@ router.path = "/entries";
 /**
  * Base route to get and filter entries
  */
-router.get("/", queryNumberParser, async (req, res) => {
+router.get("/", queryNumberParser(["lat", "long"]), async (req, res) => {
 
     let valRes = validate.validate(req.query, filterQuery);
 

@@ -65,20 +65,13 @@ class EntryService {
             query.type = filters.type;
         }
 
-        if(filters.search) {
-            query.$or = [
-                { name: new RegExp(filters.search, "i") },
-                { firstName: new RegExp(filters.search, "i") },
-                { lastName: new RegExp(filters.search, "i") },
-            ]
-        }
-
-        // Not searched with geolocation
-        if(!(filters.lat && filters.long)) {
+        // Not searched with coordinates but with location
+        if(!(filters.lat && filters.long) && filters.location) {
 
             // Add geolocation by plz or city
-            if(filters.plz || filters.city) {
-                let geodata = await Database.findGeoData(filters.city ? filters.city : filters.plz);
+            let geodata = await Database.findGeoData(filters.location);
+
+            if(geodata[0]) {
                 filters.lat = geodata[0].lat;
                 filters.long = geodata[0].lon;
             }
