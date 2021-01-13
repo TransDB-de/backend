@@ -283,7 +283,7 @@ export async function updateEntry(entry: Entry, updater: Partial<Entry>) {
             setGeolocation(entry);
         }
         // If the address was changed
-        else if (updater.address && JSON.stringify(entry.address) !== JSON.stringify(updater.address) ) {
+        else if (updater.address) {
             setGeolocation(entry);
         }
 
