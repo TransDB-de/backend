@@ -6,25 +6,8 @@ import * as Config from "./config.js";
 import * as UserApiTypes from "../api/users.js";
 import { Entry, GeoData } from "../api/entries.js";
 
-// ------ Typedefs ------
-
-/** Entry object for new database entry */
-export type NewDbEntry = Omit<Entry, keyof { _id }>
-
-/** User object as stored in database */
-export type User = {
-    _id: string | number
-    password: Password,
-} & Omit<UserApiTypes.User, keyof { password }>
-
-/** User object for new database entries */
-export type NewDbUser = Omit<User, keyof { _id }>
-
-/** Encrypted password with salt, as stored in database */
-export interface Password {
-    key: string,
-    salt: string
-}
+import { NewDbEntry, User, NewDbUser, Password } from "../types/services/database";
+export { NewDbEntry, User, NewDbUser, Password };
 
 // ------ Globals ------
 
