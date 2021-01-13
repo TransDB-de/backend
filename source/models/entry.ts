@@ -181,22 +181,12 @@ export const filterQuery = {
         ]
     },
 
-    city: {
-        presence: false,
-        type: "string"
-    },
-
-    plz: {
-        presence: false,
-        type: "string"
-    },
-
-    search: {
+    location: {
         presence: false,
         type: "string",
         length: {
             minimum: 2,
-            maximum: 120
+            maximum: 120,
         }
     },
 

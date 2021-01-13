@@ -63,9 +63,7 @@ export interface FilterQuery {
     lat?: number,
     long?: number,
     type: string,
-    city?: string,
-    plz?: string,
-    search?: string,
+    location?: string,
     page?: number
 }
 

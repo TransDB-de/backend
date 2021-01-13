@@ -38,7 +38,7 @@ router.post("/", auth({ admin: true }), validate(createUser), async (req, res) =
     let register = await User.addUser(req.body);
 
     // Return an error if the user already exist
-    if(register === false) {
+    if (register === false) {
         res.status(ResponseCode.Conflict).send({ error: "user_exist" });
         return;
     }
@@ -71,7 +71,7 @@ router.put("/me/password", auth(), validate(updatePassword), async (req, res) =>
 
     let reset = await User.resetPassword(req.user.id, req.body);
 
-    if(reset) {
+    if (reset) {
         res.status(ResponseCode.OK).end();
     } else {
         res.status(ResponseCode.BadRequest).send({ error: "invalid_verification" });

@@ -47,5 +47,10 @@ export type User = {
 
 /** Just created user, with generated plaintext password */
 export type NewUser = {
+    username: string,
     password: string,
-} & Omit<User, keyof {password}>
+    email: string,
+    registerDate: Date,
+    lastLogin: null | Date,
+    admin: boolean
+}
