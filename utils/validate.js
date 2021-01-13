@@ -1,5 +1,5 @@
 const validate = require("validate.js");
-const objectId = require("../models/objectID");
+const objectId = require("../models/objectId");
 
 // Custom validator for checking if an array contains only elements from options array
 validate.validators.exclusively = function (value, options) {
