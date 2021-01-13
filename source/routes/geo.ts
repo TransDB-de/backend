@@ -1,7 +1,7 @@
 // third-party modules
 import express from "express";
 
-import * as api from "../api/api.js";
+import * as api from "../api/api";
 
 // services
 import * as Database from "../services/database.js";

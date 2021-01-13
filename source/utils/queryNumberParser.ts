@@ -1,5 +1,4 @@
 import { NextFunction } from "express";
-import { PossibleQuery } from "../api/api.js";
 
 /**
  * Express.js Middleware to parse numbers in the querystring of a request to an actual number (float).

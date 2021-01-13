@@ -1,11 +1,11 @@
 import axios from "axios";
 import axiosRateLimit from "axios-rate-limit";
 
-import { GeoJsonPoint } from "../api/geo.js";
+import { GeoJsonPoint } from "../api/geo";
 
 import { config } from "./config.js";
 
-import { Address } from "../api/entries.js"
+import { Address } from "../api/entries"
 
 
 const axiosRl = axiosRateLimit(axios.create(), { maxRequests: 1, perMilliseconds: 1100 });

@@ -1,7 +1,7 @@
 // third-party modules
 import express from "express";
 
-import * as Api from "../api/api.js";
+import * as Api from "../api/api";
 
 // Require services
 import { config } from "../services/config.js";

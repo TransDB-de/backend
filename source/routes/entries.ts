@@ -5,7 +5,7 @@ import * as express from "express";
 import * as Entry from "../services/entry.js";
 import * as Database from "../services/database.js";
 
-import * as Api from "../api/api.js";
+import * as Api from "../api/api";
 
 // utils
 import validate, { validateId, validateManually } from "../utils/validate.js";

@@ -3,8 +3,7 @@ import MongoDB from "mongodb";
 import * as OSM from "./osm.js";
 import * as Config from "./config.js";
 
-import * as UserApiTypes from "../api/users.js";
-import { Entry, GeoData } from "../api/entries.js";
+import { Entry, GeoData } from "../api/entries";
 
 import { NewDbEntry, User, NewDbUser, Password } from "../types/services/database";
 export { NewDbEntry, User, NewDbUser, Password };

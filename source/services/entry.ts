@@ -2,7 +2,7 @@ import * as MongoDB from "mongodb";
 
 import * as Database from "./database.js";
 
-import { NewApiEntry, Entry, Address, FilterQuery } from "../api/entries.js";
+import { NewApiEntry, Entry, Address, FilterQuery } from "../api/entries";
 
 
 /**
