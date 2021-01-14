@@ -1,4 +1,4 @@
-export enum ResponseCode {
+export const enum ResponseCode {
     OK = 200,
     Created = 201,
     Accepted = 202,
