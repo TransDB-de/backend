@@ -1,18 +1,19 @@
 // Import modules
-import fs from "fs"
-import path from 'path'
-import url from 'url'
+import fs from "fs";
+import path from 'path';
+import url from 'url';
 
-import express from "express"
-import helmet from "helmet"
-import cors from "cors"
-import cleanup from "node-cleanup"
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import cleanup from "node-cleanup";
 
-// Require services
-import * as Config from "./services/config.js"
-import * as Database from "./services/database.js"
-import * as User from "./services/user.js"
+// Import services
+import * as Config from "./services/config.js";
+import * as Database from "./services/database.js";
+import * as User from "./services/user.js";
 
+import * as Shell from "./utils/shell.js";
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +22,9 @@ const __dirname = path.dirname(__filename);
 // Init modules and services
 const app = express();
 Config.initConfig();
+
+// Check if required shell commands are installed
+await Shell.testForCommands();
 
 Database.events.connected = async () => {
     await User.generateDefaultUserIfRequired();
