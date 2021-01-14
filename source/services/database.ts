@@ -5,7 +5,7 @@ import * as Config from "./config.js";
 
 import { Entry, GeoData } from "../api/entries";
 
-import { NewDbEntry, User, NewDbUser, Password } from "../types/services/database";
+import { NewDbEntry, User, NewDbUser, Password } from "../@types/services/database";
 export { NewDbEntry, User, NewDbUser, Password };
 
 // ------ Globals ------

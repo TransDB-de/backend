@@ -4,7 +4,7 @@ import { config } from "../services/config.js";
 
 import { ResponseCode } from "./restResponseCodes.js";
 
-import { AuthOptions, TokenData } from "../types/utils/auth";
+import { AuthOptions, TokenData } from "../@types/utils/auth";
 export { AuthOptions, TokenData };
 
 // Middleware to authenticate and authorize users with jsonwebtoken
