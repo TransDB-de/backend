@@ -3,9 +3,11 @@ import MongoDB from "mongodb";
 import * as OSM from "./osm.js";
 import * as Config from "./config.js";
 
+import * as Shell from "../utils/shell.js";
+
 import { Entry, GeoData } from "../api/entries";
 
-import { NewDbEntry, User, NewDbUser, Password } from "../@types/services/database";
+import { NewDbEntry, User, NewDbUser, Password, EntriesMeta, MetaUpdateType } from "../@types/services/database";
 export { NewDbEntry, User, NewDbUser, Password };
 
 // ------ Globals ------
@@ -42,9 +44,10 @@ export function connect() {
         // Add index for genoear queries
         let entryPromise = db.collection("entries").createIndex({ location: "2dsphere" });
         let geodataPromise = db.collection("geodata").createIndex({ name: "text", plz: "text" });
+        let metaPromise = db.collection("meta").createIndex({about: "text"});
 
         // Resolve all db promises in parallel, then callback sucessfull connection
-        Promise.all([ entryPromise, geodataPromise ]).then(() => {
+        Promise.all([ entryPromise, geodataPromise, metaPromise ]).then(() => {
             // Call connected method (specified in main.js)
             events.connected();
         });
@@ -110,13 +113,7 @@ export async function findUser(query: MongoDB.FilterQuery<User>): Promise<User |
  */
 export async function getAllUsers() {
 
-    type ProjectedUsers = Pick< User, keyof {
-        username,
-        email,
-        registerDate,
-        lastLogin,
-        admin
-    }>
+    type ProjectedUsers = Pick< User, "username" | "email" | "registerDate" | "lastLogin" | "admin">
 
     return await db
         .collection("users")
@@ -175,6 +172,7 @@ export async function addEntry(entry: NewDbEntry) {
         .collection("entries")
         .insertOne(entry);
 
+    updateEntriesMeta();
     return res.ops[0] as Entry;
 
 }
@@ -269,6 +267,8 @@ export async function updateEntry(entry: Entry, updater: Partial<Entry>) {
             setGeolocation(entry);
         }
 
+        updateEntriesMeta();
+
     }
 
     return updated;
@@ -286,7 +286,82 @@ export async function deleteEntry(id: string | number) {
         .collection("entries")
         .deleteOne({ _id: new MongoDB.ObjectId(id) });
 
+    updateEntriesMeta();
     return Boolean(res.deletedCount);
+
+}
+
+export async function exportEntries(): Promise<string | false> {
+
+    // get meta information about entries collection
+    let meta = await db.collection("meta").findOne({ about: "entries" }) as EntriesMeta;
+    let path = Config.config.mongodb.backupFolder + meta.lastExportTimestamp + "/entries.json";
+    let success = true;
+
+    // Change occured after last export
+    if (meta.lastChangeTimestamp > meta.lastExportTimestamp) {
+
+        success = await Shell.exportEntries( Config.getMongoUrl(), Config.config.mongodb.database, path );
+
+        if (success) {
+            updateEntriesMeta(MetaUpdateType.Exported);
+        }
+
+    }
+
+    // Return path to new export, or false if export failed
+    return success ? path : false;
+
+}
+
+/**
+ * Updates the metadata for the entry collection.
+ * Should be called after every write to the collection
+ * @param newEntry if a new entry was added
+ */
+async function updateEntriesMeta(type = MetaUpdateType.Changed): Promise<void> {
+
+    // Check if entry meta exists
+    let meta = await db.collection("meta").findOne({ about: "entries" });
+
+    let time = Date.now();
+
+    // Create one if it dosn't
+    if (!meta) {
+
+        const entriesMeta: EntriesMeta = {
+            about: "entries",
+            lastChangeTimestamp: time,
+            lastExportTimestamp: type === MetaUpdateType.Exported ? time : 0
+        }
+
+        await db.collection("meta").insertOne(entriesMeta);
+
+    } else {
+        let updater: Partial<EntriesMeta>= {};
+
+        if (type === MetaUpdateType.Changed) {
+
+            updater = {
+                lastChangeTimestamp: time
+            }
+
+        }
+        else if (type === MetaUpdateType.Exported) {
+
+            updater = {
+                lastExportTimestamp: time
+            }
+
+        }
+
+
+        // Update in Database
+        await db
+            .collection("meta")
+            .updateOne({ about: "entries" }, { $set: updater });
+
+    }
 
 }
 

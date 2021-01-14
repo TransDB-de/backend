@@ -41,22 +41,6 @@ router.get("/", queryNumberParser(["lat", "long"]), async (req, res) => {
 });
 
 /**
- * Route to get a single entry
- */
-router.get("/:id", validateId, async (req, res) => {
-
-   let entry = await Database.getEntry(req.params.id);
-
-   if(!entry) {
-       res.status(ResponseCode.NotFound).send({ error: "not_found" }).end();
-       return;
-   }
-
-   res.send(entry);
-
-});
-
-/**
  * Route to get unapproved entries
  */
 router.get("/unapproved", auth(), async (req, res) => {
@@ -68,12 +52,28 @@ router.get("/unapproved", auth(), async (req, res) => {
 });
 
 /**
+ * Route to download a backup file of the database
+ */
+router.get("/backup", auth({ admin: true }), async (req, res) => {
+
+    let exported = await Database.exportEntries();
+
+    if (!exported) {
+        res.status(ResponseCode.InternalServerError).send({ error: "backup_failed" }).end();
+        return;
+    }
+
+    res.download(exported);
+
+});
+
+/**
  * Route to create an entry
  */
 router.post("/", validate(Models.baseForm), async (req, res) => {
 
     // Validation of metadata
-    let valRes;
+    let valRes: true | any;
 
     switch(req.body.type) {
 
@@ -96,6 +96,7 @@ router.post("/", validate(Models.baseForm), async (req, res) => {
 
     if (valRes !== true) {
         res.status(ResponseCode.UnprocessableEntity).json(valRes).end();
+
         return;
     }
 
@@ -105,6 +106,25 @@ router.post("/", validate(Models.baseForm), async (req, res) => {
 
 
 });
+
+// ------ Parameter Routes ------
+// routes containing parameters must always be defined last
+
+/**
+ * Route to get a single entry
+ */
+router.get("/:id", validateId, async (req, res) => {
+
+    let entry = await Database.getEntry(req.params.id);
+ 
+    if(!entry) {
+        res.status(ResponseCode.NotFound).send({ error: "not_found" }).end();
+        return;
+    }
+ 
+    res.send(entry);
+ 
+ });
 
 /**
  * Route to change the approve state of an entry
@@ -131,6 +151,7 @@ router.patch("/:id/approve", auth(), validateId, async (req, res) => {
     res.send({ approved: newApprovedState }).end();
 
 });
+
 
 router.delete("/:id", auth(), validateId, async (req, res) => {
 

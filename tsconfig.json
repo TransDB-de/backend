@@ -8,6 +8,7 @@
     "sourceMap": true,
     "outDir": "./js",
     "rootDir": "./source",
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true

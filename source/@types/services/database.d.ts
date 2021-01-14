@@ -24,3 +24,17 @@ export interface Password {
     key: string,
     salt: string
 }
+
+export interface CollectionMeta {
+    about: string
+}
+
+export interface EntriesMeta extends CollectionMeta {
+    lastChangeTimestamp: number,
+    lastExportTimestamp: number
+}
+
+export const enum MetaUpdateType {
+    Changed,
+    Exported
+}
