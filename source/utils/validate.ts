@@ -1,6 +1,6 @@
 import validate from "validate.js";
 
-import * as objectId from "../models/objectId.js";
+import { objectId } from "../models/objectId.js";
 
 import { ResponseCode } from "./restResponseCodes.js";
 
@@ -52,7 +52,7 @@ validate.validators.exclusively = function (value: any, options: any): string | 
 }
 
 // Custom validator for checking if another value also exist
-validate.validators.requires = function (value: any, options: any, key, attributes: any): string | null {
+validate.validators.requires = function (value: any, options: any, key: any, attributes: any): string | null {
 
     if (!Array.isArray(options)) {
         options = new Array(options);
@@ -103,7 +103,7 @@ export function validateMiddleware(schema: Object): IMiddleware {
 /** Express.js Middleware to validate MongoDB's ObjectID in url params */
 export const validateId: IMiddleware = function (req, res, next) {
 
-    let errors = validate({ id: req.params.id }, objectId, { format: "detailed" });
+    let errors = validate({ id: req.params?.id }, objectId, { format: "detailed" });
 
     // Go next if there is no errors
     if(!Array.isArray(errors)){
