@@ -35,7 +35,6 @@ export type PossibleRequest =
     | users.ResetEmail
     | users.ResetUsername
     | users.UpdatePassword
-    | undefined
 
 export type PossibleResponse =
     entries.Entry
@@ -46,16 +45,13 @@ export type PossibleResponse =
     | users.User[]
     | users.NewUser
     | users.LoginResponse
-    | boolean
     | DefaultResponse
     | Error
-    | undefined
 
 export type PossibleQuery = 
     entries.FilterQuery
     | { page: Page }
     | geo.GeoDataQuery
-    | undefined
 
 
 // ------ API ------
@@ -137,27 +133,31 @@ export interface Users extends BaseRoute {
 export interface Entries extends BaseRoute {
     get: {
         "/": {
-            response: entries.Entry[] | Error
+            response: entries.Entry[] | Error | null
             query: entries.FilterQuery
         }
 
         "/:id": {
-            response: entries.Entry | Error
+            response: entries.Entry | Error | null
             params: Id
         }
 
         "/unapproved": {
-            response: entries.Entry[]
+            response: entries.Entry[] | null
             query: {
                 page: Page
             }
+        }
+
+        "/backup": {
+            response: any | Error
         }
     }
 
     post: {
         "/": {
             request: entries.NewApiEntry
-            response: entries.Entry
+            response: entries.Entry | Error
         }
     }
 
