@@ -38,7 +38,7 @@ It provides functions to get, insert and update data. This service is also somet
 
 ## Setup
 
-**Requirements:** NodeJS 14.15.4 or higher, NPM, a running MongoDB server.
+**Requirements:** NodeJS 14.15.4 or higher, NPM, a running MongoDB server, with MongoDB Database Tools installed.
 
 1. Download and extract latest release from [releases](/releases/latest).
 2. Run `npm install`.
@@ -65,6 +65,7 @@ A new folder will be created in `./dist` with it's own `package.json` and compil
 - NodeJS 14.15.4 LTS or higher
 - NPM (automatically installed with NodeJS)
 - A MongoDB server
+- [MongoDB Database Tools](https://docs.mongodb.com/database-tools/)
 - A reverse proxy with SSL
 
 ## Geodata
