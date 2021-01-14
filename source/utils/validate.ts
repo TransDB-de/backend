@@ -5,6 +5,7 @@ import * as objectId from "../models/objectId.js";
 import { ResponseCode } from "./restResponseCodes.js";
 
 
+// simple utility interface for object with string key
 interface IDictionary {
     [key: string]: any
 }
