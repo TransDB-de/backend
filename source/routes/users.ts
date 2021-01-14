@@ -69,7 +69,7 @@ router.post("/me/login", validate(loginBody), async (req, res) => {
 * */
 router.put("/me/password", auth(), validate(updatePassword), async (req, res) => {
 
-    let reset = await User.resetPassword(req.user.id, req.body);
+    let reset = await User.resetPassword(req.user?.id ?? "", req.body);
 
     if (reset) {
         res.status(ResponseCode.OK).end();
@@ -87,7 +87,7 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 
     let user = await Database.findUser({ email: req.body.email });
 
-    if (!user) {
+    if (!user && req.user) {
 
         await Database.updateUser(req.user.id, { email: req.body.email });
         res.status(ResponseCode.OK).end();
@@ -107,17 +107,20 @@ router.put("/me/username", auth(), validate(resetUsername), async (req, res) => 
 
     let user = await Database.findUser({ username: req.body.username });
 
-    if(!user){
+    if (!user && req.user){
 
         await Database.updateUser(req.user.id, { username: req.body.username });
         res.status(ResponseCode.OK).end();
 
-    }else{
+    } else {
         res.status(ResponseCode.Unauthorized).send({ error: "user_exist" });
     }
 
 
 });
+
+// ------ Parameter Routes ------
+// routes containing parameters must always be defined last
 
 /*
 * Delete a user
@@ -126,7 +129,7 @@ router.delete("/:id", auth({ admin: true }), async (req, res) => {
 
     let user = await Database.getUser(req.params.id);
 
-    if(!user) {
+    if (!user) {
         res.status(ResponseCode.NotFound).send({ error: "not_found" });
         return;
     }

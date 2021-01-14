@@ -50,7 +50,7 @@ export async function addEntry(object: NewApiEntry) {
  */
 export async function filter(filters: FilterQuery) {
 
-    let data: Entry[];
+    let data: Entry[] | null;
     let page = filters.page ? filters.page : 0;
 
     let query: MongoDB.FilterQuery<Entry> = {

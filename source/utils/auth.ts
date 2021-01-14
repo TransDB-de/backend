@@ -10,6 +10,12 @@ export { AuthOptions, TokenData };
 // Middleware to authenticate and authorize users with jsonwebtoken
 function _authMiddleware(req: IRequest, res: IResponse, next: Function, options: AuthOptions) {
 
+    if (!req.headers.authorization) {
+        res.status( ResponseCode.Unauthorized ).send({ error: "no_authorization_header" }).end();
+        
+        return;
+    }
+
     // Match the auth header with RegExp
     let bearer = /Bearer (.+)/.exec(req.headers.authorization);
 

@@ -128,7 +128,7 @@ function encryptPassword(password: string, salt?: string): Promise<Database.Pass
 
             let key = keyBuffer.toString("hex");
 
-            resolve({ key, salt });
+            resolve({ key, salt: salt as string });
 
         });
 
@@ -149,7 +149,7 @@ export async function generateDefaultUserIfRequired() {
 
         let userEntry: CreateUser = {
             username: "admin",
-            email: null,
+            email: "",
             admin: true
         };
 
