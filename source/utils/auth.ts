@@ -4,24 +4,8 @@ import { config } from "../services/config.js";
 
 import { ResponseCode } from "./restResponseCodes.js";
 
-export interface AuthOptions {
-    admin?: boolean
-}
-
-export interface TokenData {
-    id: string,
-    admin: boolean
-}
-
-// Extend express Request base interface, to include the field this middleware appends
-declare global {
-    namespace Express {
-        interface Request {
-            /** Request includes this field after the auth middleware was called */
-            user?: TokenData
-        }
-    }
-}
+import { AuthOptions, TokenData } from "../types/utils/auth";
+export { AuthOptions, TokenData };
 
 // Middleware to authenticate and authorize users with jsonwebtoken
 function _authMiddleware(req: IRequest, res: IResponse, next: Function, options: AuthOptions) {
