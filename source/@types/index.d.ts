@@ -11,7 +11,7 @@ type Methods = keyof Api.BaseRoute;
 
 // This helper type makes sure something is either defined, or undefined
 // Prevents types from defaulting to unkown, when insufficiently defined.
-type MustExtend<T, U> = T extends U ? T : undefined; 
+type MustExtend<T, U> = T extends U ? T : null; 
 
 // Overrides express router method definition
 // Types are now infered from the router methods path
@@ -33,10 +33,9 @@ interface RouteMatcher<T, method extends Methods, baseRoute extends Api.BaseRout
 declare global {
     /**
      * Replaces express.js RequestHandler.
-     * Includes all possible request bodies, queries, and parameters.
-     * Includes all possible response bodies.
+     * Defaults to any for all generics.
      */
-    interface IMiddleware extends express.RequestHandler<Api.PossileParams, Api.PossibleResponse, Api.PossibleRequest, Api.PossibleQuery> {}
+    interface IMiddleware<params = any, res = any, req = any, query = any> extends express.RequestHandler<params, res, req, query> {}
 
     /**
      * Replaces express.js Request.
