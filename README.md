@@ -19,12 +19,12 @@ The backend of the TransDB site
 
 ### Directories
 
-- `/api` Typescript api documentation. `api.ts` documents the api itself. The other files contain all types avalible to the api. Documentation is generic, and can be used for backend and frontend puproses.
-- `/models` Contains modules with javascript objects that represent [validate.js](https://validatejs.org/) validation schemas.
+- `/api` Typescript api documentation. `api.d.ts` documents the api itself. The other files contain all types avalible to the api. Documentation is generic, and can be used for backend and frontend puproses.
+- `/models` Contains modules with objects that represent [validate.js](https://validatejs.org/) validation schemas.
 - `/routes` Contains modules with [express routers](https://expressjs.com/en/4x/api.html#router).
 - `/services` Modules that provide most of the backends funtionality.
-- `/utils` Modules with javascript functions and [express middlewares](https://expressjs.com/en/guide/writing-middleware.html).
-- `/types` Custom express types, to ensure route type safety.
+- `/utils` Modules with functions and [express middlewares](https://expressjs.com/en/guide/writing-middleware.html).
+- `/@types` Typedefs for modules, and custom express types which bind the api to the typechecker.
 
 ### Services
 
@@ -45,7 +45,7 @@ It provides functions to get, insert and update data. This service is also somet
 3. Run `npm start`.
 4. On first start the application will exit. A `config.json` file will now be in the root directory.
 5. Fill out all config fields.
-6. Open your mongodb, create a collection named "geodata" and import the DE.tab file from [OpenGeoDb Downloads](http://www.fa-technik.adfc.de/code/opengeodb/) into the collection as tab seperated csv.
+6. Open your mongodb, create a collection named "geodata" and import the data.json file in GeoDbJson.zip from [Tool Downloads](https://github.com/TransDB-de/Tools/releases/tag/0.1.2) into the collection as json.
 7. Run `npm start` again.
 
 **Development Setup:**
@@ -70,10 +70,15 @@ A new folder will be created in `./dist` with it's own `package.json` and compil
 
 ## Geodata
 
-TransDB offers the functionality to filter by location and calculate the distance.
-But if you search by city or postalcode and not by coordinates (user's geolocation) the backend has no coordinates to calculate the distance.
-To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/OpenGeoDB) to get the coordinates of cities.
+TransDB offers the functionality to filter by location, and sort by distance.
+But if you search by city-name or postalcode, instead of coordinates (user's geolocation), the backend has no coordinates to calculate the distance from.
+To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/OpenGeoDB) to get the coordinates of cities, districts, and postalcodes.
+The data is also used to retrieve the name of a place, when a user searches by geolocation.
+This is useful for user feedback, in case the location determined by the front-end is incorrect.
 *The OpenStreetMaps API is not used because of rate limits.*
+
+Unfortunatly, the data from OpenGeoDB is unsuitable for some MongoDB features.
+We use a [custom tool](https://github.com/TransDB-de/Tools/) to restructure the data for our project.
 
 ## Contribution
 

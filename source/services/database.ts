@@ -4,8 +4,10 @@ import * as OSM from "./osm.js";
 import * as Config from "./config.js";
 
 import * as Shell from "../utils/shell.js";
+import { convertToAscii } from "../utils/asciiConverter.js";
 
-import { Entry, GeoData } from "../api/entries";
+import { Entry } from "../api/entries";
+import { GeoJsonPoint, GeoPlace } from "../api/geo";
 
 import { NewDbEntry, User, NewDbUser, Password, EntriesMeta, MetaUpdateType } from "../@types/services/database";
 export { NewDbEntry, User, NewDbUser, Password };
@@ -41,13 +43,17 @@ export function connect() {
 
         console.log("[mongodb] Successful connected");
 
-        // Add index for genoear queries
-        let entryPromise = db.collection("entries").createIndex({ location: "2dsphere" });
-        let geodataPromise = db.collection("geodata").createIndex({ name: "text", plz: "text" });
-        let metaPromise = db.collection("meta").createIndex({about: "text"});
-
         // Resolve all db promises in parallel, then callback sucessfull connection
-        Promise.all([ entryPromise, geodataPromise, metaPromise ]).then(() => {
+        Promise.all([
+
+            // Add index for genoear queries
+            db.collection("entries").createIndex({ location: "2dsphere" }),
+            db.collection("geodata").createIndex({ location: "2dsphere" }),
+
+            db.collection("geodata").createIndex({ name: "text", plz: "text", ascii: "text" }),
+            db.collection("meta").createIndex({ about: "text" })
+
+        ]).then(() => {
             // Call connected method (specified in main.js)
             events.connected();
         });
@@ -215,7 +221,7 @@ export async function findEntries(query: MongoDB.FilterQuery<Entry>, page: numbe
  * @param page Defaults to 0
  * @returns Array with entry objects
  */
-export async function findEntriesAtLocation(lat: number, long: number, query: MongoDB.FilterQuery<Entry> = {}, page = 0): Promise<Entry[] | null> {
+export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: MongoDB.FilterQuery<Entry> = {}, page = 0): Promise<Entry[] | null> {
 
     let limit = Config.config.mongodb.itemsPerPage;
     let skip = limit * page;
@@ -225,9 +231,8 @@ export async function findEntriesAtLocation(lat: number, long: number, query: Mo
         .aggregate([
             {
                 $geoNear: {
-                    near: [ long , lat ],
+                    near: locaction,
                     distanceField: "distance",
-                    spherical: true,
                     distanceMultiplier: 6371,
                     query: query
                 }
@@ -373,25 +378,55 @@ async function updateEntriesMeta(type = MetaUpdateType.Changed): Promise<void> {
 /**
  * Find geo data by city name or postal code
  * @param search Either postalcode or city name
- * @returns Array with objects of cityname, lat and long
+ * @returns Array with objects of cityname, and location
  */
-export async function findGeoData(search: string): Promise<GeoData[]> {
+export async function findGeoLocation(search: string): Promise<GeoPlace[]> {
 
     search = search.toString();
 
+    let ascii = convertToAscii(search);
+
+    // Search for input or ascii
+    // the ascii is aditionally included to cover more edge cases
+    let searchStr = `${search} ${ascii}`;
+
     return await db
         .collection("geodata")
-        .find({ $text: { $search: search }, level: { $nin: ["1", "2", "3", "4", "5"] } })
+        .find({ $text: { $search: searchStr } })
         .limit(6)
-        .sort({ score: { $meta: "textScore"  }, name: 1 })
+        .sort({ score: { $meta: "textScore"  }, level: -1 })
         .project({
-            lat: { $toDouble: "$lat" },
-            lon: { $toDouble: "$lon" },
             name: true,
+            location: { $ifNull: ["$location", "$referenceLocation"] },
             _id: false
         })
         .toArray();
 
+}
+
+/**
+ * Finds the name of a nearest location by GeoJsonPoint
+ * @param location GeoJsonPoint location
+ * @returns Single length array with object of cityname, and location
+ */
+export async function findGeoName(location: GeoJsonPoint) {
+    return await db
+        .collection("geodata")
+        .aggregate([
+            {
+                $geoNear: {
+                    near: location,
+                    distanceField: "distance"
+                }
+            },
+            { $limit: 1 }
+        ])
+        .project({
+            name: true,
+            location: true,
+            _id: false
+        })
+        .toArray() as [GeoPlace];
 }
 
 /**

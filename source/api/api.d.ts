@@ -39,12 +39,14 @@ export type PossibleRequest =
 export type PossibleResponse =
     entries.Entry
     | entries.Entry[]
+    | entries.QueriedEntries
     | entries.GeoData[]
     | entries.EntryApproved
     | users.User
     | users.User[]
     | users.NewUser
     | users.LoginResponse
+    | geo.GeoPlace[]
     | DefaultResponse
     | Error
 
@@ -133,7 +135,7 @@ export interface Users extends BaseRoute {
 export interface Entries extends BaseRoute {
     get: {
         "/": {
-            response: entries.Entry[] | Error | null
+            response: entries.QueriedEntries | Error
             query: entries.FilterQuery
         }
 
@@ -182,8 +184,8 @@ export interface Entries extends BaseRoute {
 export interface GeoData extends BaseRoute {
     get: {
         "/": {
-            response: entries.GeoData[],
             query: geo.GeoDataQuery
+            response?: geo.GeoPlace[]
         }
     }
 }

@@ -6,3 +6,8 @@ export interface GeoJsonPoint {
     type: "Point",
     coordinates: number[]
 }
+
+export interface GeoPlace {
+    name: string,
+    location: GeoJsonPoint
+}

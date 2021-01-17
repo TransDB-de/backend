@@ -2,7 +2,8 @@ import * as MongoDB from "mongodb";
 
 import * as Database from "./database.js";
 
-import { NewApiEntry, Entry, Address, FilterQuery } from "../api/entries";
+import { NewApiEntry, Entry, Address, FilterQuery, QueriedEntries, GeoData } from "../api/entries";
+import { GeoJsonPoint } from "../api/geo";
 
 
 /**
@@ -48,10 +49,12 @@ export async function addEntry(object: NewApiEntry) {
  * Filter and get all entry objects
  * @param filters
  */
-export async function filter(filters: FilterQuery) {
+export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 
-    let data: Entry[] | null;
+    let entries;
     let page = filters.page ? filters.page : 0;
+    let geoLoc: GeoJsonPoint | null = null;
+    let name: string = "";
 
     let query: MongoDB.FilterQuery<Entry> = {
         approved: true
@@ -61,27 +64,39 @@ export async function filter(filters: FilterQuery) {
         query.type = filters.type;
     }
 
+    // Searched with location
+    if (filters.lat && filters.long) {
+
+        let geodata = await Database.findGeoName({
+            type: "Point",
+            coordinates: [ filters.lat, filters.long ]
+        });
+
+        name = geodata[0].name;
+        geoLoc = geodata[0].location;
+
+    }
     // Not searched with geolocation
-    if ( !(filters.lat && filters.long) && filters.location) {
+    else if (filters.location) {
 
         // Add geolocation by plz or city
 
-        let geodata = await Database.findGeoData(filters.location);
+        let geodata = await Database.findGeoLocation(filters.location);
 
-        if (geodata[0]) { 
-            filters.lat = geodata[0].lat;
-            filters.long = geodata[0].lon;
+        if ( geodata[0] ) {
+            name = geodata[0].name;
+            geoLoc = geodata[0].location;
         }
 
     }
 
-    if (filters.lat && filters.long) {
-        data = await Database.findEntriesAtLocation(filters.lat, filters.long, query, page)
+    if (geoLoc) {
+        entries = await Database.findEntriesAtLocation(geoLoc, query, page);
     } else {
-        data = await Database.findEntries(query, page);
+        entries = await Database.findEntries(query, page);
     }
 
-    return data;
+    return { entries, name };
 
 }
 

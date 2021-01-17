@@ -19,6 +19,11 @@ export interface Entry extends _BaseForm {
     meta: GroupMeta & TherapistMeta & SurgeonMeta & HairRemovalMeta
 }
 
+export interface QueriedEntries {
+    entries: Entry[] | null
+    name: string
+}
+
 export interface GeoData {
     lat: number,
     lon: number,
