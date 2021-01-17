@@ -6,7 +6,8 @@
     "type": "module",
     "scripts": {
         "build": "tsc --sourceMap false --outDir ./dist/temp/ && node build.js",
-        "start": "node js/main.js"
+        "start": "node js/main.js",
+        "dev": "node js/main.js --dev"
     },
     "repository": {
         "type": "git",

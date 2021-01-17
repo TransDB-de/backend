@@ -24,7 +24,9 @@ const app = express();
 Config.initConfig();
 
 // Check if required shell commands are installed
-await Shell.testForCommands();
+if(!process.argv.includes("--dev")) {
+    await Shell.testForCommands();
+}
 
 Database.events.connected = async () => {
     await User.generateDefaultUserIfRequired();
