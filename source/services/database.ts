@@ -233,7 +233,7 @@ export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: Mong
                 $geoNear: {
                     near: locaction,
                     distanceField: "distance",
-                    distanceMultiplier: 6371,
+                    distanceMultiplier: 0.001,
                     query: query
                 }
             },
