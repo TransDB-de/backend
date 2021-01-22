@@ -96,7 +96,7 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
         entries = await Database.findEntries(query, page);
     }
 
-    return { entries, name };
+    return { entries, locationName: name };
 
 }
 

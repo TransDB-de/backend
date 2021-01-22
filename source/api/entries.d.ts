@@ -21,7 +21,7 @@ export interface Entry extends _BaseForm {
 
 export interface QueriedEntries {
     entries: Entry[] | null
-    name: string
+    locationName: string
 }
 
 export interface GeoData {
