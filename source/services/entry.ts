@@ -69,7 +69,7 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 
         let geodata = await Database.findGeoName({
             type: "Point",
-            coordinates: [ filters.lat, filters.long ]
+            coordinates: [ filters.long, filters.lat ]
         });
 
         name = geodata[0].name;
