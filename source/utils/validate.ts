@@ -38,7 +38,7 @@ export function validateManually(data: Object, schema: Object) {
 validate.validators.exclusively = function (value: any, options: any): string | null {
 
     if (!Array.isArray(value)) {
-        return "is not an array";
+        return null;
     }
 
     for (let valueElement of value) {

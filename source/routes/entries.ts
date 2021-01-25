@@ -11,6 +11,7 @@ import * as Api from "../api/api";
 import validate, { validateId, validateManually } from "../utils/validate.js";
 import auth from "../utils/auth.js";
 import queryNumberParser from "../utils/queryNumberParser.js";
+import queryArrayParser from "../utils/queryArrayParser.js";
 import { ResponseCode } from "../utils/restResponseCodes.js";
 
 // models for input validation
@@ -25,20 +26,23 @@ export const router = express.Router() as IRouter<Api.Entries>;
 /**
  * Base route to get and filter entries
  */
-router.get("/", queryNumberParser(["lat", "long"]), async (req, res) => {
+router.get("/",
+    queryNumberParser(["lat", "long"]),
+    queryArrayParser(["offers", "attributes"]),
+    async (req, res) => {
 
-    let valRes = validateManually( req.query, Models.filterQuery );
+        let valRes = validateManually( req.query, Models.filterQuery );
 
-    if(valRes !== true) {
-        res.status(ResponseCode.UnprocessableEntity).send(valRes).end();
-        return;
+        if(valRes !== true) {
+            res.status(ResponseCode.UnprocessableEntity).send(valRes).end();
+            return;
+        }
+
+        let data = await Entry.filter( req.query );
+
+        res.send(data);
     }
-
-    let data = await Entry.filter( req.query );
-
-    res.send(data);
-
-});
+);
 
 /**
  * Route to get unapproved entries

@@ -181,6 +181,23 @@ export const filterQuery = {
         ]
     },
 
+    offers: {
+        presence: false,
+        type: "array",
+        exclusively: [
+            "indication", "therapy", "expertise", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
+            "hyst", "orch", "clitPI", "bodyfem", "laser", "ipl", "electro", "electroAE"
+        ]
+    },
+
+    attributes: {
+        presence: false,
+        type: "array",
+        exclusively: [
+            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfrendly", "hasDoctor"
+        ]
+    },
+
     location: {
         presence: false,
         type: "string",

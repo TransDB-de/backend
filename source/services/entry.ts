@@ -64,6 +64,14 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
         query.type = filters.type;
     }
 
+    if(filters.offers) {
+        query["meta.offers"] = { $in: filters.offers };
+    }
+
+    if(filters.attributes) {
+        query["meta.attributes"] = { $in: filters.attributes };
+    }
+
     // Searched with location
     if (filters.lat && filters.long) {
 
