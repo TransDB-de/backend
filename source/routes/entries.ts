@@ -27,7 +27,7 @@ export const router = express.Router() as IRouter<Api.Entries>;
  * Base route to get and filter entries
  */
 router.get("/",
-    queryNumberParser(["lat", "long"]),
+    queryNumberParser(["lat", "long", "page"]),
     queryArrayParser(["offers", "attributes"]),
     async (req, res) => {
 

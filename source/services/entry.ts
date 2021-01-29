@@ -1,8 +1,8 @@
 import * as MongoDB from "mongodb";
-
+import { config } from "./config.js";
 import * as Database from "./database.js";
 
-import { NewApiEntry, Entry, Address, FilterQuery, QueriedEntries, GeoData } from "../api/entries";
+import { NewApiEntry, Entry, Address, FilterQuery, QueriedEntries} from "../api/entries";
 import { GeoJsonPoint } from "../api/geo";
 
 
@@ -51,10 +51,10 @@ export async function addEntry(object: NewApiEntry) {
  */
 export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 
-    let entries;
+    let entries: Entry[];
     let page = filters.page ? filters.page : 0;
     let geoLoc: GeoJsonPoint | null = null;
-    let name: string = "";
+    let locationName: string = "";
 
     let query: MongoDB.FilterQuery<Entry> = {
         approved: true
@@ -80,7 +80,7 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
             coordinates: [ filters.long, filters.lat ]
         });
 
-        name = geodata[0].name;
+        locationName = geodata[0].name;
         geoLoc = geodata[0].location;
 
     }
@@ -92,7 +92,7 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
         let geodata = await Database.findGeoLocation(filters.location);
 
         if ( geodata[0] ) {
-            name = geodata[0].name;
+            locationName = geodata[0].name;
             geoLoc = geodata[0].location;
         }
 
@@ -104,7 +104,9 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
         entries = await Database.findEntries(query, page);
     }
 
-    return { entries, locationName: name };
+    let more = !(entries.length < config.mongodb.itemsPerPage);
+
+    return { entries, locationName, more };
 
 }
 

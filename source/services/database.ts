@@ -202,7 +202,7 @@ export async function getEntry(entryId: string | number): Promise<Entry | null> 
  * @param page
  * @returns Array with entry objects
  */
-export async function findEntries(query: MongoDB.FilterQuery<Entry>, page: number): Promise<Entry[] | null> {
+export async function findEntries(query: MongoDB.FilterQuery<Entry>, page: number): Promise<Entry[]> {
 
     let limit = Config.config.mongodb.itemsPerPage;
     let skip = limit * page;
@@ -215,13 +215,12 @@ export async function findEntries(query: MongoDB.FilterQuery<Entry>, page: numbe
 
 /**
  * Find all entries close to given location
- * @param lat Latitude
- * @param long Longitude
+ * @param locaction
  * @param query MongoDB Query
  * @param page Defaults to 0
  * @returns Array with entry objects
  */
-export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: MongoDB.FilterQuery<Entry> = {}, page = 0): Promise<Entry[] | null> {
+export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: MongoDB.FilterQuery<Entry> = {}, page = 0): Promise<Entry[]> {
 
     let limit = Config.config.mongodb.itemsPerPage;
     let skip = limit * page;
@@ -248,7 +247,7 @@ export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: Mong
 
 /**
  * Update an entry by id
- * @param id
+ * @param entry
  * @param updater
  * @returns Boolean indicating the success of the update
  */
@@ -322,7 +321,7 @@ export async function exportEntries(): Promise<string | false> {
 /**
  * Updates the metadata for the entry collection.
  * Should be called after every write to the collection
- * @param newEntry if a new entry was added
+ * @param type
  */
 async function updateEntriesMeta(type = MetaUpdateType.Changed): Promise<void> {
 
