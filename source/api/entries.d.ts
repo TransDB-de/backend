@@ -72,6 +72,7 @@ export interface FilterQuery {
     offers?: string[],
     attributes?: string[],
     location?: string,
+    text?: string,
     page?: number
 }
 

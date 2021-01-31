@@ -207,6 +207,15 @@ export const filterQuery = {
         }
     },
 
+    text: {
+        presence: false,
+        type: "string",
+        length: {
+            minimum: 2,
+            maximum: 120
+        }
+    },
+
     page: {
         presence: false,
         type: "integer"

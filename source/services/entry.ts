@@ -72,6 +72,14 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
         query["meta.attributes"] = { $in: filters.attributes };
     }
 
+    if(filters.text) {
+        query.$or = [
+            { name: new RegExp(filters.text, "i") },
+            { firstName: new RegExp(filters.text, "i") },
+            { lastName: new RegExp(filters.text, "i") }
+        ]
+    }
+
     // Searched with location
     if (filters.lat && filters.long) {
 
