@@ -30,6 +30,8 @@ export type PossileParams = Id | undefined
 
 export type PossibleRequest =
     entries.NewApiEntry
+    | entries.EntryEdit
+    | entries.FilterFull
     | users.CreateUser
     | users.LoginBody
     | users.ResetEmail
@@ -42,6 +44,8 @@ export type PossibleResponse =
     | entries.QueriedEntries
     | entries.GeoData[]
     | entries.EntryApproved
+    | entries.FilteredEntries
+    | entries.UnapprovedEntries
     | users.User
     | users.User[]
     | users.NewUser
@@ -52,6 +56,7 @@ export type PossibleResponse =
 
 export type PossibleQuery = 
     entries.FilterQuery
+    | entries.ApproveQuery
     | { page: Page }
     | geo.GeoDataQuery
 
@@ -61,10 +66,10 @@ export type PossibleQuery =
 export type BaseRoute = {
     [method in "get" | "post" | "put" | "patch" | "delete"]: {
         [route: string]: {
-            params?
-            request?
-            response?
-            query?
+            params?: any
+            request?: any
+            response?: any
+            query?: any
         }
     }
 }
@@ -145,7 +150,7 @@ export interface Entries extends BaseRoute {
         }
 
         "/unapproved": {
-            response: entries.Entry[] | null
+            response: entries.UnapprovedEntries | Error
             query: {
                 page: Page
             }
@@ -157,6 +162,11 @@ export interface Entries extends BaseRoute {
     }
 
     post: {
+        "/full": {
+            request: entries.FilterFull
+            response: entries.FilteredEntries | Error
+        }
+
         "/": {
             request: entries.NewApiEntry
             response: entries.Entry | Error
@@ -166,7 +176,19 @@ export interface Entries extends BaseRoute {
     patch: {
         "/:id/approve": {
             params: Id
+            query: entries.ApproveQuery
             response: entries.EntryApproved | Error
+        }
+
+        "/:id/edit": {
+            params: Id
+            request: entries.EntryEdit
+            response?: Error
+        }
+
+        "/:id/updateGeo": {
+            params:Id
+            response?: Error
         }
     }
 

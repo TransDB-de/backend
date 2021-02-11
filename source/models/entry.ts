@@ -58,8 +58,11 @@ export const baseForm = {
             minimum: 5,
             maximum: 30
         }
-    },
+    }
 
+}
+
+export const address = {
     city: {
         presence: { allowEmpty: false },
         type: "string"
@@ -82,8 +85,12 @@ export const baseForm = {
             minimum: 1,
             maximum: 10
         }
-    },
+    }
+}
 
+export const baseEntry = {
+    ...baseForm,
+    ...address
 }
 
 export const groupMeta = {
@@ -194,7 +201,7 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfrendly", "hasDoctor"
+            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfriendly", "hasDoctor"
         ]
     },
 

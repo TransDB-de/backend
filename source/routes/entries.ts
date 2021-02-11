@@ -16,6 +16,7 @@ import { ResponseCode } from "../utils/restResponseCodes.js";
 
 // models for input validation
 import * as Models from "../models/entry.js";
+import { entryEdit } from "../models/entry/edit.js";
 
 // Path in URL
 export const path = "/entries";
@@ -49,9 +50,9 @@ router.get("/",
  */
 router.get("/unapproved", auth(), async (req, res) => {
 
-    let entries = await Entry.getUnapproved(req.query.page ? req.query.page : 0);
+    let unapprovedEntries = await Entry.getUnapproved(req.query.page ? req.query.page : 0);
 
-    res.send(entries);
+    res.send(unapprovedEntries);
 
 });
 
@@ -72,9 +73,25 @@ router.get("/backup", auth({ admin: true }), async (req, res) => {
 });
 
 /**
+ * Route to get full fitlered entries for admins
+ */
+router.post("/full", auth({ admin: true }), async (req, res) => {
+
+    let entries = await Entry.filterWithFilterLang(req.body);
+
+    if (entries === null) {
+        res.status(ResponseCode.UnprocessableEntity).send({ error: "compilation_failed" }).end();
+        return;
+    }
+
+    res.send(entries);
+
+});
+
+/**
  * Route to create an entry
  */
-router.post("/", validate(Models.baseForm), async (req, res) => {
+router.post("/", validate(Models.baseEntry), async (req, res) => {
 
     // Validation of metadata
     let valRes: true | any;
@@ -107,7 +124,6 @@ router.post("/", validate(Models.baseForm), async (req, res) => {
     let entry = await Entry.addEntry(req.body);
 
     res.send(entry);
-
 
 });
 
@@ -142,20 +158,52 @@ router.patch("/:id/approve", auth(), validateId, async (req, res) => {
         return;
     }
 
-    // Invert approved state
-    let newApprovedState = !entry.approved;
-
     // Update entry with new approved state
-    let updated = await Database.updateEntry(entry, { approved: newApprovedState });
-
-    if (!updated) {
+    try {
+        await Entry.approve(entry, req.user!.id, req.query.approve);
+    }
+    catch {
         res.status(ResponseCode.InternalServerError).send({ error: "not_updated" }).end();
+        return;
     }
 
-    res.send({ approved: newApprovedState }).end();
+    res.send({ approved: req.query.approve ?? true }).end();
 
 });
 
+router.patch("/:id/edit", auth({admin: true}), validateId, validate(entryEdit), async (req, res) => {
+
+    let entry = await Database.getEntry(req.params.id);
+
+    if(!entry) {
+        res.status(ResponseCode.NotFound).send({ error: "not_found" }).end();
+        return;
+    }
+
+    let updated = await Database.updateEntry(entry, req.body);
+
+    if(!updated) {
+        res.status(ResponseCode.InternalServerError).send({ error: "not_edited" }).end();
+    }
+
+    res.send().end();
+
+});
+
+router.patch("/:id/updateGeo", auth({admin: true}), validateId, async (req, res) => {
+
+    let entry = await Database.getEntry(req.params.id);
+
+    if(!entry) {
+        res.status(ResponseCode.NotFound).send({ error: "not_found" }).end();
+        return;
+    }
+
+    Database.setGeolocation(entry);
+
+    res.send().end();
+
+});
 
 router.delete("/:id", auth(), validateId, async (req, res) => {
 

@@ -5,6 +5,8 @@ import { customAlphabet } from "nanoid";
 import * as Database from "../services/database.js";
 import { config } from "../services/config.js";
 
+import { filterUser } from "../utils/filter.js";
+
 // Data Interfaces
 import { 
     CreateUser, User, NewUser,
@@ -35,7 +37,7 @@ export async function addUser(createUser: CreateUser) {
     // Do a secure password hashing with scrypt
     let pwObject = await encryptPassword(password);
 
-    let newUser = await Database.createUser(username, email, pwObject, admin) as Database.User | NewUser;
+    let newUser = await Database.createUser(username, email, pwObject, admin) as Database.User<"out"> | NewUser;
 
     newUser.password = password;
 
@@ -52,26 +54,25 @@ export async function login(loginBody: LoginBody) {
     const { username, password } = loginBody;
 
     // Get the user
-    let dbUser = await Database.findUser({ $or: [ { username: username }, { email: username } ] }) as Database.User;
+    let user = await Database.findUser({ $or: [ { username: username }, { email: username } ] }) as Database.User<"out">;
 
-    if (!dbUser) {
+    if (!user) {
         return false;
     }
 
-    let pw = await encryptPassword(password, dbUser.password.salt);
+    let pw = await encryptPassword(password, user.password.salt);
 
     // Cancel on wrong password
-    if (pw.key !== dbUser.password.key) {
+    if (pw.key !== user.password.key) {
         return false;
     }
 
-    let token = jwt.sign({ id: dbUser._id, admin: dbUser.admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+    let token = jwt.sign({ id: user._id, admin: user.admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 
     // Set users last login date
-    await Database.updateUser(dbUser._id, { lastLogin: new Date() });
+    await Database.updateUser(user._id, { lastLogin: new Date() });
 
-    // type-safe deletion
-    let {password: deletedPassword, ...user} = dbUser;
+    filterUser(user);
 
     return { user, token } as { user: User, token: string };
 

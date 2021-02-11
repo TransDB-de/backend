@@ -37,6 +37,7 @@ export interface ResetUsername {
 
 /** User object as sent in get requests */
 export type User = {
+    _id: string,
     username: string,
     password?: never,
     email: string,

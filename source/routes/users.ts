@@ -11,6 +11,7 @@ import * as User from "../services/user.js";
 import validate from "../utils/validate.js";
 import auth from "../utils/auth.js";
 import { ResponseCode } from "../utils/restResponseCodes.js";
+import { filterUsers } from "../utils/filter.js";
 
 import { createUser, loginBody, resetEmail, resetUsername, updatePassword } from "../models/user.js";
 
@@ -25,6 +26,8 @@ export const path = "/users";
 router.get("/", auth({ admin: true }), async (req, res) => {
 
     let users = await Database.getAllUsers();
+
+    filterUsers(users);
 
     res.send(users);
 
