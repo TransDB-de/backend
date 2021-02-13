@@ -4,7 +4,7 @@ export const baseForm = {
         presence: { allowEmpty: false },
         type: "string",
         inclusion: [
-            "group", "therapist", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
         ]
     },
 
@@ -133,8 +133,17 @@ export const therapistMeta = {
         presence: { allowEmpty: false },
         type: "array",
         exclusively: [
-            "indication", "therapy", "expertise"
+            "indication", "therapy"
         ]
+    }
+
+}
+
+export const surveyorMeta = {
+
+    attributes: {
+        type: "array",
+        exclusively: ["enby"]
     }
 
 }
@@ -184,7 +193,7 @@ export const filterQuery = {
     type: {
         type: "string",
         inclusion: [
-            "group", "therapist", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
         ]
     },
 
@@ -192,7 +201,7 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "indication", "therapy", "expertise", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
+            "indication", "therapy", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
             "hyst", "orch", "clitPI", "bodyfem", "laser", "ipl", "electro", "electroAE"
         ]
     },
@@ -201,7 +210,7 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfriendly", "hasDoctor"
+            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfriendly", "hasDoctor", "enby"
         ]
     },
 

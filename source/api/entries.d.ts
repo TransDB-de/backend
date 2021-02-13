@@ -18,7 +18,7 @@ export interface Entry extends _BaseForm {
     address: Address,
     location: GeoJsonPoint | null,
     distance?: number,
-    meta: GroupMeta | TherapistMeta | SurgeonMeta | HairRemovalMeta
+    meta: GroupMeta | TherapistMeta | SurveyorMeta | SurgeonMeta | HairRemovalMeta
 }
 
 /** Partial Entry object, used to edit fields of an enrty */
@@ -47,7 +47,7 @@ export interface GeoData {
 }
 
 /** Api format of new entry post request */
-export type NewApiEntry = BaseForm & GroupMeta & TherapistMeta & SurgeonMeta & HairRemovalMeta;
+export type NewApiEntry = BaseForm & GroupMeta & SurveyorMeta & TherapistMeta & SurgeonMeta & HairRemovalMeta;
 
 export interface Address {
     city: string,
@@ -69,6 +69,10 @@ export interface GroupMeta {
 export interface TherapistMeta {
     subject: string[] | null,
     offers: string[] | null,
+}
+
+export interface SurveyorMeta {
+    attributes: string[] | null,
 }
 
 export interface SurgeonMeta {

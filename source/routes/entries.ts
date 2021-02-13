@@ -106,6 +106,10 @@ router.post("/", validate(Models.baseEntry), async (req, res) => {
             valRes = validateManually(req.body, Models.therapistMeta);
             break;
 
+        case "surveyor":
+            valRes = validateManually(req.body, Models.surveyorMeta);
+            break;
+
         case "surgeon":
             valRes = validateManually(req.body, Models.surgeonMeta);
             break;
