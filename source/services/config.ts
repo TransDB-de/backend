@@ -17,7 +17,7 @@ const defaultConfig = {
         password: "",
         database: "transdb",
         itemsPerPage: 10,
-        backupFolder: "/files/backups/"
+        backupFolder: "./files/backups/"
     },
     web: {
         port: 1300,

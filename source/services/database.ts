@@ -1,4 +1,5 @@
 import MongoDB from "mongodb";
+import * as fs from "fs";
 
 import * as OSM from "./osm.js";
 import * as Config from "./config.js";
@@ -327,12 +328,16 @@ export async function exportEntries(): Promise<string | false> {
     let success = true;
 
     // Change occured after last export
-    if (meta.lastChangeTimestamp > meta.lastExportTimestamp) {
+    if (meta.lastChangeTimestamp > meta.lastExportTimestamp || !fs.existsSync(path)) {
+
+        let timestamp = Date.now();
+
+        path = Config.config.mongodb.backupFolder + timestamp + "/entries.json";
 
         success = await Shell.exportEntries( Config.getMongoUrl(), Config.config.mongodb.database, path );
 
         if (success) {
-            updateEntriesMeta(MetaUpdateType.Exported);
+            updateEntriesMeta(MetaUpdateType.Exported, timestamp);
         }
 
     }
@@ -347,20 +352,18 @@ export async function exportEntries(): Promise<string | false> {
  * Should be called after every write to the collection
  * @param type
  */
-async function updateEntriesMeta(type = MetaUpdateType.Changed): Promise<void> {
+async function updateEntriesMeta(type = MetaUpdateType.Changed, timestamp: number = Date.now()): Promise<void> {
 
     // Check if entry meta exists
     let meta = await db.collection<CollectionMeta>("meta").findOne({ about: "entries" });
-
-    let time = Date.now();
 
     // Create one if it dosn't
     if (!meta) {
 
         const entriesMeta: EntriesMeta = {
             about: "entries",
-            lastChangeTimestamp: time,
-            lastExportTimestamp: type === MetaUpdateType.Exported ? time : 0
+            lastChangeTimestamp: timestamp,
+            lastExportTimestamp: type === MetaUpdateType.Exported ? timestamp : 0
         }
 
         await db.collection<CollectionMeta>("meta").insertOne(entriesMeta);
@@ -371,14 +374,14 @@ async function updateEntriesMeta(type = MetaUpdateType.Changed): Promise<void> {
         if (type === MetaUpdateType.Changed) {
 
             updater = {
-                lastChangeTimestamp: time
+                lastChangeTimestamp: timestamp
             }
 
         }
         else if (type === MetaUpdateType.Exported) {
 
             updater = {
-                lastExportTimestamp: time
+                lastExportTimestamp: timestamp
             }
 
         }
