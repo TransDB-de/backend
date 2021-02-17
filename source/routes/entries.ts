@@ -1,11 +1,14 @@
 // third-party modules
 import * as express from "express";
+import rateLimit from "express-rate-limit";
 
 // services
 import * as Entry from "../services/entry.js";
 import * as Database from "../services/database.js";
 
 import * as Api from "../api/api";
+
+import { config } from "../services/config.js";
 
 // utils
 import validate, { validateId, validateManually } from "../utils/validate.js";
@@ -23,6 +26,13 @@ export const path = "/entries";
 
 export const router = express.Router() as IRouter<Api.Entries>;
 
+/**
+ * Limits the rate at which new entries can be submitted
+ */
+const newEntryLimiter = rateLimit({
+    windowMs: config.rateLimit.newEntries.timeframeMinutes * 60 * 1000,
+    max: config.rateLimit.newEntries.maxRequests,
+}) as IMiddleware;
 
 /**
  * Base route to get and filter entries
@@ -91,7 +101,7 @@ router.post("/full", auth({ admin: true }), async (req, res) => {
 /**
  * Route to create an entry
  */
-router.post("/", validate(Models.baseEntry), async (req, res) => {
+router.post("/", newEntryLimiter, validate(Models.baseEntry), async (req, res) => {
 
     // Validation of metadata
     let valRes: true | any;

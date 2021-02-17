@@ -33,6 +33,12 @@ const defaultConfig = {
         secret: "",
         expiresIn: "1h"
     },
+    rateLimit: {
+        newEntries: {
+            timeframeMinutes: 5,
+            maxRequests: 3
+        }
+    }
 };
 
 const configPath = "./config.json";
