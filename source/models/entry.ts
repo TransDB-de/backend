@@ -36,9 +36,13 @@ export const baseForm = {
     },
 
     email: {
-        presence: { allowEmpty: false },
+        presence: false,
         type: "string",
-        email: true
+        email: true,
+        length: {
+            minimum: 5,
+            maximum: 320
+        }
     },
 
     website: {
