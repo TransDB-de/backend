@@ -1,5 +1,5 @@
 import MongoDB from "mongodb";
-import FilterLang from "filter-lang";
+import FilterLang from "@transdb-de/filter-lang";
 import { config } from "./config.js";
 
 import * as Database from "./database.js";
