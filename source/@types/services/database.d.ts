@@ -47,10 +47,10 @@ export interface Entry<io extends "in" | "out"> extends ApiEntry {
 }
 
 /** Entry object for new database entry */
-export type NewDbEntry = Omit<Entry, '_id'>
+export type NewDbEntry = Omit< Entry<"in">, '_id'>
 
 /** User object for new database entries */
-export type NewDbUser = Omit<User, '_id'>
+export type NewDbUser = Omit< User<"in">, '_id'>
 
 /** Encrypted password with salt, as stored in database */
 export interface Password {

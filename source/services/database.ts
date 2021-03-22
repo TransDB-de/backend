@@ -95,11 +95,11 @@ export async function createUser(username: string, email: string, password: Pass
  * Get a user by id
  * @returns The user object
  */
-export async function getUser(userId: string | number): Promise<User<"out"> | null> {
+export async function getUser(userId: string | number): Promise< User<"out"> | null > {
 
     return await db
         .collection<User<"in">>("users")
-        .findOne({ _id: new MongoDB.ObjectId(userId) });
+        .findOne({ _id: new MongoDB.ObjectId(userId) }) as unknown as User<"out">;
 
 }
 
@@ -107,11 +107,11 @@ export async function getUser(userId: string | number): Promise<User<"out"> | nu
  * Find a user with a custom mongodb query
  * @returns The user object
  */
-export async function findUser(query: MongoDB.FilterQuery<User<"in">>): Promise<User<"out"> | null> {
+export async function findUser(query: MongoDB.FilterQuery< User<"in"> >): Promise< User<"out"> | null > {
 
     return await db
         .collection<User<"in">>("users")
-        .findOne(query);
+        .findOne(query) as unknown as User<"out">;
 
 }
 
@@ -142,7 +142,7 @@ export async function getAllUsers() {
  * @param updater Fields to update
  * @returns {Promise<Boolean>} Boolean indicating the success of the update
  */
-export async function updateUser(userId: string | number, updater: Partial<User<"in">> ): Promise<boolean> {
+export async function updateUser(userId: string | number, updater: Partial< User<"in"> > ): Promise<boolean> {
 
     let res = await db
         .collection<User<"in">>("users")
@@ -190,11 +190,11 @@ export async function addEntry(entry: NewDbEntry) {
  * @param entryId
  * @returns The entry
  */
-export async function getEntry(entryId: string | number): Promise<Entry<"out"> | null> {
+export async function getEntry(entryId: string | number): Promise< Entry<"out"> | null > {
 
     return await db
         .collection<Entry<"in">>("entries")
-        .findOne({ _id: new MongoDB.ObjectId(entryId) });
+        .findOne({ _id: new MongoDB.ObjectId(entryId) }) as unknown as Entry<"out">;
 
 }
 
