@@ -5,7 +5,7 @@
     "main": "main.js",
     "type": "module",
     "scripts": {
-        "build": "tsc --sourceMap false --outDir ./dist/temp/ && node build.js",
+        "build": "npx tsc --sourceMap false --outDir ./dist/",
         "start": "node js/main.js",
         "dev": "node js/main.js --dev"
     },
