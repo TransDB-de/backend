@@ -4,7 +4,7 @@ export interface GeoDataQuery {
 
 export interface GeoJsonPoint {
     type: "Point",
-    coordinates: number[]
+    coordinates: [number, number]
 }
 
 export interface GeoPlace {

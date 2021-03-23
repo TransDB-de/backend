@@ -4,7 +4,7 @@ export const baseForm = {
         presence: { allowEmpty: false },
         type: "string",
         inclusion: [
-            "group", "therapist", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
         ]
     },
 
@@ -36,9 +36,13 @@ export const baseForm = {
     },
 
     email: {
-        presence: { allowEmpty: false },
+        presence: false,
         type: "string",
-        email: true
+        email: true,
+        length: {
+            minimum: 5,
+            maximum: 320
+        }
     },
 
     website: {
@@ -58,8 +62,11 @@ export const baseForm = {
             minimum: 5,
             maximum: 30
         }
-    },
+    }
 
+}
+
+export const address = {
     city: {
         presence: { allowEmpty: false },
         type: "string"
@@ -82,8 +89,12 @@ export const baseForm = {
             minimum: 1,
             maximum: 10
         }
-    },
+    }
+}
 
+export const baseEntry = {
+    ...baseForm,
+    ...address
 }
 
 export const groupMeta = {
@@ -126,8 +137,17 @@ export const therapistMeta = {
         presence: { allowEmpty: false },
         type: "array",
         exclusively: [
-            "indication", "therapy", "expertise"
+            "indication", "therapy"
         ]
+    }
+
+}
+
+export const surveyorMeta = {
+
+    attributes: {
+        type: "array",
+        exclusively: ["enby"]
     }
 
 }
@@ -177,7 +197,7 @@ export const filterQuery = {
     type: {
         type: "string",
         inclusion: [
-            "group", "therapist", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
         ]
     },
 
@@ -185,7 +205,7 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "indication", "therapy", "expertise", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
+            "indication", "therapy", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
             "hyst", "orch", "clitPI", "bodyfem", "laser", "ipl", "electro", "electroAE"
         ]
     },
@@ -194,7 +214,7 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfrendly", "hasDoctor"
+            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfriendly", "hasDoctor", "enby"
         ]
     },
 
@@ -204,6 +224,15 @@ export const filterQuery = {
         length: {
             minimum: 2,
             maximum: 120,
+        }
+    },
+
+    text: {
+        presence: false,
+        type: "string",
+        length: {
+            minimum: 2,
+            maximum: 120
         }
     },
 

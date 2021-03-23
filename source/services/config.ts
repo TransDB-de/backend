@@ -17,7 +17,7 @@ const defaultConfig = {
         password: "",
         database: "transdb",
         itemsPerPage: 10,
-        backupFolder: "/files/backups/"
+        backupFolder: "./files/backups/"
     },
     web: {
         port: 1300,
@@ -33,6 +33,12 @@ const defaultConfig = {
         secret: "",
         expiresIn: "1h"
     },
+    rateLimit: {
+        newEntries: {
+            timeframeMinutes: 5,
+            maxRequests: 3
+        }
+    }
 };
 
 const configPath = "./config.json";
