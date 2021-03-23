@@ -5,8 +5,8 @@
     "main": "main.js",
     "type": "module",
     "scripts": {
-        "build": "npx tsc --sourceMap false --outDir ./dist/",
-        "start": "node js/main.js",
+        "build": "npx tsc --sourceMap false --outDir \"./dist\"",
+        "start": "node dist/main.js",
         "dev": "node js/main.js --dev"
     },
     "repository": {

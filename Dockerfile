@@ -1,41 +1,35 @@
-FROM node:14.16-alpine
+FROM node:14.16-alpine AS build
 
 WORKDIR /tmp/
 
-# install required cli tools
-RUN apk add --no-cache mongodb-tools
-
+# required by npm for github packages
 RUN apk add --no-cache git
 
-# copy scripts and config
-COPY "tsconfig.json" "./"
-
-# copy package.json and install dependencies
-COPY ["package.json", "package-lock.json*", "./"]
+# install dependencies
+COPY ["package.json", "package-lock.json*", "tsconfig.json", "./"]
 RUN npm install
 
 # copy source files
 COPY source/ ./source/
 
 # build
-RUN npx tsc --sourceMap false --outDir "./dist"
+RUN npm run build
 
-RUN mv package.json ./dist/package.json && \
-    mv package-lock.json ./dist/package-lock.json
+FROM node:14.16-alpine
 
-# copy dist
-RUN mkdir /app
-RUN mv dist/* /app/
+# install required cli tools
+RUN apk add --no-cache git && \
+    apk add --no-cache mongodb-tools
 
 WORKDIR /app/
+
+COPY --from=build ["tmp/package.json", "tmp/package-lock.json*", "./"]
 
 ENV NODE_ENV=production
 
 # install prod dependencies
 RUN npm install
 
-# remove git and temp files
-RUN apk del git
-RUN rm -rf /tmp/
+COPY --from=build tmp/dist/ ./dist/
 
 CMD ["npm", "start"]
