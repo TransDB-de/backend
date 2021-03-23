@@ -32,4 +32,6 @@ RUN npm install
 
 COPY --from=build tmp/dist/ ./dist/
 
+RUN apk del git
+
 CMD ["npm", "start"]
