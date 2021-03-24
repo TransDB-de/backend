@@ -32,4 +32,9 @@ RUN npm install
 
 COPY --from=build tmp/dist/ ./dist/
 
+RUN apk del git
+
+# run once, to create config file
+RUN npm start; exit 0
+
 CMD ["npm", "start"]
