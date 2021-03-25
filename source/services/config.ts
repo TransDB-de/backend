@@ -127,5 +127,5 @@ export function getMongoUrl() {
         }
     }
 
-    return `mongodb://${config.mongodb.username}:${config.mongodb.password}@${config.mongodb.host}/?authSource=${config.mongodb.database}`;
+    return `mongodb://${config.mongodb.username}:${config.mongodb.password}@${config.mongodb.host}/${config.mongodb.database}?authSource=${config.mongodb.database}`;
 }
