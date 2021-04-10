@@ -9,6 +9,6 @@ This module provide utility methods for dealing with Regular Expressions
  * @param flags flags to set on RegExp
  */
 export function stringToRegex(string: string, flags?: string): RegExp {
-	const escapedStr = string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	return new RegExp(escapedStr, flags);
+    const escapedStr = string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(escapedStr, flags);
 }
