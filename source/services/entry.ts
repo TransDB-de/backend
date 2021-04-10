@@ -7,6 +7,8 @@ import * as Database from "./database.js";
 import { NewApiEntry, Entry, Address, FilterQuery, QueriedEntries, FullEntry, FilterFull, FilteredEntries } from "../api/entries";
 import { GeoJsonPoint } from "../api/geo";
 
+import { stringToRegex } from "../utils/regExp.js";
+
 /**
  * Add an entry
  * @param object body of the new entry request
@@ -77,9 +79,9 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 
     if(filters.text) {
         query.$or = [
-            { name: new RegExp(filters.text, "i") },
-            { firstName: new RegExp(filters.text, "i") },
-            { lastName: new RegExp(filters.text, "i") }
+            { name: stringToRegex(filters.text, "i") },
+            { firstName: stringToRegex(filters.text, "i") },
+            { lastName: stringToRegex(filters.text, "i") }
         ]
     }
 
