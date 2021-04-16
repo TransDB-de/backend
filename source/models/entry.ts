@@ -170,7 +170,7 @@ export const hairRemovalMeta = {
 
     attributes: {
         type: "array",
-        exclusively: ["insurancePay", "transfrendly", "hasDoctor"]
+        exclusively: ["insurancePay", "transfriendly", "hasDoctor"]
     },
 
     offers: {
