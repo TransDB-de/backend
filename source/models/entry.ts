@@ -73,17 +73,19 @@ export const address = {
     },
 
     plz: {
-        presence: { allowEmpty: false },
+        presence: false,
         type: "string"
     },
 
     street: {
-        presence: { allowEmpty: false },
+        presence: false,
+        requires: "city",
         type: "string"
     },
 
     house: {
-        presence: { allowEmpty: false },
+        presence: false,
+        requires: "street",
         type: "string",
         length: {
             minimum: 1,
@@ -168,7 +170,7 @@ export const hairRemovalMeta = {
 
     attributes: {
         type: "array",
-        exclusively: ["insurancePay", "transfrendly", "hasDoctor"]
+        exclusively: ["insurancePay", "transfriendly", "hasDoctor"]
     },
 
     offers: {
