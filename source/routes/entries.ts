@@ -104,7 +104,7 @@ router.post("/full", auth({ admin: true }), async (req, res) => {
 router.post("/", newEntryLimiter, validate(Models.baseEntry), async (req, res) => {
 
     // Validation of metadata
-    let valRes: true | any;
+    let valRes: true | any = true;
 
     switch(req.body.type) {
 
@@ -126,10 +126,6 @@ router.post("/", newEntryLimiter, validate(Models.baseEntry), async (req, res) =
 
         case "hairremoval":
             valRes = validateManually(req.body, Models.hairRemovalMeta);
-            break;
-
-        case "logopedics":
-            valRes = true;
             break;
     }
 
