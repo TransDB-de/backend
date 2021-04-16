@@ -127,11 +127,14 @@ router.post("/", newEntryLimiter, validate(Models.baseEntry), async (req, res) =
         case "hairremoval":
             valRes = validateManually(req.body, Models.hairRemovalMeta);
             break;
+
+        case "logopedics":
+            valRes = true;
+            break;
     }
 
     if (valRes !== true) {
         res.status(ResponseCode.UnprocessableEntity).json(valRes).end();
-
         return;
     }
 
