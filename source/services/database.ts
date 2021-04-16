@@ -334,7 +334,7 @@ export async function exportEntries(): Promise<string | false> {
 
         path = Config.config.mongodb.backupFolder + timestamp + "/entries.json";
 
-        success = await Shell.exportEntries( Config.getMongoUrl(), Config.config.mongodb.database, path );
+        success = await Shell.exportEntries( Config.getMongoUrl(), path );
 
         if (success) {
             updateEntriesMeta(MetaUpdateType.Exported, timestamp);

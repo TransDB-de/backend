@@ -12,7 +12,7 @@ const asyncExec = promisify(exec);
  */
 const commands = {
     exportEntries: {
-        getCommand: (args: string[]) => `mongoexport --uri "${args[0]}" --db ${args[1]} --out "${args[2]}" --collection entries --jsonArray --quiet`,
+        getCommand: (args: string[]) => `mongoexport --uri "${args[0]}" --out "${args[1]}" --collection entries --jsonArray --quiet`,
         getTest: () => `mongoexport --version`
     }
 }
@@ -23,8 +23,8 @@ const commands = {
  * @param outFile path to save file to
  * @returns sucess
  */
-export async function exportEntries(dbUri: string, dbName: string, outFile: string): Promise<boolean> {
-    let [sucess] = await runCommand("exportEntries", dbUri, dbName, outFile);
+export async function exportEntries(dbUri: string, outFile: string): Promise<boolean> {
+    let [sucess] = await runCommand("exportEntries", dbUri, outFile);
     return sucess;
 }
 
