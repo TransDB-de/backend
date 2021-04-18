@@ -90,13 +90,13 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 
     let user = await Database.findUser({ email: req.body.email });
 
-    if (!user && req.user) {
+    if (!user) {
 
-        await Database.updateUser(req.user.id, { email: req.body.email });
+        await Database.updateUser(req.user!.id, { email: req.body.email });
         res.status(ResponseCode.OK).end();
 
     } else {
-        res.status(ResponseCode.Unauthorized).send({ error: "user_exist" });
+        res.status(ResponseCode.Conflict).send({ error: "user_exist" });
     }
 
 
@@ -107,16 +107,15 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 * */
 router.put("/me/username", auth(), validate(resetUsername), async (req, res) => {
 
-
     let user = await Database.findUser({ username: req.body.username });
 
-    if (!user && req.user){
+    if (!user){
 
-        await Database.updateUser(req.user.id, { username: req.body.username });
+        await Database.updateUser(req.user!.id, { username: req.body.username });
         res.status(ResponseCode.OK).end();
 
     } else {
-        res.status(ResponseCode.Unauthorized).send({ error: "user_exist" });
+        res.status(ResponseCode.Conflict).send({ error: "user_exist" });
     }
 
 
