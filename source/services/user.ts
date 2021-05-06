@@ -82,7 +82,7 @@ export async function login(loginBody: LoginBody) {
  * Reset the password of a user
  * @param userId The id of the user whos password to reset
  * @param updatePasswordBody The body of the update password request
- * @returns sucess
+ * @returns success
  */
 export async function resetPassword(userId: string, updatePasswordBody: UpdatePassword) {
 
@@ -106,6 +106,26 @@ export async function resetPassword(userId: string, updatePasswordBody: UpdatePa
     let password = await encryptPassword(newPassword);
 
     return await Database.updateUser(userId, { password });
+
+}
+
+/**
+ * Gives the user a new random generated password and returns it
+ * @param userId
+ */
+export async function resetPasswordDirectly(userId: string): Promise<string|boolean> {
+
+    let password = nanoid();
+
+    let pwObject = await encryptPassword(password);
+
+    let res = await Database.updateUser(userId, { password: pwObject });
+
+    if(!res) {
+        return false;
+    }
+
+    return password;
 
 }
 

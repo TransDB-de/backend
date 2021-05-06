@@ -50,6 +50,7 @@ export type PossibleResponse =
     | users.User[]
     | users.NewUser
     | users.LoginResponse
+    | users.ResetPasswordResponse
     | geo.GeoPlace[]
     | DefaultResponse
     | Error
@@ -122,6 +123,11 @@ export interface Users extends BaseRoute {
         "/me/username": {
             request: users.ResetUsername
             response?: Error
+        }
+
+        "/:id/password": {
+            params: Id,
+            response: users.ResetPasswordResponse | Error
         }
     }
 
