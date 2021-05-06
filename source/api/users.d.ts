@@ -25,6 +25,10 @@ export interface UpdatePassword {
     new: string
 }
 
+export interface ResetPasswordResponse {
+    password: string | boolean
+}
+
 /** Body of reset email post request */
 export interface ResetEmail {
     email: string
