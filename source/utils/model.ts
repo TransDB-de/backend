@@ -10,6 +10,7 @@ export function makeOptional(model: IDictionary): IDictionary {
 	for (let [key, filter] of Object.entries(mod)) {
 		if (typeof filter === 'object' && filter !== null) {
 			(filter as IDictionary).presence = false;
+			delete (filter as IDictionary).requires;
 		}
 	}
 
