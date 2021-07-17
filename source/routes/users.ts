@@ -125,6 +125,29 @@ router.put("/me/username", auth(), validate(resetUsername), async (req, res) => 
 // routes containing parameters must always be defined last
 
 /*
+* Reset the users password to a random generated
+* */
+router.put("/:id/password", auth({ admin: true }), async (req, res) => {
+
+    let user = await Database.getUser(req.params.id);
+
+    if (!user) {
+        res.status(ResponseCode.NotFound).send({ error: "not_found" });
+        return;
+    }
+
+    let reset = await User.resetPasswordDirectly(req.params.id);
+
+    if(!reset) {
+        res.status(ResponseCode.InternalServerError).send({ error: "reset_failed" });
+        return;
+    }
+
+    res.send({ password: reset });
+
+});
+
+/*
 * Delete a user
 * */
 router.delete("/:id", auth({ admin: true }), async (req, res) => {
