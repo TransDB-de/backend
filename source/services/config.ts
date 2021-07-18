@@ -38,7 +38,8 @@ const defaultConfig = {
             timeframeMinutes: 5,
             maxRequests: 3
         }
-    }
+    },
+    discordWebhookURL: ""
 };
 
 const configPath = "./config.json";

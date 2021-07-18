@@ -10,6 +10,8 @@ import * as Api from "../api/api";
 
 import { config } from "../services/config.js";
 
+import * as Discord from "../services/discord.js";
+
 // utils
 import validate, { validateId, validateManually } from "../utils/validate.js";
 import auth from "../utils/auth.js";
@@ -137,6 +139,8 @@ router.post("/", newEntryLimiter, validate(Models.baseEntry), async (req, res) =
     let entry = await Entry.addEntry(req.body);
 
     res.send(entry);
+
+    Discord.sendNewEntryNotification(entry.name, entry.type);
 
 });
 
