@@ -62,6 +62,14 @@ export const baseForm = {
             minimum: 5,
             maximum: 30
         }
+    },
+
+    accessible: {
+        presence: false,
+        type: "string",
+        inclusion: [
+            "null", "true", "false"
+        ]
     }
 
 }
@@ -241,6 +249,14 @@ export const filterQuery = {
     page: {
         presence: false,
         type: "integer"
+    },
+
+    accessible: {
+        presence: false,
+        type: "string",
+        exclusively: [
+            "true", "false", "null"
+        ]
     }
 
 }

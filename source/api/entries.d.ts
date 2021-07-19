@@ -8,7 +8,8 @@ interface _BaseForm {
     lastName: string | null,
     email: string,
     website: string | null,
-    telephone: string | null
+    telephone: string | null,
+    accessible: string | null
 }
 
 /** Entry object as returned by get requests */

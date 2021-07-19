@@ -42,6 +42,7 @@ export async function addEntry(object: NewApiEntry) {
             subject: object.subject ?? null,
             offers: object.offers ?? null,
         },
+        accessible: object.accessible ?? null,
         submittedTimestamp: Date.now()
     };
 
