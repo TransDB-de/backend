@@ -129,6 +129,10 @@ router.post("/", newEntryLimiter, validate(Models.baseEntry), async (req, res) =
         case "hairremoval":
             valRes = validateManually(req.body, Models.hairRemovalMeta);
             break;
+        
+        case "endocrinologist":
+            valRes = validateManually(req.body, Models.endocrinologistMeta);
+            break;
     }
 
     if (valRes !== true) {

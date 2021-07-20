@@ -4,7 +4,8 @@ export const baseForm = {
         presence: { allowEmpty: false },
         type: "string",
         inclusion: [
-            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor", "endocrinologist",
+            "surgeon", "logopedics", "hairremoval"
         ]
     },
 
@@ -168,7 +169,21 @@ export const surgeonMeta = {
         presence: { allowEmpty: false },
         type: "array",
         exclusively: [
-            "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem"
+            "mastectomy", "vaginPI", "vaginCombined", "ffs",
+            "penoid", "breast", "hyst", "orch", "clitPI",
+            "bodyfem", "glottoplasty", "fms"
+        ]
+    }
+
+}
+
+export const endocrinologistMeta = {
+
+    attributes: {
+        presence: { allowEmpty: false },
+        type: "array",
+        exclusively: [
+            "treatsNB"
         ]
     }
 
@@ -207,7 +222,9 @@ export const filterQuery = {
     type: {
         type: "string",
         inclusion: [
-            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor",
+            "endocrinologist", "surgeon", "logopedics",
+            "hairremoval"
         ]
     },
 
@@ -215,8 +232,10 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "indication", "therapy", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
-            "hyst", "orch", "clitPI", "bodyfem", "laser", "ipl", "electro", "electroAE"
+            "indication", "therapy", "mastectomy", "vaginPI",
+            "vaginCombined", "ffs", "penoid", "breast",
+            "hyst", "orch", "clitPI", "bodyfem", "laser",
+            "ipl", "electro", "electroAE", "glottoplasty", "fms"
         ]
     },
 
@@ -224,7 +243,9 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfriendly", "hasDoctor", "enby"
+            "trans", "regularMeetings", "consulting",
+            "activities", "insurancePay", "transfriendly",
+            "hasDoctor", "enby", "treatsNB"
         ]
     },
 
