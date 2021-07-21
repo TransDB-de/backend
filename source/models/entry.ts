@@ -180,7 +180,6 @@ export const surgeonMeta = {
 export const endocrinologistMeta = {
 
     attributes: {
-        presence: { allowEmpty: false },
         type: "array",
         exclusively: [
             "treatsNB"
