@@ -9,7 +9,7 @@ interface _BaseForm {
     email: string,
     website: string | null,
     telephone: string | null,
-    accessible: string | null
+    accessible: number | null
 }
 
 /** Entry object as returned by get requests */

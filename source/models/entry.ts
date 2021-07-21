@@ -67,10 +67,7 @@ export const baseForm = {
 
     accessible: {
         presence: false,
-        type: "string",
-        inclusion: [
-            "null", "true", "false"
-        ]
+        type: "number"
     }
 
 }
