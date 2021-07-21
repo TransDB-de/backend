@@ -21,7 +21,7 @@ interface RouteMatcher<T, method extends Methods, baseRoute extends Api.BaseRout
     (path: Path,...handlers: Array<express.RequestHandler< // set types for used request handlers
 
         // Searches for the correct type with given baseRoute and path
-        MustExtend< baseRoute[method][Path]["params"], Api.PossileParams >,
+        MustExtend< baseRoute[method][Path]["params"], Api.PossibleParams >,
         MustExtend< baseRoute[method][Path]["response"], Api.PossibleResponse >,
         MustExtend< baseRoute[method][Path]["request"], Api.PossibleRequest >,
         MustExtend< baseRoute[method][Path]["query"], Api.PossibleQuery >
@@ -41,7 +41,7 @@ declare global {
      * Replaces express.js Request.
      * Includes all possible request bodies, as defined out in api.ts
      */
-    interface IRequest extends express.Request<Api.PossileParams, Api.PossibleResponse, Api.PossibleRequest, Api.PossibleQuery> {}
+    interface IRequest extends express.Request<Api.PossibleParams, Api.PossibleResponse, Api.PossibleRequest, Api.PossibleQuery> {}
 
     /**
      * Replaces express.js Response.

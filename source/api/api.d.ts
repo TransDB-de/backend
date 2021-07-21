@@ -1,6 +1,7 @@
 import * as entries from "./entries.js"
 import * as users from "./users.js"
 import * as geo from "./geo.js"
+import * as reports from "./reports.js"
 import Id from "./objectId.js"
 
 type Page = number;
@@ -26,7 +27,7 @@ export interface Problem {
 }
 
 
-export type PossileParams = Id | undefined
+export type PossibleParams = Id | undefined
 
 export type PossibleRequest =
     entries.NewApiEntry
@@ -37,6 +38,7 @@ export type PossibleRequest =
     | users.ResetEmail
     | users.ResetUsername
     | users.UpdatePassword
+    | reports.Report
 
 export type PossibleResponse =
     entries.Entry
@@ -76,7 +78,7 @@ export type BaseRoute = {
 }
 
 /**
- * Requests avalible in the apis default route
+ * Requests available in the apis default route
  */
 export interface Default extends BaseRoute {
     get: {
@@ -88,7 +90,19 @@ export interface Default extends BaseRoute {
 }
 
 /**
- * Requests avalible in the apis "/users" route
+ * Requests available in the apis report route
+ */
+export interface Report extends BaseRoute {
+    post: {
+        "/": {
+            request: reports.Report
+            response: DefaultResponse | Error
+        }
+    }
+}
+
+/**
+ * Requests available in the apis "/users" route
  */
 export interface Users extends BaseRoute {
     get: {
@@ -141,7 +155,7 @@ export interface Users extends BaseRoute {
 }
 
 /**
- * Requests avalible in the apis "/entries" route
+ * Requests available in the apis "/entries" route
  */
 export interface Entries extends BaseRoute {
     get: {
@@ -207,7 +221,7 @@ export interface Entries extends BaseRoute {
 }
 
 /**
- * Requests avalible in the apis "/geodata" route
+ * Requests available in the apis "/geodata" route
  */
 export interface GeoData extends BaseRoute {
     get: {

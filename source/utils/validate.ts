@@ -13,7 +13,7 @@ interface IDictionary {
 /**
  * Function to validate an object manually with a schema
  * @param data Data object to validate
- * @param schmea validate.js schema
+ * @param schema validate.js schema
  * @returns true if validation passed
  */
 export function validateManually(data: Object, schema: Object) {
