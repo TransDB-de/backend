@@ -69,7 +69,7 @@ export const baseForm = {
         presence: false,
         type: "string",
         inclusion: [
-            "yes", "no", "unkown"
+            "yes", "no", "unknown"
         ]
     }
 
