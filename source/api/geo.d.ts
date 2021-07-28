@@ -1,13 +1,13 @@
 export interface GeoDataQuery {
-    search: string
+	search: string
 }
 
 export interface GeoJsonPoint {
-    type: "Point",
-    coordinates: [number, number]
+	type: "Point",
+	coordinates: [number, number]
 }
 
 export interface GeoPlace {
-    name: string,
-    location: GeoJsonPoint
+	name: string,
+	location: GeoJsonPoint
 }

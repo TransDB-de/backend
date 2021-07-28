@@ -1,5 +1,5 @@
 export interface Id {
-    id: string
+	id: string
 }
 
 export default Id

@@ -1,4 +1,4 @@
 export interface Report {
-    entryId: string
-    message: string
+	entryId: string
+	message: string
 }

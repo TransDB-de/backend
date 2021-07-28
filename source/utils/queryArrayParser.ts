@@ -8,21 +8,21 @@ import { IDictionary } from "../api/api";
  */
 function _queryArrayParser(req: IRequest, res: IResponse, next: NextFunction, fields: Array<string>) {
 
-    if (req.query) {
-        let query = req.query as IDictionary;
+	if (req.query) {
+		let query = req.query as IDictionary;
 
-        for (let [ key, value ] of Object.entries(query)) {
-            if ( !fields.includes(key) ) continue;
+		for (let [ key, value ] of Object.entries(query)) {
+			if ( !fields.includes(key) ) continue;
 
-            if(!Array.isArray(value)) {
-                query[ key ] = [value];
-            }
+			if(!Array.isArray(value)) {
+				query[ key ] = [value];
+			}
 
-        }
+		}
 
-    }
+	}
 
-    next();
+	next();
 
 }
 
@@ -33,7 +33,7 @@ function _queryArrayParser(req: IRequest, res: IResponse, next: NextFunction, fi
  * @param fields Array of query fields to parse
  */
 export function queryArrayParser(fields: Array<string>): IMiddleware {
-    return (req, res, next) => _queryArrayParser(req, res, next, fields);
+	return (req, res, next) => _queryArrayParser(req, res, next, fields);
 }
 
 // double export to support both default, and named imports

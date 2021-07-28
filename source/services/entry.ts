@@ -16,37 +16,37 @@ import { stringToRegex } from "../utils/regExp.js";
  */
 export async function addEntry(object: NewApiEntry) {
 
-    let address: Address = {
-        city: object.city,
-        plz: object.plz,
-        street: object.street,
-        house: object.house
-    }
+	let address: Address = {
+		city: object.city,
+		plz: object.plz,
+		street: object.street,
+		house: object.house
+	}
 
-    // Build the entry object
-    let entry: Database.NewDbEntry = {
-        type: object.type,
-        approved: false,
-        name: object.name,
-        firstName: object.firstName ?? null,
-        lastName: object.lastName ?? null,
-        email: object.email,
-        website: object.website ?? null,
-        telephone: object.telephone ?? null,
-        address: address,
-        location: null,
-        meta: {
-            attributes: object.attributes ?? null,
-            specials: object.specials ?? null,
-            minAge: object.minAge ?? null,
-            subject: object.subject ?? null,
-            offers: object.offers ?? null,
-        },
-        accessible: object.accessible ?? null,
-        submittedTimestamp: Date.now()
-    };
+	// Build the entry object
+	let entry: Database.NewDbEntry = {
+		type: object.type,
+		approved: false,
+		name: object.name,
+		firstName: object.firstName ?? null,
+		lastName: object.lastName ?? null,
+		email: object.email,
+		website: object.website ?? null,
+		telephone: object.telephone ?? null,
+		address: address,
+		location: null,
+		meta: {
+			attributes: object.attributes ?? null,
+			specials: object.specials ?? null,
+			minAge: object.minAge ?? null,
+			subject: object.subject ?? null,
+			offers: object.offers ?? null,
+		},
+		accessible: object.accessible ?? null,
+		submittedTimestamp: Date.now()
+	};
 
-    return await Database.addEntry(entry);
+	return await Database.addEntry(entry);
 
 }
 
@@ -57,70 +57,70 @@ export async function addEntry(object: NewApiEntry) {
  */
 export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 
-    let entries: Entry[];
-    let page = filters.page ? filters.page : 0;
-    let geoLoc: GeoJsonPoint | null = null;
-    let locationName: string = "";
+	let entries: Entry[];
+	let page = filters.page ? filters.page : 0;
+	let geoLoc: GeoJsonPoint | null = null;
+	let locationName: string = "";
 
-    let query: MongoDB.FilterQuery<Entry> = {
-        approved: true
-    };
+	let query: MongoDB.FilterQuery<Entry> = {
+		approved: true
+	};
 
-    if (filters.type) {
-        query.type = filters.type;
-    }
+	if (filters.type) {
+		query.type = filters.type;
+	}
 
-    if(filters.offers) {
-        query["meta.offers"] = { $in: filters.offers };
-    }
+	if(filters.offers) {
+		query["meta.offers"] = { $in: filters.offers };
+	}
 
-    if(filters.attributes) {
-        query["meta.attributes"] = { $in: filters.attributes };
-    }
+	if(filters.attributes) {
+		query["meta.attributes"] = { $in: filters.attributes };
+	}
 
-    if(filters.text) {
-        query.$or = [
-            { name: stringToRegex(filters.text, "i") },
-            { firstName: stringToRegex(filters.text, "i") },
-            { lastName: stringToRegex(filters.text, "i") }
-        ]
-    }
+	if(filters.text) {
+		query.$or = [
+			{ name: stringToRegex(filters.text, "i") },
+			{ firstName: stringToRegex(filters.text, "i") },
+			{ lastName: stringToRegex(filters.text, "i") }
+		]
+	}
 
-    // Searched with location
-    if (filters.lat && filters.long) {
+	// Searched with location
+	if (filters.lat && filters.long) {
 
-        let geodata = await Database.findGeoName({
-            type: "Point",
-            coordinates: [ filters.long, filters.lat ]
-        });
+		let geodata = await Database.findGeoName({
+			type: "Point",
+			coordinates: [ filters.long, filters.lat ]
+		});
 
-        locationName = geodata[0].name;
-        geoLoc = geodata[0].location;
+		locationName = geodata[0].name;
+		geoLoc = geodata[0].location;
 
-    }
-    // Not searched with geolocation
-    else if (filters.location) {
+	}
+	// Not searched with geolocation
+	else if (filters.location) {
 
-        // Add geolocation by plz or city
+		// Add geolocation by plz or city
 
-        let geodata = await Database.findGeoLocation(filters.location);
+		let geodata = await Database.findGeoLocation(filters.location);
 
-        if ( geodata[0] ) {
-            locationName = geodata[0].name;
-            geoLoc = geodata[0].location;
-        }
+		if ( geodata[0] ) {
+			locationName = geodata[0].name;
+			geoLoc = geodata[0].location;
+		}
 
-    }
+	}
 
-    if (geoLoc) {
-        entries = await Database.findEntriesAtLocation(geoLoc, query, page);
-    } else {
-        entries = await Database.findEntries(query, page);
-    }
+	if (geoLoc) {
+		entries = await Database.findEntriesAtLocation(geoLoc, query, page);
+	} else {
+		entries = await Database.findEntries(query, page);
+	}
 
-    let more = !(entries.length < config.mongodb.itemsPerPage);
+	let more = !(entries.length < config.mongodb.itemsPerPage);
 
-    return { entries, locationName, more };
+	return { entries, locationName, more };
 
 }
 
@@ -129,68 +129,68 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
  * @param filters filter-lang generated filters
  */
 export async function filterWithFilterLang({filter, page}: FilterFull): Promise<FilteredEntries | null> {
-    let pipeline: object[];
+	let pipeline: object[];
 
-    // injects manual reference for "approvedBy" username
-    let userLookupInjection: FilterLang.Compiler.InjectedStages = {
-        approvedBy: [
-            {
-                $lookup: {
-                    from: "users", 
-                    localField: "approvedBy", 
-                    foreignField: "_id", 
-                    as: "users"
-                }
-            }, {
-                $set: {
-                    approvedBy: {
-                        $first: "$users.username"
-                    }
-                }
-            }, {
-                $unset: [ "users" ]
-            }
-        ]
-    }
+	// injects manual reference for "approvedBy" username
+	let userLookupInjection: FilterLang.Compiler.InjectedStages = {
+		approvedBy: [
+			{
+				$lookup: {
+					from: "users", 
+					localField: "approvedBy", 
+					foreignField: "_id", 
+					as: "users"
+				}
+			}, {
+				$set: {
+					approvedBy: {
+						$first: "$users.username"
+					}
+				}
+			}, {
+				$unset: [ "users" ]
+			}
+		]
+	}
 
-    // fetch coordinates for location search
-    let loc: GeoJsonPoint | undefined;
-    if (filter.location && filter.location.locationName) {
+	// fetch coordinates for location search
+	let loc: GeoJsonPoint | undefined;
+	if (filter.location && filter.location.locationName) {
 
-        let geo = await Database.findGeoLocation(filter.location.locationName);
+		let geo = await Database.findGeoLocation(filter.location.locationName);
 
-        if (geo.length > 0) {
-            loc = geo[0].location;
-        }
+		if (geo.length > 0) {
+			loc = geo[0].location;
+		}
 
-    }
+	}
 
-    // inser objectID
-    const replacer: FilterLang.Compiler.Replacer = {
-        _id: (val) => { return new MongoDB.ObjectId(val) }
-    }
+	// inser objectID
+	const replacer: FilterLang.Compiler.Replacer = {
+		_id: (val) => { return new MongoDB.ObjectId(val) }
+	}
 
-    // attempt compilation
-    try {
-        pipeline = FilterLang.Compiler.compileToMongoDB(filter, userLookupInjection, ["approvedBy"], loc, replacer);
-    } catch {
-        return null;
-    }
+	// attempt compilation
+	try {
+		pipeline = FilterLang.Compiler.compileToMongoDB(filter, userLookupInjection, ["approvedBy"], loc, replacer);
+	} catch {
+		return null;
+	}
 
-    let limit = config.mongodb.itemsPerPage;
-    let skip = limit * page;
+	let limit = config.mongodb.itemsPerPage;
+	let skip = limit * page;
 
-    // append pagination to pipeline
-    pipeline = [...pipeline,
-        { $skip: skip },
-        { $limit: limit }
-    ];
+	// append pagination to pipeline
+	pipeline = [...pipeline,
+		{ $skip: skip },
+		{ $limit: limit }
+	];
 
-    let entries = await Database.findEntriesRaw(pipeline);
+	let entries = await Database.findEntriesRaw(pipeline);
 
-    let more = !(entries.length < config.mongodb.itemsPerPage);
+	let more = !(entries.length < config.mongodb.itemsPerPage);
 
-    return { entries, more };
+	return { entries, more };
 }
 
 /**
@@ -199,11 +199,11 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
  */
 export async function getUnapproved(page = 0): Promise<{ entries: Database.Entry<"out">[], more: boolean }> {
 
-    let entries = await Database.findEntries( {approved: false}, page);
+	let entries = await Database.findEntries( {approved: false}, page);
 
-    let more = !(entries.length < config.mongodb.itemsPerPage);
+	let more = !(entries.length < config.mongodb.itemsPerPage);
 
-    return { entries, more };
+	return { entries, more };
 }
 
 /**
@@ -214,17 +214,17 @@ export async function getUnapproved(page = 0): Promise<{ entries: Database.Entry
  */
 export async function approve(entry: Database.Entry<"out">, userId: string, approve = true) {
 
-    let updater: Partial< Database.Entry<"in"> > = {
-        approved: approve
-    };
+	let updater: Partial< Database.Entry<"in"> > = {
+		approved: approve
+	};
 
-    if (approve) {
-        updater.approvedBy = new MongoDB.ObjectID(userId);
-        updater.approvedTimestamp = Date.now();
-    }
+	if (approve) {
+		updater.approvedBy = new MongoDB.ObjectID(userId);
+		updater.approvedTimestamp = Date.now();
+	}
 
-    let updated = await Database.updateEntry(entry, updater);
+	let updated = await Database.updateEntry(entry, updater);
 
-    if (!updated) throw "Database failed to update";
+	if (!updated) throw "Database failed to update";
 
 }

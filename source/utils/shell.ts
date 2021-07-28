@@ -11,10 +11,10 @@ const asyncExec = promisify(exec);
  * All avalible commands
  */
 const commands = {
-    exportEntries: {
-        getCommand: (args: string[]) => `mongoexport --uri "${args[0]}" --out "${args[1]}" --collection entries --jsonArray --quiet`,
-        getTest: () => `mongoexport --version`
-    }
+	exportEntries: {
+		getCommand: (args: string[]) => `mongoexport --uri "${args[0]}" --out "${args[1]}" --collection entries --jsonArray --quiet`,
+		getTest: () => `mongoexport --version`
+	}
 }
 
 /**
@@ -24,8 +24,8 @@ const commands = {
  * @returns sucess
  */
 export async function exportEntries(dbUri: string, outFile: string): Promise<boolean> {
-    let [sucess] = await runCommand("exportEntries", dbUri, outFile);
-    return sucess;
+	let [sucess] = await runCommand("exportEntries", dbUri, outFile);
+	return sucess;
 }
 
 /**
@@ -34,23 +34,23 @@ export async function exportEntries(dbUri: string, outFile: string): Promise<boo
  */
 async function runCommand(command: keyof typeof commands, ...stringArgs: string[]): Promise<[boolean, string]> {
 
-    try {
+	try {
 
-        let { stdout, stderr } = await asyncExec(
-            commands[command].getCommand( stringArgs )
-        );
+		let { stdout, stderr } = await asyncExec(
+			commands[command].getCommand( stringArgs )
+		);
 
-        if (stderr) {
-            return [ false, stderr ];
-        } else {
-            return [ true, stdout ];
-        }
+		if (stderr) {
+			return [ false, stderr ];
+		} else {
+			return [ true, stdout ];
+		}
 
-    } catch(e) {
+	} catch(e) {
 
-        return [ false, e ];
+		return [ false, e ];
 
-    }
+	}
 
 }
 
@@ -58,26 +58,26 @@ async function runCommand(command: keyof typeof commands, ...stringArgs: string[
  * Tests if all commands are installed on this machine
  */
 export async function testForCommands(): Promise<void> {
-    let command = "";
+	let command = "";
 
-    try {
-        
-        for (let [key, val] of Object.entries(commands) ) {
+	try {
+		
+		for (let [key, val] of Object.entries(commands) ) {
 
-            command = val.getTest();
-            let { stderr } = await asyncExec( command );
+			command = val.getTest();
+			let { stderr } = await asyncExec( command );
 
-            if (stderr) {
-                throw(stderr);
-            }
+			if (stderr) {
+				throw(stderr);
+			}
 
-        }
+		}
 
-    } catch(e) {
+	} catch(e) {
 
-        console.log(`Command "${command}" failed to run.`);
-        console.log(`Check if the required command is installed on this machine!`);
-        console.error(e);
+		console.log(`Command "${command}" failed to run.`);
+		console.log(`Check if the required command is installed on this machine!`);
+		console.error(e);
 
-    }
+	}
 }

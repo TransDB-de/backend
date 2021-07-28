@@ -6,23 +6,23 @@ import { IDictionary } from "../api/api";
  */
 function _queryNumberParser(req: IRequest, res: IResponse, next: NextFunction, fields: Array<string>) {
 
-    if (req.query) {
-        let query = req.query as IDictionary;
+	if (req.query) {
+		let query = req.query as IDictionary;
 
-        for (let [ key, value ] of Object.entries(query)) {
-            if ( !fields.includes(key) ) continue;
+		for (let [ key, value ] of Object.entries(query)) {
+			if ( !fields.includes(key) ) continue;
 
-            let parsed = parseFloat(value as string);
+			let parsed = parseFloat(value as string);
 
-            if ( !isNaN(parsed) ) {
-                query[ key ] = parsed;
-            }
+			if ( !isNaN(parsed) ) {
+				query[ key ] = parsed;
+			}
 
-        }
+		}
 
-    }
+	}
 
-    next();
+	next();
 
 }
 
@@ -33,7 +33,7 @@ function _queryNumberParser(req: IRequest, res: IResponse, next: NextFunction, f
  * @param fields Array of query fields to parse
  */
 export function queryNumberParser(fields: Array<string>): IMiddleware {
-    return (req, res, next) => _queryNumberParser(req, res, next, fields);
+	return (req, res, next) => _queryNumberParser(req, res, next, fields);
 }
 
 // double export to support both default, and named imports

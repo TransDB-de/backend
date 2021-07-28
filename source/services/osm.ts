@@ -16,32 +16,32 @@ const axiosRl = axiosRateLimit(axios.create(), { maxRequests: 1, perMilliseconds
  */
 export async function getGeoByAddress(address: Address) {
 
-    let data;
+	let data;
 
-    try {
-        let response = await axiosRl.get( config.osm.apiUrl, {
-            params: {
-                city: address.city,
-                postalcode: address.plz,
-                street: address.house + " " + address.street,
-                format: "geojson"
-            },
-            headers: {
-                "user-agent": config.osm.userAgent
-            }
-        });
+	try {
+		let response = await axiosRl.get( config.osm.apiUrl, {
+			params: {
+				city: address.city,
+				postalcode: address.plz,
+				street: address.house + " " + address.street,
+				format: "geojson"
+			},
+			headers: {
+				"user-agent": config.osm.userAgent
+			}
+		});
 
-        data = response.data?.features[0];
+		data = response.data?.features[0];
 
-    } catch (e) {
-        return null;
-    }
+	} catch (e) {
+		return null;
+	}
 
-    if( !data || !data.geometry ) {
-        return null
-    }
+	if( !data || !data.geometry ) {
+		return null
+	}
 
-    return data.geometry as GeoJsonPoint;
+	return data.geometry as GeoJsonPoint;
 
 }
 

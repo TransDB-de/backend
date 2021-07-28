@@ -7,7 +7,7 @@ import { ResponseCode } from "./restResponseCodes.js";
 
 // simple utility interface for object with string key
 interface IDictionary {
-    [key: string]: any
+	[key: string]: any
 }
 
 /**
@@ -18,17 +18,17 @@ interface IDictionary {
  */
 export function validateManually(data: Object, schema: Object) {
 
-    let errors = validate(data, schema, { format: "detailed" });
+	let errors = validate(data, schema, { format: "detailed" });
 
-    if (!Array.isArray(errors)) {
-        return true;
-    }
+	if (!Array.isArray(errors)) {
+		return true;
+	}
 
-    errors =  errors.map((err) => {
-        return { field: err.attribute, violated: err.validator, expect: err.options };
-    });
+	errors =  errors.map((err) => {
+		return { field: err.attribute, violated: err.validator, expect: err.options };
+	});
 
-    return { error: "validation_error", problems: errors };
+	return { error: "validation_error", problems: errors };
 
 }
 
@@ -37,36 +37,36 @@ export function validateManually(data: Object, schema: Object) {
 // Custom validator for checking if an array contains only elements from options array
 validate.validators.exclusively = function (value: any, options: any): string | null {
 
-    if (!Array.isArray(value)) {
-        return null;
-    }
+	if (!Array.isArray(value)) {
+		return null;
+	}
 
-    for (let valueElement of value) {
-        if (!options.includes(valueElement)) {
-            return "has elements that are not in options";
-        }
-    }
+	for (let valueElement of value) {
+		if (!options.includes(valueElement)) {
+			return "has elements that are not in options";
+		}
+	}
 
-    return null;
+	return null;
 
 }
 
 // Custom validator for checking if another value also exist
 validate.validators.requires = function (value: any, options: any, key: any, attributes: any): string | null {
 
-    if (!Array.isArray(options)) {
-        options = new Array(options);
-    }
+	if (!Array.isArray(options)) {
+		options = new Array(options);
+	}
 
-    for (let required of options) {
+	for (let required of options) {
 
-        if (!(required in attributes) && value) {
-            return "requires " + options.join(" and ");
-        }
+		if (!(required in attributes) && value) {
+			return "requires " + options.join(" and ");
+		}
 
-    }
+	}
 
-    return null;
+	return null;
 
 }
 
@@ -75,18 +75,18 @@ validate.validators.requires = function (value: any, options: any, key: any, att
 // Middleware to validate custom fields in Request body
 function _validationMiddleware(req: IRequest, res: IResponse, next: Function, schema: Object) {
 
-    let errors: IDictionary[] | undefined = validate(req.body, schema, { format: "detailed" });
+	let errors: IDictionary[] | undefined = validate(req.body, schema, { format: "detailed" });
 
-    // Go next if there is no errors
-    if( errors === undefined ){
-        return next();
-    }
+	// Go next if there is no errors
+	if( errors === undefined ){
+		return next();
+	}
 
-    errors = errors.map((err) => {
-        return { field: err.attribute, violated: err.validator, expect: err.options };
-    });
+	errors = errors.map((err) => {
+		return { field: err.attribute, violated: err.validator, expect: err.options };
+	});
 
-    return res.status( ResponseCode.UnprocessableEntity ).json({ error: "validation_error", problems: errors });
+	return res.status( ResponseCode.UnprocessableEntity ).json({ error: "validation_error", problems: errors });
 
 }
 
@@ -97,23 +97,23 @@ function _validationMiddleware(req: IRequest, res: IResponse, next: Function, sc
  * @returns Express.js Middleware using given validate.js schema
  */
 export function validateMiddleware(schema: Object): IMiddleware {
-    return (req, res, next) => _validationMiddleware(req, res, next, schema);
+	return (req, res, next) => _validationMiddleware(req, res, next, schema);
 }
 
 /** Express.js Middleware to validate MongoDB's ObjectID in url params */
 export const validateId: IMiddleware = function (req, res, next) {
 
-    let errors = validate({ id: req.params?.id }, objectId, { format: "detailed" });
+	let errors = validate({ id: req.params?.id }, objectId, { format: "detailed" });
 
-    // Go next if there is no errors
-    if(!Array.isArray(errors)){
-        return next();
-    }
+	// Go next if there is no errors
+	if(!Array.isArray(errors)){
+		return next();
+	}
 
-    return res.status( ResponseCode.UnprocessableEntity ).json({ error: "validation_error", location: "params", problems: [
-            { field: "id", violated: "format", expect: "ObjectId" }
-        ]
-    });
+	return res.status( ResponseCode.UnprocessableEntity ).json({ error: "validation_error", location: "params", problems: [
+			{ field: "id", violated: "format", expect: "ObjectId" }
+		]
+	});
 
 }
 

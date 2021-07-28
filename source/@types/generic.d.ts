@@ -1,5 +1,5 @@
 declare global {
-    interface IDictionary {
-        [key: string]: any
-    }
+	interface IDictionary {
+		[key: string]: any
+	}
 }

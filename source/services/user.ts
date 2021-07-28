@@ -9,8 +9,8 @@ import { filterUser } from "../utils/filter.js";
 
 // Data Interfaces
 import { 
-    CreateUser, User, NewUser,
-    ResetUsername, LoginBody, UpdatePassword, ResetEmail
+	CreateUser, User, NewUser,
+	ResetUsername, LoginBody, UpdatePassword, ResetEmail
 } from "../api/users";
 
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqurstuvxyz', 8);
@@ -22,26 +22,26 @@ const nanoid = customAlphabet('0123456789abcdefghijklmnopqurstuvxyz', 8);
  */
 export async function addUser(createUser: CreateUser) {
 
-    const { username, email, admin } = createUser;
+	const { username, email, admin } = createUser;
 
-    // Get possible user from database to check if the user already exist
-    let user = await Database.findUser({ $or: [ { username }, { email } ] });
+	// Get possible user from database to check if the user already exist
+	let user = await Database.findUser({ $or: [ { username }, { email } ] });
 
-    if (user !== null) {
-        return false;
-    }
+	if (user !== null) {
+		return false;
+	}
 
-    // Generate random password
-    let password = nanoid();
+	// Generate random password
+	let password = nanoid();
 
-    // Do a secure password hashing with scrypt
-    let pwObject = await encryptPassword(password);
+	// Do a secure password hashing with scrypt
+	let pwObject = await encryptPassword(password);
 
-    let newUser = await Database.createUser(username, email, pwObject, admin) as Database.User<"out"> | NewUser;
+	let newUser = await Database.createUser(username, email, pwObject, admin) as Database.User<"out"> | NewUser;
 
-    newUser.password = password;
+	newUser.password = password;
 
-    return newUser as NewUser;
+	return newUser as NewUser;
 }
 
 /**
@@ -51,30 +51,30 @@ export async function addUser(createUser: CreateUser) {
  */
 export async function login(loginBody: LoginBody) {
 
-    const { username, password } = loginBody;
+	const { username, password } = loginBody;
 
-    // Get the user
-    let user = await Database.findUser({ $or: [ { username: username }, { email: username } ] }) as Database.User<"out">;
+	// Get the user
+	let user = await Database.findUser({ $or: [ { username: username }, { email: username } ] }) as Database.User<"out">;
 
-    if (!user) {
-        return false;
-    }
+	if (!user) {
+		return false;
+	}
 
-    let pw = await encryptPassword(password, user.password.salt);
+	let pw = await encryptPassword(password, user.password.salt);
 
-    // Cancel on wrong password
-    if (pw.key !== user.password.key) {
-        return false;
-    }
+	// Cancel on wrong password
+	if (pw.key !== user.password.key) {
+		return false;
+	}
 
-    let token = jwt.sign({ id: user._id, admin: user.admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+	let token = jwt.sign({ id: user._id, admin: user.admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 
-    // Set users last login date
-    await Database.updateUser(user._id, { lastLogin: new Date() });
+	// Set users last login date
+	await Database.updateUser(user._id, { lastLogin: new Date() });
 
-    filterUser(user);
+	filterUser(user);
 
-    return { user, token } as { user: User, token: string };
+	return { user, token } as { user: User, token: string };
 
 }
 
@@ -86,26 +86,26 @@ export async function login(loginBody: LoginBody) {
  */
 export async function resetPassword(userId: string, updatePasswordBody: UpdatePassword) {
 
-    let user = await Database.getUser(userId);
+	let user = await Database.getUser(userId);
 
-    let oldPassword = updatePasswordBody.old ?? "";
-    let newPassword = updatePasswordBody.new;
+	let oldPassword = updatePasswordBody.old ?? "";
+	let newPassword = updatePasswordBody.new;
 
-    // Cancel if user not found
-    if (!user) {
-        return false;
-    }
+	// Cancel if user not found
+	if (!user) {
+		return false;
+	}
 
-    let oldPW = await encryptPassword(oldPassword, user.password.salt);
+	let oldPW = await encryptPassword(oldPassword, user.password.salt);
 
-    // Cancel if old password is not matching
-    if (oldPW.key !== user.password.key) {
-        return false;
-    }
+	// Cancel if old password is not matching
+	if (oldPW.key !== user.password.key) {
+		return false;
+	}
 
-    let password = await encryptPassword(newPassword);
+	let password = await encryptPassword(newPassword);
 
-    return await Database.updateUser(userId, { password });
+	return await Database.updateUser(userId, { password });
 
 }
 
@@ -115,17 +115,17 @@ export async function resetPassword(userId: string, updatePasswordBody: UpdatePa
  */
 export async function resetPasswordDirectly(userId: string): Promise<string|boolean> {
 
-    let password = nanoid();
+	let password = nanoid();
 
-    let pwObject = await encryptPassword(password);
+	let pwObject = await encryptPassword(password);
 
-    let res = await Database.updateUser(userId, { password: pwObject });
+	let res = await Database.updateUser(userId, { password: pwObject });
 
-    if(!res) {
-        return false;
-    }
+	if(!res) {
+		return false;
+	}
 
-    return password;
+	return password;
 
 }
 
@@ -134,26 +134,26 @@ export async function resetPasswordDirectly(userId: string): Promise<string|bool
  */
 function encryptPassword(password: string, salt?: string): Promise<Database.Password> {
 
-    return new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 
-        // Generate 16 bytes salt as hex string to salt the password
-        let buff = crypto.randomBytes(16);
+		// Generate 16 bytes salt as hex string to salt the password
+		let buff = crypto.randomBytes(16);
 
-        if (!salt) {
-            salt = buff.toString("hex");
-        }
+		if (!salt) {
+			salt = buff.toString("hex");
+		}
 
-        crypto.scrypt(password, salt, 128, (err, keyBuffer) => {
+		crypto.scrypt(password, salt, 128, (err, keyBuffer) => {
 
-            if (err) throw reject(err);
+			if (err) throw reject(err);
 
-            let key = keyBuffer.toString("hex");
+			let key = keyBuffer.toString("hex");
 
-            resolve({ key, salt: salt as string });
+			resolve({ key, salt: salt as string });
 
-        });
+		});
 
-    });
+	});
 
 }
 
@@ -162,28 +162,28 @@ function encryptPassword(password: string, salt?: string): Promise<Database.Pass
  */
 export async function generateDefaultUserIfRequired() {
 
-    let users = await Database.getAllUsers();
+	let users = await Database.getAllUsers();
 
-    if (users.length < 1) {
+	if (users.length < 1) {
 
-        console.warn("[users] No users found in database!");
+		console.warn("[users] No users found in database!");
 
-        let userEntry: CreateUser = {
-            username: "admin",
-            email: "",
-            admin: true
-        };
+		let userEntry: CreateUser = {
+			username: "admin",
+			email: "",
+			admin: true
+		};
 
-        let newUser = await addUser(userEntry);
+		let newUser = await addUser(userEntry);
 
-        if (!newUser) {
-            console.warn("Failed to create default admin user!");
+		if (!newUser) {
+			console.warn("Failed to create default admin user!");
 
-            process.exit();
-        }
+			process.exit();
+		}
 
-        console.info(`Created default admin user: admin/${newUser.password}`);
+		console.info(`Created default admin user: admin/${newUser.password}`);
 
-    }
+	}
 
 }

@@ -4,13 +4,13 @@ import {config} from "./config.js";
 import {Entry} from "../@types/services/database";
 
 const typeMapping: IDictionary = {
-    group: "Gruppe/Verein",
-    therapist: "Therapeut*in/Psychiater*in",
-    surveyor: "Gutachter*in",
-    endocrinologist: "Endokrinologische Praxis",
-    surgeon: "Operateur*in",
-    logopedics: "Logopäd*in",
-    hairremoval: "Haarentfernung"
+	group: "Gruppe/Verein",
+	therapist: "Therapeut*in/Psychiater*in",
+	surveyor: "Gutachter*in",
+	endocrinologist: "Endokrinologische Praxis",
+	surgeon: "Operateur*in",
+	logopedics: "Logopäd*in",
+	hairremoval: "Haarentfernung"
 }
 
 /**
@@ -20,34 +20,34 @@ const typeMapping: IDictionary = {
  */
 export async function sendNewEntryNotification(name: string, type: string): Promise<void> {
 
-    if(!config.discordWebhookURL) return;
+	if(!config.discordWebhookURL) return;
 
-    let embed: any = {
-        title: "📥 Neuer Eintrag",
-        description: "Ein neuer Eintrag wurde eingereicht und wartet auf Freischaltung.",
-        color: 15241160,
-        timestamp: new Date(),
-        footer: {
-            icon_url: "https://transdb.de/logo.png",
-            text: "Trans*DB Systembenachrichtigung"
-        },
-        fields: [
-            {
-                name: "Name des Eintrags",
-                value: name
-            },
-            {
-                name: "Typ",
-                value: typeMapping[type]
-            }
-        ]
-    }
+	let embed: any = {
+		title: "📥 Neuer Eintrag",
+		description: "Ein neuer Eintrag wurde eingereicht und wartet auf Freischaltung.",
+		color: 15241160,
+		timestamp: new Date(),
+		footer: {
+			icon_url: "https://transdb.de/logo.png",
+			text: "Trans*DB Systembenachrichtigung"
+		},
+		fields: [
+			{
+				name: "Name des Eintrags",
+				value: name
+			},
+			{
+				name: "Typ",
+				value: typeMapping[type]
+			}
+		]
+	}
 
-    try {
-        await axios.post(config.discordWebhookURL, {embeds: [embed]});
-    } catch (e) {
-        console.error(`Error while sending Discord webhook! Status Code: ${e.message}`);
-    }
+	try {
+		await axios.post(config.discordWebhookURL, {embeds: [embed]});
+	} catch (e) {
+		console.error(`Error while sending Discord webhook! Status Code: ${e.message}`);
+	}
 
 }
 
@@ -58,36 +58,36 @@ export async function sendNewEntryNotification(name: string, type: string): Prom
  */
 export async function sendReport(entry: Entry<"out">, message: string): Promise<boolean> {
 
-    if(!config.discordWebhookURL) return false;
+	if(!config.discordWebhookURL) return false;
 
 
-    let embed: any = {
-        title: "📣 Neue Meldung",
-        url: config.reportEntryURL + entry._id,
-        color: 6595835,
-        timestamp: new Date(),
-        footer: {
-            icon_url: "https://transdb.de/logo.png",
-            text: "Trans*DB Systembenachrichtigung"
-        },
-        fields: [
-            {
-                name: typeMapping[entry.type],
-                value: entry.name
-            },
-            {
-                name: "Nachricht",
-                value: message
-            }
-        ]
-    }
+	let embed: any = {
+		title: "📣 Neue Meldung",
+		url: config.reportEntryURL + entry._id,
+		color: 6595835,
+		timestamp: new Date(),
+		footer: {
+			icon_url: "https://transdb.de/logo.png",
+			text: "Trans*DB Systembenachrichtigung"
+		},
+		fields: [
+			{
+				name: typeMapping[entry.type],
+				value: entry.name
+			},
+			{
+				name: "Nachricht",
+				value: message
+			}
+		]
+	}
 
-    try {
-        await axios.post(config.discordWebhookURL, {embeds: [embed]});
-        return true;
-    } catch (e) {
-        console.error(`Error while sending Discord webhook! Status Code: ${e.message}`);
-        return false;
-    }
+	try {
+		await axios.post(config.discordWebhookURL, {embeds: [embed]});
+		return true;
+	} catch (e) {
+		console.error(`Error while sending Discord webhook! Status Code: ${e.message}`);
+		return false;
+	}
 
 }
