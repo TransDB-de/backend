@@ -42,6 +42,7 @@ export async function addEntry(object: NewApiEntry) {
             subject: object.subject ?? null,
             offers: object.offers ?? null,
         },
+        accessible: object.accessible ?? null,
         submittedTimestamp: Date.now()
     };
 
@@ -164,9 +165,14 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
 
     }
 
+    // inser objectID
+    const replacer: FilterLang.Compiler.Replacer = {
+        _id: (val) => { return new MongoDB.ObjectId(val) }
+    }
+
     // attempt compilation
     try {
-        pipeline = FilterLang.Compiler.compileToMongoDB(filter, userLookupInjection, ["approvedBy"], loc);
+        pipeline = FilterLang.Compiler.compileToMongoDB(filter, userLookupInjection, ["approvedBy"], loc, replacer);
     } catch {
         return null;
     }

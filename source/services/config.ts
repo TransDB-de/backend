@@ -21,7 +21,6 @@ const defaultConfig = {
     },
     web: {
         port: 1300,
-        frontEndURL: "http://localhost:8080/",
         enableCORS: true,
         CORSOrigins: ["http://localhost:8080"]
     },
@@ -37,9 +36,14 @@ const defaultConfig = {
         newEntries: {
             timeframeMinutes: 5,
             maxRequests: 3
+        },
+        report: {
+            timeframeMinutes: 5,
+            maxRequests: 3
         }
     },
-    discordWebhookURL: ""
+    discordWebhookURL: "",
+    reportEntryURL: "https://transdb.de/manage/database?id="
 };
 
 const configPath = "./config.json";

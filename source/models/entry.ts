@@ -4,7 +4,8 @@ export const baseForm = {
         presence: { allowEmpty: false },
         type: "string",
         inclusion: [
-            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor", "endocrinologist",
+            "surgeon", "logopedics", "hairremoval"
         ]
     },
 
@@ -62,6 +63,14 @@ export const baseForm = {
             minimum: 5,
             maximum: 30
         }
+    },
+
+    accessible: {
+        presence: false,
+        type: "string",
+        inclusion: [
+            "yes", "no", "unknown"
+        ]
     }
 
 }
@@ -160,7 +169,20 @@ export const surgeonMeta = {
         presence: { allowEmpty: false },
         type: "array",
         exclusively: [
-            "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem"
+            "mastectomy", "vaginPI", "vaginCombined", "ffs",
+            "penoid", "breast", "hyst", "orch", "clitPI",
+            "bodyfem", "glottoplasty", "fms"
+        ]
+    }
+
+}
+
+export const endocrinologistMeta = {
+
+    attributes: {
+        type: "array",
+        exclusively: [
+            "treatsNB"
         ]
     }
 
@@ -199,7 +221,9 @@ export const filterQuery = {
     type: {
         type: "string",
         inclusion: [
-            "group", "therapist", "surveyor", "endocrinologist", "surgeon", "logopedics", "hairremoval"
+            "group", "therapist", "surveyor",
+            "endocrinologist", "surgeon", "logopedics",
+            "hairremoval"
         ]
     },
 
@@ -207,8 +231,10 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "indication", "therapy", "mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast",
-            "hyst", "orch", "clitPI", "bodyfem", "laser", "ipl", "electro", "electroAE"
+            "indication", "therapy", "mastectomy", "vaginPI",
+            "vaginCombined", "ffs", "penoid", "breast",
+            "hyst", "orch", "clitPI", "bodyfem", "laser",
+            "ipl", "electro", "electroAE", "glottoplasty", "fms"
         ]
     },
 
@@ -216,7 +242,9 @@ export const filterQuery = {
         presence: false,
         type: "array",
         exclusively: [
-            "trans", "regularMeetings", "consulting", "activities", "insurancePay", "transfriendly", "hasDoctor", "enby"
+            "trans", "regularMeetings", "consulting",
+            "activities", "insurancePay", "transfriendly",
+            "hasDoctor", "enby", "treatsNB"
         ]
     },
 
@@ -241,6 +269,14 @@ export const filterQuery = {
     page: {
         presence: false,
         type: "integer"
+    },
+
+    accessible: {
+        presence: false,
+        type: "string",
+        exclusively: [
+            "true", "false", "null"
+        ]
     }
 
 }
