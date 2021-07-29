@@ -9,7 +9,7 @@ export const reportBody = {
 		presence: { allowEmpty: false },
 		length: {
 			minimum: 10,
-			maximum: 800
+			maximum: 1200
 		}
 	}
 
