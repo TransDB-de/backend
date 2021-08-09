@@ -2,8 +2,8 @@ import { Entry as ApiEntry } from "../../api/entries"
 import MongoDB from "mongodb";
 
 interface GeoJsonPoint {
-    type: "Point",
-    coordinates: number[]
+	type: "Point",
+	coordinates: number[]
 }
 
 // Types for services/database.ts
@@ -19,13 +19,13 @@ interface GeoJsonPoint {
  * "out" is for users which are returned by the database, external (our **out**side) users
  */
 export type User<io extends "in" | "out"> = {
-    _id: io extends "in" ? MongoDB.ObjectId : string,
-    username: string,
-    password: Password,
-    email: string,
-    registerDate: Date,
-    lastLogin: null | Date,
-    admin: boolean
+	_id: io extends "in" ? MongoDB.ObjectId : string,
+	username: string,
+	password: Password,
+	email: string,
+	registerDate: Date,
+	lastLogin: null | Date,
+	admin: boolean
 }
 
 /**
@@ -39,11 +39,11 @@ export type User<io extends "in" | "out"> = {
  * "out" is for entries which are returned by the database, external (our **out**side) entries
  */
 export interface Entry<io extends "in" | "out"> extends ApiEntry {
-    _id: io extends "in" ? MongoDB.ObjectId : string,
-    submittedTimestamp: number,
-    approvedTimestamp?: number,
-    /** id of user who approved entry */
-    approvedBy?: io extends "in" ? MongoDB.ObjectId : string
+	_id: io extends "in" ? MongoDB.ObjectId : string,
+	submittedTimestamp: number,
+	approvedTimestamp?: number,
+	/** id of user who approved entry */
+	approvedBy?: io extends "in" ? MongoDB.ObjectId : string
 }
 
 /** Entry object for new database entry */
@@ -54,30 +54,30 @@ export type NewDbUser = Omit< User<"in">, '_id'>
 
 /** Encrypted password with salt, as stored in database */
 export interface Password {
-    key: string,
-    salt: string
+	key: string,
+	salt: string
 }
 
 export interface CollectionMeta {
-    about: string
+	about: string
 }
 
 export interface GeoData {
-    _id: string | MongoDB.ObjectId,
-    level: number,
-    name: string,
-    ascii: string,
-    plz: string,
-    location: GeoJsonPoint | null,
-    referenceLocation: GeoJsonPoint | null
+	_id: string | MongoDB.ObjectId,
+	level: number,
+	name: string,
+	ascii: string,
+	plz: string,
+	location: GeoJsonPoint | null,
+	referenceLocation: GeoJsonPoint | null
 }
 
 export interface EntriesMeta extends CollectionMeta {
-    lastChangeTimestamp: number,
-    lastExportTimestamp: number
+	lastChangeTimestamp: number,
+	lastExportTimestamp: number
 }
 
 export const enum MetaUpdateType {
-    Changed,
-    Exported
+	Changed,
+	Exported
 }

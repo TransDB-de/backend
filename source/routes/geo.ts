@@ -18,18 +18,18 @@ export const router = express.Router() as IRouter<Api.GeoData>;
  */
 router.get("/", async (req, res) => {
 
-    if( !req.query.search ) {
-        res.status(ResponseCode.UnprocessableEntity).end();
-        return;
-    }
+	if( !req.query.search ) {
+		res.status(ResponseCode.UnprocessableEntity).end();
+		return;
+	}
 
-    let data = await Database.findGeoLocation(req.query.search);
+	let data = await Database.findGeoLocation(req.query.search);
 
-    if ( !data[0] ) {
-        res.status(ResponseCode.NotFound).end();
-        return;
-    }
+	if ( !data[0] ) {
+		res.status(ResponseCode.NotFound).end();
+		return;
+	}
 
-    res.send(data);
+	res.send(data);
 
 });

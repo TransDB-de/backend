@@ -14,6 +14,6 @@ export const router = express.Router() as IRouter<Api.Default>;
 // Base route to get basic information about this API. The data can be changed in the config file.
 router.get("/", (req, res) => {
 
-    res.send(config.info);
+	res.send(config.info);
 
 });

@@ -25,11 +25,11 @@ export const path = "/users";
 * */
 router.get("/", auth({ admin: true }), async (req, res) => {
 
-    let users = await Database.getAllUsers();
+	let users = await Database.getAllUsers();
 
-    filterUsers(users);
+	filterUsers(users);
 
-    res.send(users);
+	res.send(users);
 
 });
 
@@ -38,16 +38,16 @@ router.get("/", auth({ admin: true }), async (req, res) => {
 * */
 router.post("/", auth({ admin: true }), validate(createUser), async (req, res) => {
 
-    let register = await User.addUser(req.body);
+	let register = await User.addUser(req.body);
 
-    // Return an error if the user already exist
-    if (register === false) {
-        res.status(ResponseCode.Conflict).send({ error: "user_exist" });
-        return;
-    }
+	// Return an error if the user already exist
+	if (register === false) {
+		res.status(ResponseCode.Conflict).send({ error: "user_exist" });
+		return;
+	}
 
-    // Registration successful
-    res.send(register);
+	// Registration successful
+	res.send(register);
 
 });
 
@@ -56,14 +56,14 @@ router.post("/", auth({ admin: true }), validate(createUser), async (req, res) =
 * */
 router.post("/me/login", validate(loginBody), async (req, res) => {
 
-    let login = await User.login(req.body);
+	let login = await User.login(req.body);
 
-    if (!login) {
-        res.status(ResponseCode.Unauthorized).send({ error: "wrong_credentials" });
-        return;
-    }
+	if (!login) {
+		res.status(ResponseCode.Unauthorized).send({ error: "wrong_credentials" });
+		return;
+	}
 
-    res.send(login);
+	res.send(login);
 
 });
 
@@ -72,13 +72,13 @@ router.post("/me/login", validate(loginBody), async (req, res) => {
 * */
 router.put("/me/password", auth(), validate(updatePassword), async (req, res) => {
 
-    let reset = await User.resetPassword(req.user?.id ?? "", req.body);
+	let reset = await User.resetPassword(req.user?.id ?? "", req.body);
 
-    if (reset) {
-        res.status(ResponseCode.OK).end();
-    } else {
-        res.status(ResponseCode.BadRequest).send({ error: "invalid_verification" });
-    }
+	if (reset) {
+		res.status(ResponseCode.OK).end();
+	} else {
+		res.status(ResponseCode.BadRequest).send({ error: "invalid_verification" });
+	}
 
 });
 
@@ -88,16 +88,16 @@ router.put("/me/password", auth(), validate(updatePassword), async (req, res) =>
 router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 
 
-    let user = await Database.findUser({ email: req.body.email });
+	let user = await Database.findUser({ email: req.body.email });
 
-    if (!user) {
+	if (!user) {
 
-        await Database.updateUser(req.user!.id, { email: req.body.email });
-        res.status(ResponseCode.OK).end();
+		await Database.updateUser(req.user!.id, { email: req.body.email });
+		res.status(ResponseCode.OK).end();
 
-    } else {
-        res.status(ResponseCode.Conflict).send({ error: "user_exist" });
-    }
+	} else {
+		res.status(ResponseCode.Conflict).send({ error: "user_exist" });
+	}
 
 
 });
@@ -107,16 +107,16 @@ router.put("/me/email", auth(), validate(resetEmail), async (req, res) => {
 * */
 router.put("/me/username", auth(), validate(resetUsername), async (req, res) => {
 
-    let user = await Database.findUser({ username: req.body.username });
+	let user = await Database.findUser({ username: req.body.username });
 
-    if (!user){
+	if (!user){
 
-        await Database.updateUser(req.user!.id, { username: req.body.username });
-        res.status(ResponseCode.OK).end();
+		await Database.updateUser(req.user!.id, { username: req.body.username });
+		res.status(ResponseCode.OK).end();
 
-    } else {
-        res.status(ResponseCode.Conflict).send({ error: "user_exist" });
-    }
+	} else {
+		res.status(ResponseCode.Conflict).send({ error: "user_exist" });
+	}
 
 
 });
@@ -129,21 +129,21 @@ router.put("/me/username", auth(), validate(resetUsername), async (req, res) => 
 * */
 router.put("/:id/password", auth({ admin: true }), async (req, res) => {
 
-    let user = await Database.getUser(req.params.id);
+	let user = await Database.getUser(req.params.id);
 
-    if (!user) {
-        res.status(ResponseCode.NotFound).send({ error: "not_found" });
-        return;
-    }
+	if (!user) {
+		res.status(ResponseCode.NotFound).send({ error: "not_found" });
+		return;
+	}
 
-    let reset = await User.resetPasswordDirectly(req.params.id);
+	let reset = await User.resetPasswordDirectly(req.params.id);
 
-    if(!reset) {
-        res.status(ResponseCode.InternalServerError).send({ error: "reset_failed" });
-        return;
-    }
+	if(!reset) {
+		res.status(ResponseCode.InternalServerError).send({ error: "reset_failed" });
+		return;
+	}
 
-    res.send({ password: reset });
+	res.send({ password: reset });
 
 });
 
@@ -152,15 +152,15 @@ router.put("/:id/password", auth({ admin: true }), async (req, res) => {
 * */
 router.delete("/:id", auth({ admin: true }), async (req, res) => {
 
-    let user = await Database.getUser(req.params.id);
+	let user = await Database.getUser(req.params.id);
 
-    if (!user) {
-        res.status(ResponseCode.NotFound).send({ error: "not_found" });
-        return;
-    }
+	if (!user) {
+		res.status(ResponseCode.NotFound).send({ error: "not_found" });
+		return;
+	}
 
-    await Database.deleteUser(req.params.id);
-    res.status(ResponseCode.OK).end();
+	await Database.deleteUser(req.params.id);
+	res.status(ResponseCode.OK).end();
 
 
 });

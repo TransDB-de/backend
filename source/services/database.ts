@@ -23,44 +23,44 @@ let db: MongoDB.Db;
  * register callback functions here
  */
 export const events = {
-    connected: () => {}
+	connected: () => {}
 };
 
 // ------ Functions ------
 
 export function connect() {
 
-    client = new MongoDB.MongoClient( Config.getMongoUrl(), { tls: false, useUnifiedTopology: true } );
+	client = new MongoDB.MongoClient( Config.getMongoUrl(), { tls: false, useUnifiedTopology: true } );
 
-    client.connect((err) => {
+	client.connect((err) => {
 
-        if (err) {
-            console.error(err);
-            return;
-        }
+		if (err) {
+			console.error(err);
+			return;
+		}
 
-        db = client.db( Config.config.mongodb.database );
+		db = client.db( Config.config.mongodb.database );
 
-        console.log("[mongodb] Successful connected");
+		console.log("[mongodb] Successful connected");
 
-        // Resolve all db promises in parallel, then callback sucessfull connection
-        Promise.all([
+		// Resolve all db promises in parallel, then callback sucessfull connection
+		Promise.all([
 
-            // Add index for genoear queries
-            db.collection<Entry<"in">>("entries").createIndex({ location: "2dsphere" }),
-            db.collection<GeoData>("geodata").createIndex({ location: "2dsphere" }),
+			// Add index for genoear queries
+			db.collection<Entry<"in">>("entries").createIndex({ location: "2dsphere" }),
+			db.collection<GeoData>("geodata").createIndex({ location: "2dsphere" }),
 
-            db.collection<Entry<"in">>("entries").createIndex({ name: "text", firstName: "text", lastName: "text", email: "text", webiste: "text", telephone: "text", "address.city": "text", "address.plz": "text", "address.street": "text", "address.house": "text" , "meta.specials": "text" }),
+			db.collection<Entry<"in">>("entries").createIndex({ name: "text", firstName: "text", lastName: "text", email: "text", webiste: "text", telephone: "text", "address.city": "text", "address.plz": "text", "address.street": "text", "address.house": "text" , "meta.specials": "text" }),
 
-            db.collection<GeoData>("geodata").createIndex({ name: "text", plz: "text", ascii: "text" }),
-            db.collection<EntriesMeta>("meta").createIndex({ about: "text" })
+			db.collection<GeoData>("geodata").createIndex({ name: "text", plz: "text", ascii: "text" }),
+			db.collection<EntriesMeta>("meta").createIndex({ about: "text" })
 
-        ]).then(() => {
-            // Call connected method (specified in main.js)
-            events.connected();
-        });
+		]).then(() => {
+			// Call connected method (specified in main.js)
+			events.connected();
+		});
 
-    });
+	});
 
 }
 
@@ -74,20 +74,20 @@ export function connect() {
  */
 export async function createUser(username: string, email: string, password: Password, admin = false) {
 
-    let user: NewDbUser = {
-        username,
-        email,
-        password,
-        registerDate: new Date(),
-        lastLogin: null,
-        admin
-    };
+	let user: NewDbUser = {
+		username,
+		email,
+		password,
+		registerDate: new Date(),
+		lastLogin: null,
+		admin
+	};
 
-    let res = await db
-        .collection<User<"in">>("users")
-        .insertOne(user);
+	let res = await db
+		.collection<User<"in">>("users")
+		.insertOne(user);
 
-    return res.ops[0] as unknown as User<"out">;
+	return res.ops[0] as unknown as User<"out">;
 
 }
 
@@ -97,9 +97,9 @@ export async function createUser(username: string, email: string, password: Pass
  */
 export async function getUser(userId: string | number): Promise< User<"out"> | null > {
 
-    return await db
-        .collection<User<"in">>("users")
-        .findOne({ _id: new MongoDB.ObjectId(userId) }) as unknown as User<"out">;
+	return await db
+		.collection<User<"in">>("users")
+		.findOne({ _id: new MongoDB.ObjectId(userId) }) as unknown as User<"out">;
 
 }
 
@@ -109,9 +109,9 @@ export async function getUser(userId: string | number): Promise< User<"out"> | n
  */
 export async function findUser(query: MongoDB.FilterQuery< User<"in"> >): Promise< User<"out"> | null > {
 
-    return await db
-        .collection<User<"in">>("users")
-        .findOne(query) as unknown as User<"out">;
+	return await db
+		.collection<User<"in">>("users")
+		.findOne(query) as unknown as User<"out">;
 
 }
 
@@ -121,19 +121,19 @@ export async function findUser(query: MongoDB.FilterQuery< User<"in"> >): Promis
  */
 export async function getAllUsers() {
 
-    type ProjectedUsers = Pick< User<"out">, "username" | "email" | "registerDate" | "lastLogin" | "admin">
+	type ProjectedUsers = Pick< User<"out">, "username" | "email" | "registerDate" | "lastLogin" | "admin">
 
-    return await db
-        .collection<User<"in">>("users")
-        .find({}, {
-            projection: {
-                username: true,
-                email: true,
-                registerDate: true,
-                lastLogin: true,
-                admin: true
-            }
-        }).toArray() as ProjectedUsers[];
+	return await db
+		.collection<User<"in">>("users")
+		.find({}, {
+			projection: {
+				username: true,
+				email: true,
+				registerDate: true,
+				lastLogin: true,
+				admin: true
+			}
+		}).toArray() as ProjectedUsers[];
 }
 
 /**
@@ -144,11 +144,11 @@ export async function getAllUsers() {
  */
 export async function updateUser(userId: string | number, updater: Partial< User<"in"> > ): Promise<boolean> {
 
-    let res = await db
-        .collection<User<"in">>("users")
-        .updateOne({ _id: new MongoDB.ObjectId(userId) }, { $set: updater });
+	let res = await db
+		.collection<User<"in">>("users")
+		.updateOne({ _id: new MongoDB.ObjectId(userId) }, { $set: updater });
 
-    return Boolean(res.modifiedCount);
+	return Boolean(res.modifiedCount);
 
 }
 
@@ -159,11 +159,11 @@ export async function updateUser(userId: string | number, updater: Partial< User
  */
 export async function deleteUser(userId: string | number) {
 
-    let res = await db
-        .collection<User<"in">>("users")
-        .deleteOne({ _id: new MongoDB.ObjectId(userId) });
+	let res = await db
+		.collection<User<"in">>("users")
+		.deleteOne({ _id: new MongoDB.ObjectId(userId) });
 
-    return Boolean(res.deletedCount);
+	return Boolean(res.deletedCount);
 
 }
 
@@ -176,12 +176,12 @@ export async function deleteUser(userId: string | number) {
  */
 export async function addEntry(entry: NewDbEntry) {
 
-    let res = await db
-        .collection<Entry<"in">>("entries")
-        .insertOne(entry);
+	let res = await db
+		.collection<Entry<"in">>("entries")
+		.insertOne(entry);
 
-    updateEntriesMeta();
-    return res.ops[0] as unknown as Entry<"out">;
+	updateEntriesMeta();
+	return res.ops[0] as unknown as Entry<"out">;
 
 }
 
@@ -192,9 +192,9 @@ export async function addEntry(entry: NewDbEntry) {
  */
 export async function getEntry(entryId: string | number): Promise< Entry<"out"> | null > {
 
-    return await db
-        .collection<Entry<"in">>("entries")
-        .findOne({ _id: new MongoDB.ObjectId(entryId) }) as unknown as Entry<"out">;
+	return await db
+		.collection<Entry<"in">>("entries")
+		.findOne({ _id: new MongoDB.ObjectId(entryId) }) as unknown as Entry<"out">;
 
 }
 
@@ -206,22 +206,22 @@ export async function getEntry(entryId: string | number): Promise< Entry<"out"> 
  */
 export async function findEntries(query: MongoDB.FilterQuery<Entry<"out">>, page: number): Promise<Entry<"out">[]> {
 
-    let limit = Config.config.mongodb.itemsPerPage;
-    let skip = limit * page;
+	let limit = Config.config.mongodb.itemsPerPage;
+	let skip = limit * page;
 
-    let entries = await db
-        .collection<Entry<"in">>("entries")
-        .aggregate([
-            {
-                $match: query
-            },
-            { $sort: { approvedTimestamp: -1, submittedTimestamp: -1, _id: -1 } },
-            { $skip: skip },
-            { $limit: limit },
-            { $unset: ["location", "approvedBy", "approvedTimestamp", "submittedTimestamp"] }
-        ]).toArray();
+	let entries = await db
+		.collection<Entry<"in">>("entries")
+		.aggregate([
+			{
+				$match: query
+			},
+			{ $sort: { approvedTimestamp: -1, submittedTimestamp: -1, _id: -1 } },
+			{ $skip: skip },
+			{ $limit: limit },
+			{ $unset: ["location", "approvedBy", "approvedTimestamp", "submittedTimestamp"] }
+		]).toArray();
 
-    return entries as unknown as Entry<"out">[];
+	return entries as unknown as Entry<"out">[];
 
 }
 
@@ -234,26 +234,26 @@ export async function findEntries(query: MongoDB.FilterQuery<Entry<"out">>, page
  */
 export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: MongoDB.FilterQuery<Entry<"out">> = {}, page = 0): Promise<Entry<"out">[]> {
 
-    let limit = Config.config.mongodb.itemsPerPage;
-    let skip = limit * page;
+	let limit = Config.config.mongodb.itemsPerPage;
+	let skip = limit * page;
 
-    return await db
-        .collection<Entry<"in">>("entries")
-        .aggregate([
-            {
-                $geoNear: {
-                    near: locaction,
-                    distanceField: "distance",
-                    distanceMultiplier: 0.001,
-                    query: query
-                }
-            },
-            { $sort: { distance: 1 } },
-            { $skip: skip },
-            { $limit: limit },
-            { $set: { distance: { $round: [ "$distance", 2 ] } } },
-            { $unset: ["location", "approvedBy", "approvedTimestamp", "submittedTimestamp"] }
-        ]).toArray() as unknown as Entry<"out">[];
+	return await db
+		.collection<Entry<"in">>("entries")
+		.aggregate([
+			{
+				$geoNear: {
+					near: locaction,
+					distanceField: "distance",
+					distanceMultiplier: 0.001,
+					query: query
+				}
+			},
+			{ $sort: { distance: 1 } },
+			{ $skip: skip },
+			{ $limit: limit },
+			{ $set: { distance: { $round: [ "$distance", 2 ] } } },
+			{ $unset: ["location", "approvedBy", "approvedTimestamp", "submittedTimestamp"] }
+		]).toArray() as unknown as Entry<"out">[];
 
 }
 
@@ -263,10 +263,10 @@ export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: Mong
  */
 export async function findEntriesRaw(pipeline: object[] | undefined): Promise<Entry<"out">[]> {
 
-    return await db
-        .collection<Entry<"in">>("entries")
-        .aggregate(pipeline)
-        .toArray() as unknown as Entry<"out">[];
+	return await db
+		.collection<Entry<"in">>("entries")
+		.aggregate(pipeline)
+		.toArray() as unknown as Entry<"out">[];
 
 }
 
@@ -278,29 +278,29 @@ export async function findEntriesRaw(pipeline: object[] | undefined): Promise<En
  */
 export async function updateEntry(entry: Entry<"out">, updater: Partial<Entry<"in">>) {
 
-    let res = await db
-        .collection<Entry<"in">>("entries")
-        .updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: updater });
+	let res = await db
+		.collection<Entry<"in">>("entries")
+		.updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: updater });
 
-    let updated = Boolean(res.modifiedCount);
+	let updated = Boolean(res.modifiedCount);
 
-    // Check if Geolocation needs updating
-    if (updated) {
+	// Check if Geolocation needs updating
+	if (updated) {
 
-        // If the entry was first approved
-        if (!entry.approved && updater.approved) {
-            setGeolocation(entry);
-        }
-        // If the address was changed
-        else if (updater.address) {
-            setGeolocation(entry);
-        }
+		// If the entry was first approved
+		if (!entry.approved && updater.approved) {
+			setGeolocation(entry);
+		}
+		// If the address was changed
+		else if (updater.address) {
+			setGeolocation(entry);
+		}
 
-        updateEntriesMeta();
+		updateEntriesMeta();
 
-    }
+	}
 
-    return updated;
+	return updated;
 
 }
 
@@ -311,39 +311,39 @@ export async function updateEntry(entry: Entry<"out">, updater: Partial<Entry<"i
  */
 export async function deleteEntry(id: string | number) {
 
-    let res = await db
-        .collection<Entry<"in">>("entries")
-        .deleteOne({ _id: new MongoDB.ObjectId(id) });
+	let res = await db
+		.collection<Entry<"in">>("entries")
+		.deleteOne({ _id: new MongoDB.ObjectId(id) });
 
-    updateEntriesMeta();
-    return Boolean(res.deletedCount);
+	updateEntriesMeta();
+	return Boolean(res.deletedCount);
 
 }
 
 export async function exportEntries(): Promise<string | false> {
 
-    // get meta information about entries collection
-    let meta = await db.collection<CollectionMeta>("meta").findOne({ about: "entries" }) as EntriesMeta;
-    let path = Config.config.mongodb.backupFolder + meta.lastExportTimestamp + "/entries.json";
-    let success = true;
+	// get meta information about entries collection
+	let meta = await db.collection<CollectionMeta>("meta").findOne({ about: "entries" }) as EntriesMeta;
+	let path = Config.config.mongodb.backupFolder + meta.lastExportTimestamp + "/entries.json";
+	let success = true;
 
-    // Change occured after last export
-    if (meta.lastChangeTimestamp > meta.lastExportTimestamp || !fs.existsSync(path)) {
+	// Change occured after last export
+	if (meta.lastChangeTimestamp > meta.lastExportTimestamp || !fs.existsSync(path)) {
 
-        let timestamp = Date.now();
+		let timestamp = Date.now();
 
-        path = Config.config.mongodb.backupFolder + timestamp + "/entries.json";
+		path = Config.config.mongodb.backupFolder + timestamp + "/entries.json";
 
-        success = await Shell.exportEntries( Config.getMongoUrl(), path );
+		success = await Shell.exportEntries( Config.getMongoUrl(), path );
 
-        if (success) {
-            updateEntriesMeta(MetaUpdateType.Exported, timestamp);
-        }
+		if (success) {
+			updateEntriesMeta(MetaUpdateType.Exported, timestamp);
+		}
 
-    }
+	}
 
-    // Return path to new export, or false if export failed
-    return success ? path : false;
+	// Return path to new export, or false if export failed
+	return success ? path : false;
 
 }
 
@@ -354,45 +354,45 @@ export async function exportEntries(): Promise<string | false> {
  */
 async function updateEntriesMeta(type = MetaUpdateType.Changed, timestamp: number = Date.now()): Promise<void> {
 
-    // Check if entry meta exists
-    let meta = await db.collection<CollectionMeta>("meta").findOne({ about: "entries" });
+	// Check if entry meta exists
+	let meta = await db.collection<CollectionMeta>("meta").findOne({ about: "entries" });
 
-    // Create one if it dosn't
-    if (!meta) {
+	// Create one if it dosn't
+	if (!meta) {
 
-        const entriesMeta: EntriesMeta = {
-            about: "entries",
-            lastChangeTimestamp: timestamp,
-            lastExportTimestamp: type === MetaUpdateType.Exported ? timestamp : 0
-        }
+		const entriesMeta: EntriesMeta = {
+			about: "entries",
+			lastChangeTimestamp: timestamp,
+			lastExportTimestamp: type === MetaUpdateType.Exported ? timestamp : 0
+		}
 
-        await db.collection<CollectionMeta>("meta").insertOne(entriesMeta);
+		await db.collection<CollectionMeta>("meta").insertOne(entriesMeta);
 
-    } else {
-        let updater: Partial<EntriesMeta>= {};
+	} else {
+		let updater: Partial<EntriesMeta>= {};
 
-        if (type === MetaUpdateType.Changed) {
+		if (type === MetaUpdateType.Changed) {
 
-            updater = {
-                lastChangeTimestamp: timestamp
-            }
+			updater = {
+				lastChangeTimestamp: timestamp
+			}
 
-        }
-        else if (type === MetaUpdateType.Exported) {
+		}
+		else if (type === MetaUpdateType.Exported) {
 
-            updater = {
-                lastExportTimestamp: timestamp
-            }
+			updater = {
+				lastExportTimestamp: timestamp
+			}
 
-        }
+		}
 
 
-        // Update in Database
-        await db
-            .collection<CollectionMeta>("meta")
-            .updateOne({ about: "entries" }, { $set: updater });
+		// Update in Database
+		await db
+			.collection<CollectionMeta>("meta")
+			.updateOne({ about: "entries" }, { $set: updater });
 
-    }
+	}
 
 }
 
@@ -408,31 +408,31 @@ async function updateEntriesMeta(type = MetaUpdateType.Changed, timestamp: numbe
  */
 export async function findGeoLocation(search: string) {
 
-    search = search.toString();
+	search = search.toString();
 
-    let ascii = convertToAscii(search);
+	let ascii = convertToAscii(search);
 
-    // Search for input or ascii
-    // the ascii is aditionally included to cover more edge cases
-    let searchStr = `${search} ${ascii}`;
+	// Search for input or ascii
+	// the ascii is aditionally included to cover more edge cases
+	let searchStr = `${search} ${ascii}`;
 
-    return await db
-        .collection<GeoData>("geodata")
-        .aggregate([
-            {
-                $match: {
-                    $text: { $search: searchStr }
-                }
-            },
-            { $sort: { score: { $meta: "textScore"  }, level: -1 } },
-            { $limit: 6 }
-        ])
-        .project<GeoPlace>({
-            name: true,
-            location: { $ifNull: ["$location", "$referenceLocation"] },
-            _id: false
-        })
-        .toArray();
+	return await db
+		.collection<GeoData>("geodata")
+		.aggregate([
+			{
+				$match: {
+					$text: { $search: searchStr }
+				}
+			},
+			{ $sort: { score: { $meta: "textScore"  }, level: -1 } },
+			{ $limit: 6 }
+		])
+		.project<GeoPlace>({
+			name: true,
+			location: { $ifNull: ["$location", "$referenceLocation"] },
+			_id: false
+		})
+		.toArray();
 
 }
 
@@ -442,23 +442,23 @@ export async function findGeoLocation(search: string) {
  * @returns Single length array with object of cityname, and location
  */
 export async function findGeoName(location: GeoJsonPoint) {
-    return await db
-        .collection<GeoData>("geodata")
-        .aggregate([
-            {
-                $geoNear: {
-                    near: location,
-                    distanceField: "distance"
-                }
-            },
-            { $limit: 1 }
-        ])
-        .project<GeoPlace>({
-            name: true,
-            location: true,
-            _id: false
-        })
-        .toArray();
+	return await db
+		.collection<GeoData>("geodata")
+		.aggregate([
+			{
+				$geoNear: {
+					near: location,
+					distanceField: "distance"
+				}
+			},
+			{ $limit: 1 }
+		])
+		.project<GeoPlace>({
+			name: true,
+			location: true,
+			_id: false
+		})
+		.toArray();
 }
 
 /**
@@ -469,16 +469,16 @@ export async function findGeoName(location: GeoJsonPoint) {
  */
 export async function setGeolocation(entry: Entry<"out">) {
 
-    try {
+	try {
 
-        let loc = await OSM.getGeoByAddress( entry.address );
+		let loc = await OSM.getGeoByAddress( entry.address );
 
-        await db
-            .collection<Entry<"in">>("entries")
-            .updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: { location: loc } });
+		await db
+			.collection<Entry<"in">>("entries")
+			.updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: { location: loc } });
 
-    } catch {
-        // TODO : Error logging?
-    }
+	} catch {
+		// TODO : Error logging?
+	}
 
 }

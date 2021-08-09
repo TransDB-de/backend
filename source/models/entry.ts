@@ -1,282 +1,282 @@
 export const baseForm = {
 
-    type: {
-        presence: { allowEmpty: false },
-        type: "string",
-        inclusion: [
-            "group", "therapist", "surveyor", "endocrinologist",
-            "surgeon", "logopedics", "hairremoval"
-        ]
-    },
+	type: {
+		presence: { allowEmpty: false },
+		type: "string",
+		inclusion: [
+			"group", "therapist", "surveyor", "endocrinologist",
+			"surgeon", "logopedics", "hairremoval"
+		]
+	},
 
-    name: {
-        presence: { allowEmpty: false },
-        type: "string",
-        length: {
-            minimum: 1,
-            maximum: 50
-        }
-    },
+	name: {
+		presence: { allowEmpty: false },
+		type: "string",
+		length: {
+			minimum: 1,
+			maximum: 50
+		}
+	},
 
-    firstName: {
-        presence: false,
-        type: "string",
-        length: {
-            minimum: 2,
-            maximum: 30
-        }
-    },
+	firstName: {
+		presence: false,
+		type: "string",
+		length: {
+			minimum: 2,
+			maximum: 30
+		}
+	},
 
-    lastName: {
-        presence: false,
-        type: "string",
-        length: {
-            minimum: 2,
-            maximum: 30
-        }
-    },
+	lastName: {
+		presence: false,
+		type: "string",
+		length: {
+			minimum: 2,
+			maximum: 30
+		}
+	},
 
-    email: {
-        presence: false,
-        type: "string",
-        email: true,
-        length: {
-            minimum: 5,
-            maximum: 320
-        }
-    },
+	email: {
+		presence: false,
+		type: "string",
+		email: true,
+		length: {
+			minimum: 5,
+			maximum: 320
+		}
+	},
 
-    website: {
-        presence: false,
-        url: true,
-        type: "string",
-        length: {
-            minimum: 3,
-            maximum: 500
-        }
-    },
+	website: {
+		presence: false,
+		url: true,
+		type: "string",
+		length: {
+			minimum: 3,
+			maximum: 500
+		}
+	},
 
-    telephone: {
-        presence: false,
-        type: "string",
-        length: {
-            minimum: 5,
-            maximum: 30
-        }
-    },
+	telephone: {
+		presence: false,
+		type: "string",
+		length: {
+			minimum: 5,
+			maximum: 30
+		}
+	},
 
-    accessible: {
-        presence: false,
-        type: "string",
-        inclusion: [
-            "yes", "no", "unknown"
-        ]
-    }
+	accessible: {
+		presence: false,
+		type: "string",
+		inclusion: [
+			"yes", "no", "unknown"
+		]
+	}
 
 }
 
 export const address = {
-    city: {
-        presence: { allowEmpty: false },
-        type: "string"
-    },
+	city: {
+		presence: { allowEmpty: false },
+		type: "string"
+	},
 
-    plz: {
-        presence: false,
-        type: "string"
-    },
+	plz: {
+		presence: false,
+		type: "string"
+	},
 
-    street: {
-        presence: false,
-        requires: "city",
-        type: "string"
-    },
+	street: {
+		presence: false,
+		requires: "city",
+		type: "string"
+	},
 
-    house: {
-        presence: false,
-        requires: "street",
-        type: "string",
-        length: {
-            minimum: 1,
-            maximum: 10
-        }
-    }
+	house: {
+		presence: false,
+		requires: "street",
+		type: "string",
+		length: {
+			minimum: 1,
+			maximum: 10
+		}
+	}
 }
 
 export const baseEntry = {
-    ...baseForm,
-    ...address
+	...baseForm,
+	...address
 }
 
 export const groupMeta = {
 
-    attributes: {
-        presence: { allowEmpty: false },
-        type: "array",
-        exclusively: [
-            "trans", "regularMeetings", "consulting", "activities"
-        ]
-    },
+	attributes: {
+		presence: { allowEmpty: false },
+		type: "array",
+		exclusively: [
+			"trans", "regularMeetings", "consulting", "activities"
+		]
+	},
 
-    specials: {
-        presence: false,
-        type: "string",
-        length: {
-            minimum: 0,
-            maximum: 280
-        }
-    },
+	specials: {
+		presence: false,
+		type: "string",
+		length: {
+			minimum: 0,
+			maximum: 280
+		}
+	},
 
-    minAge: {
-        presence: false,
-        type: "integer"
-    }
+	minAge: {
+		presence: false,
+		type: "integer"
+	}
 
 }
 
 export const therapistMeta = {
 
-    subject: {
-        presence: { allowEmpty: false },
-        type: "string",
-        inclusion: [
-            "therapist", "psychologist"
-        ]
-    },
+	subject: {
+		presence: { allowEmpty: false },
+		type: "string",
+		inclusion: [
+			"therapist", "psychologist"
+		]
+	},
 
-    offers: {
-        presence: { allowEmpty: false },
-        type: "array",
-        exclusively: [
-            "indication", "therapy"
-        ]
-    }
+	offers: {
+		presence: { allowEmpty: false },
+		type: "array",
+		exclusively: [
+			"indication", "therapy"
+		]
+	}
 
 }
 
 export const surveyorMeta = {
 
-    attributes: {
-        type: "array",
-        exclusively: ["enby"]
-    }
+	attributes: {
+		type: "array",
+		exclusively: ["enby"]
+	}
 
 }
 
 export const surgeonMeta = {
 
-    offers: {
-        presence: { allowEmpty: false },
-        type: "array",
-        exclusively: [
-            "mastectomy", "vaginPI", "vaginCombined", "ffs",
-            "penoid", "breast", "hyst", "orch", "clitPI",
-            "bodyfem", "glottoplasty", "fms"
-        ]
-    }
+	offers: {
+		presence: { allowEmpty: false },
+		type: "array",
+		exclusively: [
+			"mastectomy", "vaginPI", "vaginCombined", "ffs",
+			"penoid", "breast", "hyst", "orch", "clitPI",
+			"bodyfem", "glottoplasty", "fms"
+		]
+	}
 
 }
 
 export const endocrinologistMeta = {
 
-    attributes: {
-        type: "array",
-        exclusively: [
-            "treatsNB"
-        ]
-    }
+	attributes: {
+		type: "array",
+		exclusively: [
+			"treatsNB"
+		]
+	}
 
 }
 
 export const hairRemovalMeta = {
 
-    attributes: {
-        type: "array",
-        exclusively: ["insurancePay", "transfriendly", "hasDoctor"]
-    },
+	attributes: {
+		type: "array",
+		exclusively: ["insurancePay", "transfriendly", "hasDoctor"]
+	},
 
-    offers: {
-        presence: { allowEmpty: false },
-        type: "array",
-        exclusively: [
-            "laser", "ipl", "electro", "electroAE"
-        ]
-    }
+	offers: {
+		presence: { allowEmpty: false },
+		type: "array",
+		exclusively: [
+			"laser", "ipl", "electro", "electroAE"
+		]
+	}
 
 }
 
 export const filterQuery = {
 
-    lat: {
-        presence: false,
-        type: "number",
-        requires: "long"
-    },
+	lat: {
+		presence: false,
+		type: "number",
+		requires: "long"
+	},
 
-    long: {
-        presence: false,
-        requires: "lat"
-    },
+	long: {
+		presence: false,
+		requires: "lat"
+	},
 
-    type: {
-        type: "string",
-        inclusion: [
-            "group", "therapist", "surveyor",
-            "endocrinologist", "surgeon", "logopedics",
-            "hairremoval"
-        ]
-    },
+	type: {
+		type: "string",
+		inclusion: [
+			"group", "therapist", "surveyor",
+			"endocrinologist", "surgeon", "logopedics",
+			"hairremoval"
+		]
+	},
 
-    offers: {
-        presence: false,
-        type: "array",
-        exclusively: [
-            "indication", "therapy", "mastectomy", "vaginPI",
-            "vaginCombined", "ffs", "penoid", "breast",
-            "hyst", "orch", "clitPI", "bodyfem", "laser",
-            "ipl", "electro", "electroAE", "glottoplasty", "fms"
-        ]
-    },
+	offers: {
+		presence: false,
+		type: "array",
+		exclusively: [
+			"indication", "therapy", "mastectomy", "vaginPI",
+			"vaginCombined", "ffs", "penoid", "breast",
+			"hyst", "orch", "clitPI", "bodyfem", "laser",
+			"ipl", "electro", "electroAE", "glottoplasty", "fms"
+		]
+	},
 
-    attributes: {
-        presence: false,
-        type: "array",
-        exclusively: [
-            "trans", "regularMeetings", "consulting",
-            "activities", "insurancePay", "transfriendly",
-            "hasDoctor", "enby", "treatsNB"
-        ]
-    },
+	attributes: {
+		presence: false,
+		type: "array",
+		exclusively: [
+			"trans", "regularMeetings", "consulting",
+			"activities", "insurancePay", "transfriendly",
+			"hasDoctor", "enby", "treatsNB"
+		]
+	},
 
-    location: {
-        presence: false,
-        type: "string",
-        length: {
-            minimum: 2,
-            maximum: 120,
-        }
-    },
+	location: {
+		presence: false,
+		type: "string",
+		length: {
+			minimum: 2,
+			maximum: 120,
+		}
+	},
 
-    text: {
-        presence: false,
-        type: "string",
-        length: {
-            minimum: 2,
-            maximum: 120
-        }
-    },
+	text: {
+		presence: false,
+		type: "string",
+		length: {
+			minimum: 2,
+			maximum: 120
+		}
+	},
 
-    page: {
-        presence: false,
-        type: "integer"
-    },
+	page: {
+		presence: false,
+		type: "integer"
+	},
 
-    accessible: {
-        presence: false,
-        type: "string",
-        exclusively: [
-            "true", "false", "null"
-        ]
-    }
+	accessible: {
+		presence: false,
+		type: "string",
+		exclusively: [
+			"true", "false", "null"
+		]
+	}
 
 }
