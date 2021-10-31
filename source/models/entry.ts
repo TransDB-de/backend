@@ -14,7 +14,7 @@ export const baseForm = {
 		type: "string",
 		length: {
 			minimum: 1,
-			maximum: 50
+			maximum: 100
 		}
 	},
 
