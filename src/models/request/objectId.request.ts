@@ -1,8 +1,9 @@
 import { Matches } from "class-validator"
-import Request from "../request.js"
+import { RequestBody } from "../request.js"
 
+export const idRegex = /^[0-9a-f]{24}$/i;
 
-export class ObjectId extends Request {
-	@Matches(/^[0-9a-f]{24}$/i)
+export class ObjectId {
+	@Matches(idRegex)
 	id !: string
 }

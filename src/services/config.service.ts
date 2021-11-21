@@ -59,7 +59,7 @@ export function initConfig() {
 		
 		config.jwt.secret = nanoid();
 		
-		fs.writeFileSync(configPath, JSON.stringify(config, null, 4));
+		fs.writeFileSync(configPath, JSON.stringify(config, null, '\t'));
 		
 		console.warn("--- [ Config ] ---\n" +
 			"No config file found. A new one has been created. Please fill in data and restart the application!");

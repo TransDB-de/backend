@@ -1,4 +1,4 @@
-import Request from "../request.js"
+import { RequestBody } from "../request.js"
 import { Length, IsEmail, IsBoolean } from "class-validator"
 
 
@@ -6,7 +6,7 @@ const usernameLength: [number, number] = [4, 16];
 const passwordLength: [number, number] = [8, 1024];
 
 
-export class CreateUser extends Request {
+export class CreateUser extends RequestBody {
 	@Length(...usernameLength)
 	username !: string;
 	
@@ -18,7 +18,7 @@ export class CreateUser extends Request {
 }
 
 
-export class LoginBody extends Request {
+export class LoginBody extends RequestBody {
 	@Length(...usernameLength)
 	username !: string;
 	
@@ -27,7 +27,7 @@ export class LoginBody extends Request {
 }
 
 
-export class UpdatePassword extends Request {
+export class UpdatePassword extends RequestBody {
 	@Length(...passwordLength)
 	old !: string;
 	
@@ -36,13 +36,13 @@ export class UpdatePassword extends Request {
 }
 
 
-export class ResetEmail extends Request {
+export class UpdateEmail extends RequestBody {
 	@IsEmail()
 	email !: string;
 }
 
 
-export class ResetUsername extends Request {
+export class UpdateUsername extends RequestBody {
 	@Length(...usernameLength)
 	username !: string;
 }

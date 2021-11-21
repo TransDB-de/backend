@@ -9,7 +9,7 @@ import { stringToRegex } from "../util/regExp.js"
 
 import { GeoJsonPoint } from "../models/database/geodata.model.js"
 import { DatabaseEntry, DatabaseAddress } from "../models/database/entry.model.js"
-import { Entry, FilterQuery } from "../models/request/entries.request.js"
+import { Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 
 /**
@@ -123,9 +123,6 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 }
 
 
-
-interface FilterFull {filter: FilterLang.IntermediateFormat.AbstractFilters, page: number}
-
 /**
  * Retrieve full entries via a filter-lang filter
  * @param filters filter-lang generated filters
@@ -199,7 +196,7 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
  * Get all unnaproved entries on a page as an array
  * @param page (optional) Page number to get unapproved entries for. Defaults to 0
  */
-export async function getUnapproved(page = 0): Promise<{ entries: PublicEntry[], more: boolean }> {
+export async function getUnapproved(page = 0): Promise<QueriedEntries> {
 
 	let entries = await Database.findEntries( {approved: false}, page);
 
@@ -239,18 +236,25 @@ export async function update(entry: DatabaseEntry<"out">, updater: Partial< Data
 	let updated = await Database.updateEntry(entry, updater);
 	
 	if (updated) {
-		try {
-			let loc = await OSM.getGeoByAddress( entry.address );
-			
-			if (loc === null) throw("location not found");
-			
-			Database.setGeolocation(entry._id!, loc);
-		} catch(e) {
-			// TODO : Error logging?
-			console.error("Failed to update GeoLocation: " + e.message)
-		}
+		updateGeoLocation(entry);
 	}
 	
 	return updated;
 }
 
+/**
+ * Queues a GeoLocation update. May take long, do not await this function!
+ * @param entry Entry to fetch new GeoLocation for
+ */
+export async function updateGeoLocation(entry: DatabaseEntry<"out">) {
+	try {
+		let loc = await OSM.getGeoByAddress( entry.address );
+		
+		if (loc === null) throw("location not found");
+		
+		Database.setGeolocation(entry._id!, loc);
+	} catch(e) {
+		// TODO : Error logging?
+		console.error("Failed to update GeoLocation: " + e.message)
+	}
+}

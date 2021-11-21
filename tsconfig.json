@@ -4,7 +4,7 @@
 		"module": "esnext",
 		"moduleResolution": "node",
 		"sourceMap": true,
-		"outDir": "./js",
+		"outDir": "./dist",
 		"rootDir": "./src",
 		"strict": true,
 		"esModuleInterop": true,

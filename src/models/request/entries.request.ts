@@ -1,7 +1,8 @@
 import { IsEmail, isEmpty, IsEmpty, IsIn, IsNotEmpty, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
+import * as FilterLang from "@transdb-de/filter-lang"
 import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.js"
 import { allExcept, mergeArrays } from "../../util/arrayUtils.js"
-import Request from "../request.js"
+import { RequestBody, Query } from "../request.js"
 
 const types = [
 	"group", "therapist", "surveyor", "endocrinologist",
@@ -27,7 +28,7 @@ const offers = {
 } as const;
 
 
-export class Entry extends Request {
+export class Entry extends RequestBody {
 	@IsIn(types)
 	type !: typeof types[number];
 	
@@ -116,7 +117,7 @@ export class Meta {
 }
 
 
-export class FilterQuery {
+export class FilterQuery extends Query {
 	@IsEmpty({ groups: ["noCoords"] })
 	@IsNumber({}, { groups: ["hasCoords"] })
 	lat ?: number;
@@ -153,3 +154,5 @@ export class FilterQuery {
 	@IsIn(accessibility)
 	accessible ?: typeof accessibility[number];
 }
+
+export interface FilterFull { filter: FilterLang.IntermediateFormat.AbstractFilters, page: number }

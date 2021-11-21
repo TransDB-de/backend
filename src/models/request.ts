@@ -1,4 +1,8 @@
+import * as express from "express"
+
 /**
  * Base class for Request objects
  */
-export default abstract class Request {}
+export abstract class RequestBody {}
+
+export abstract class Query {}

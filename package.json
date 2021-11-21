@@ -3,6 +3,7 @@
 	"version": "2.0.0",
 	"description": "",
 	"main": "dist/main.js",
+	"type": "module",
 	"scripts": {
 		"build": "npx tsc --sourceMap false",
 		"start": "node dist/main.js",
