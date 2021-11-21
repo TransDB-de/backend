@@ -118,18 +118,18 @@ export default class EntriesController {
 	@Middleware( validateOptional(Entry) )
 	async adminUpdateEntry(req: IRequest<Entry, {}, ObjectId>, res: IResponse) {
 		let entry = await Database.getEntry(req.params.id);
-
+		
 		if(!entry) {
 			res.error!("not_found");
 			return;
 		}
-
+		
 		let updated = await Database.updateEntry(entry, req.body);
-
+		
 		if(!updated) {
 			res.error!("not_updated");
 		}
-
+		
 		res.status(StatusCode.OK).end();
 	}
 	
