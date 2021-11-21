@@ -6,6 +6,7 @@ import * as Database from "./services/database.service.js"
 // Config
 Config.initConfig();
 
+// Database
 Database.connect();
 
 // Start server

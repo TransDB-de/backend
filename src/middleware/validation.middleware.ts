@@ -42,6 +42,7 @@ async function validateBody(req: IRequest<RequestBody, Query>, res: IResponse, n
 		always: true,
 		whitelist: true,
 		forbidNonWhitelisted: true,
+		forbidUnknownValues: true,
 		skipMissingProperties: _options.skipMissingProperties
 	};
 	

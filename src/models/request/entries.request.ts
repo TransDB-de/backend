@@ -88,6 +88,7 @@ export class Address {
 
 
 export class Meta {
+	@IsOptional()
 	@IsEmptyArray({ groups: allExcept(types, "group", "surveyor", "endocrinologist", "hairremoval") })
 	@ArrayExclusively(attributes.group, { groups: ["group"] })
 	@ArrayExclusively(attributes.surveyor, { groups: ["surveyor"] })
@@ -95,6 +96,7 @@ export class Meta {
 	@ArrayExclusively(attributes.hairremoval, { groups: ["hairremoval"] })
 	attributes !: string[];
 	
+	@IsOptional()
 	@IsEmptyArray({ groups: allExcept(types, "therapist", "surgeon", "hairremoval") })
 	@ArrayExclusively(offers.therapist, { groups: ["therapist"] })
 	@ArrayExclusively(offers.surgeon, { groups: ["surgeon"] })
@@ -103,7 +105,7 @@ export class Meta {
 	
 	@IsEmpty({ groups: allExcept(types, "group") })
 	@IsOptional({ groups: ["group"] })
-	@Length(0, 280)
+	@Length(0, 280, { groups: ["group"] })
 	specials ?: string;
 	
 	@IsEmpty({ groups: allExcept(types, "group") })
