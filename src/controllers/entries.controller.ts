@@ -34,7 +34,7 @@ export default class EntriesController {
 	
 	@Post("/")
 	@Middleware( newEntryLimiter )
-	@Middleware( validate(Entry) )
+	@Middleware( validate(Entry, { validationGroupFromEntryType: true }) )
 	async submitNewEntry(req: IRequest<Entry>, res: IResponse<PublicEntry>) {
 		await EntryService.addEntry(req.body);
 		

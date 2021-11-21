@@ -1,8 +1,9 @@
-import { IsEmail, isEmpty, IsEmpty, IsIn, IsNotEmpty, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
+import { IsEmail, IsEmpty, IsIn, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
 import * as FilterLang from "@transdb-de/filter-lang"
 import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.js"
 import { allExcept, mergeArrays } from "../../util/arrayUtils.js"
 import { RequestBody, Query } from "../request.js"
+import {Type} from "class-transformer";
 
 const types = [
 	"group", "therapist", "surveyor", "endocrinologist",
@@ -62,9 +63,11 @@ export class Entry extends RequestBody {
 	accessible ?: typeof accessibility[number];
 	
 	@ValidateNested()
+	@Type(() => Address)
 	address !: Address
 	
 	@ValidateNested()
+	@Type(() => Meta)
 	meta !: Meta
 }
 

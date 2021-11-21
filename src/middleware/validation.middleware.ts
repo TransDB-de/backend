@@ -52,7 +52,7 @@ async function validateBody(req: IRequest<RequestBody, Query>, res: IResponse, n
 	
 	if (errors.length < 1) return next();
 	
-	errors = errors.map((error) => ({ property: error.property, constraints: error.constraints }));
+	// errors = errors.map((error) => ({ property: error.property, constraints: error.constraints }));
 	
 	return res.error!("validation_error", errors);
 	
