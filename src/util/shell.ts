@@ -46,7 +46,7 @@ async function runCommand(command: keyof typeof commands, ...stringArgs: string[
 			return [ true, stdout ];
 		}
 
-	} catch(e) {
+	} catch(e: any) {
 
 		return [ false, e ];
 

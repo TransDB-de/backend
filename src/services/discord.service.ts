@@ -45,7 +45,7 @@ export async function sendNewEntryNotification(name: string, type: string): Prom
 
 	try {
 		await axios.post(config.discordWebhookURL, {embeds: [embed]});
-	} catch (e) {
+	} catch (e: any) {
 		console.error(`Error while sending Discord webhook! Status Code: ${e.message}`);
 	}
 
@@ -85,7 +85,7 @@ export async function sendReport(entry: DatabaseEntry<"out">, message: string): 
 	try {
 		await axios.post(config.discordWebhookURL, {embeds: [embed]});
 		return true;
-	} catch (e) {
+	} catch (e: any) {
 		console.error(`Error while sending Discord webhook! Status Code: ${e.message}`);
 		return false;
 	}

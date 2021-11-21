@@ -253,7 +253,7 @@ export async function updateGeoLocation(entry: DatabaseEntry<"out">) {
 		if (loc === null) throw("location not found");
 		
 		Database.setGeolocation(entry._id!, loc);
-	} catch(e) {
+	} catch(e: any) {
 		// TODO : Error logging?
 		console.error("Failed to update GeoLocation: " + e.message)
 	}
