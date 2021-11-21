@@ -1,8 +1,9 @@
-import { IsEmail, isEmpty, IsEmpty, IsIn, IsNotEmpty, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
+import { IsEmail, IsEmpty, IsIn, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
 import * as FilterLang from "@transdb-de/filter-lang"
 import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.js"
 import { allExcept, mergeArrays } from "../../util/arrayUtils.js"
 import { RequestBody, Query } from "../request.js"
+import {Type} from "class-transformer";
 
 const types = [
 	"group", "therapist", "surveyor", "endocrinologist",
@@ -62,9 +63,11 @@ export class Entry extends RequestBody {
 	accessible ?: typeof accessibility[number];
 	
 	@ValidateNested()
+	@Type(() => Address)
 	address !: Address
 	
 	@ValidateNested()
+	@Type(() => Meta)
 	meta !: Meta
 }
 
@@ -88,13 +91,15 @@ export class Address {
 
 
 export class Meta {
+	@IsOptional()
 	@IsEmptyArray({ groups: allExcept(types, "group", "surveyor", "endocrinologist", "hairremoval") })
 	@ArrayExclusively(attributes.group, { groups: ["group"] })
 	@ArrayExclusively(attributes.surveyor, { groups: ["surveyor"] })
 	@ArrayExclusively(attributes.endocrinologist, { groups: ["endocrinologist"] })
 	@ArrayExclusively(attributes.hairremoval, { groups: ["hairremoval"] })
 	attributes !: string[];
-	
+
+	@IsOptional()
 	@IsEmptyArray({ groups: allExcept(types, "therapist", "surgeon", "hairremoval") })
 	@ArrayExclusively(offers.therapist, { groups: ["therapist"] })
 	@ArrayExclusively(offers.surgeon, { groups: ["surgeon"] })
@@ -103,7 +108,7 @@ export class Meta {
 	
 	@IsEmpty({ groups: allExcept(types, "group") })
 	@IsOptional({ groups: ["group"] })
-	@Length(0, 280)
+	@Length(0, 280, { groups: ["group"] })
 	specials ?: string;
 	
 	@IsEmpty({ groups: allExcept(types, "group") })

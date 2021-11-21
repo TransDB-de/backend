@@ -42,7 +42,8 @@ async function validateBody(req: IRequest<RequestBody, Query>, res: IResponse, n
 		always: true,
 		whitelist: true,
 		forbidNonWhitelisted: true,
-		skipMissingProperties: _options.skipMissingProperties
+		skipMissingProperties: _options.skipMissingProperties,
+		forbidUnknownValues: true
 	};
 	
 	if (_options.validationGroupFromEntryType && req.body instanceof Entry) validatorOptions.groups = [req.body.type];
@@ -51,7 +52,7 @@ async function validateBody(req: IRequest<RequestBody, Query>, res: IResponse, n
 	
 	if (errors.length < 1) return next();
 	
-	errors = errors.map((error) => ({ property: error.property, constraints: error.constraints }));
+	// errors = errors.map((error) => ({ property: error.property, constraints: error.constraints }));
 	
 	return res.error!("validation_error", errors);
 	
