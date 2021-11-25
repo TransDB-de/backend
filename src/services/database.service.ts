@@ -278,11 +278,11 @@ export async function updateEntry(entry: DatabaseEntry<"out">, updater: Partial<
 	let res = await db
 		.collection<DatabaseEntry<"in">>("entries")
 		.updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: updater });
-
+	
 	let updated = Boolean(res.modifiedCount);
-
+	
 	updateEntriesCollectionMeta();
-
+	
 	return updated;
 }
 
@@ -292,41 +292,41 @@ export async function updateEntry(entry: DatabaseEntry<"out">, updater: Partial<
  * @returns Boolean indicating the success of the delete
  */
 export async function deleteEntry(id: string): Promise<boolean> {
-
+	
 	let res = await db
 		.collection<DatabaseEntry<"in">>("entries")
 		.deleteOne({ _id: new MongoDB.ObjectId(id) });
-
+	
 	updateEntriesCollectionMeta();
 	return Boolean(res.deletedCount);
-
+	
 }
 
 export async function exportEntries(): Promise<string | false> {
-
+	
 	// get meta information about entries collection
 	let meta = await db.collection<CollectionMeta<"in">>("meta").findOne({ about: "entries" }) as unknown as EntriesCollectionMeta<"out">;
 	let path = Config.config.mongodb.backupFolder + meta.lastExportTimestamp + "/entries.json";
 	let success = true;
-
+	
 	// Change occured after last export
 	if (meta.lastChangeTimestamp > meta.lastExportTimestamp || !fs.existsSync(path)) {
-
+		
 		let timestamp = Date.now();
-
+		
 		path = Config.config.mongodb.backupFolder + timestamp + "/entries.json";
-
+		
 		success = await Shell.exportEntries( Config.getMongoUrl(), path );
-
+		
 		if (success) {
 			updateEntriesCollectionMeta(CollectionMetaUpdateType.Exported, timestamp);
 		}
-
+		
 	}
-
+	
 	// Return path to new export, or false if export failed
 	return success ? path : false;
-
+	
 }
 
 /**
@@ -338,44 +338,44 @@ async function updateEntriesCollectionMeta(type = CollectionMetaUpdateType.Chang
 
 	// Check if entry meta exists
 	let meta = await db.collection<CollectionMeta<"out">>("meta").findOne({ about: "entries" });
-
+	
 	// Create one if it dosn't
 	if (!meta) {
-
+		
 		const entriesMeta: EntriesCollectionMeta<"in"> = {
 			about: "entries",
 			lastChangeTimestamp: timestamp,
 			lastExportTimestamp: type === CollectionMetaUpdateType.Exported ? timestamp : 0
 		}
-
+		
 		await db.collection<CollectionMeta<"in">>("meta").insertOne(entriesMeta);
-
+		
 	} else {
-		let updater: Partial<EntriesCollectionMeta<"in">>= {};
-
+		let updater: Partial<EntriesCollectionMeta<"in">> = {};
+		
 		if (type === CollectionMetaUpdateType.Changed) {
-
+			
 			updater = {
 				lastChangeTimestamp: timestamp
 			}
-
+			
 		}
 		else if (type === CollectionMetaUpdateType.Exported) {
-
+			
 			updater = {
 				lastExportTimestamp: timestamp
 			}
-
+			
 		}
-
-
+		
+		
 		// Update in Database
 		await db
 			.collection<CollectionMeta<"in">>("meta")
 			.updateOne({ about: "entries" }, { $set: updater });
-
+		
 	}
-
+	
 }
 
 /*
@@ -389,15 +389,15 @@ async function updateEntriesCollectionMeta(type = CollectionMetaUpdateType.Chang
  * @returns Array with objects of cityname, and location
  */
 export async function findGeoLocation(search: string): Promise<GeoPlace[]> {
-
+	
 	search = search.toString();
-
+	
 	let ascii = convertToAscii(search);
-
+	
 	// Search for input or ascii
 	// the ascii is aditionally included to cover more edge cases
 	let searchStr = `${search} ${ascii}`;
-
+	
 	return await db
 		.collection<GeoData>("geodata")
 		.aggregate([
@@ -415,7 +415,7 @@ export async function findGeoLocation(search: string): Promise<GeoPlace[]> {
 			_id: false
 		})
 		.toArray();
-
+		
 }
 
 /**
