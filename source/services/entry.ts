@@ -8,6 +8,7 @@ import { NewApiEntry, Entry, Address, FilterQuery, QueriedEntries, FullEntry, Fi
 import { GeoJsonPoint } from "../api/geo";
 
 import { stringToRegex } from "../utils/regExp.js";
+import { parsePhoneNumber, PhoneNumber } from "libphonenumber-js";
 
 /**
  * Add an entry
@@ -22,6 +23,16 @@ export async function addEntry(object: NewApiEntry) {
 		street: object.street,
 		house: object.house
 	}
+	
+	let nationalPhoneNumber = object.telephone ?? null;
+	
+	// Parse and unify phone number
+	if (object.telephone) {
+		let phoneNumber: PhoneNumber = parsePhoneNumber(object.telephone, "DE");
+		if (phoneNumber) {
+			nationalPhoneNumber = phoneNumber.formatNational();
+		}
+	}
 
 	// Build the entry object
 	let entry: Database.NewDbEntry = {
@@ -32,7 +43,7 @@ export async function addEntry(object: NewApiEntry) {
 		lastName: object.lastName ?? null,
 		email: object.email,
 		website: object.website ?? null,
-		telephone: object.telephone ?? null,
+		telephone: nationalPhoneNumber,
 		address: address,
 		location: null,
 		meta: {
