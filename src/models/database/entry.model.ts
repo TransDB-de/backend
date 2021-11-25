@@ -24,7 +24,7 @@ export interface DatabaseEntry<io extends "in" | "out"> {
 	address: DatabaseAddress,
 	location: GeoJsonPoint | null,
 	meta: DatabaseEntryMeta,
-	accessible?: "yes" | "no" | "unkown" | null
+	accessible?: "yes" | "no" | "unknown" | null
 	
 	submittedTimestamp: number,
 	approvedTimestamp?: number,

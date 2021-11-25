@@ -50,7 +50,6 @@ export async function addEntry(object: Entry) {
 /**
  * Filter and get all entry objects
  * @param filters
- * @param full (optional) Full entry view for admins
  */
 export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 	
@@ -81,6 +80,10 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 			{ firstName: stringToRegex(filters.text, "i") },
 			{ lastName: stringToRegex(filters.text, "i") }
 		]
+	}
+	
+	if(filters.accessible) {
+		query.accessible = filters.accessible;
 	}
 	
 	// Searched with location

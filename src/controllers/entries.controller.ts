@@ -9,12 +9,17 @@ import * as DiscordService from "../services/discord.service.js"
 
 import queryNumberParser from "../middleware/queryNumberParser.middleware.js"
 import queryArrayParser from "../middleware/queryArrayParser.middleware.js"
-import { PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
+import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 import authenticate from "../middleware/auth.middleware.js"
 import { Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
-import validate, { EValidationDataSource, validateId, validateOptional } from "../middleware/validation.middleware.js"
+import validate, {
+	validateFilterQuery,
+	validateId,
+	validateOptional
+} from "../middleware/validation.middleware.js"
 import { StatusCode } from "../types/httpStatusCodes.js"
 import { ObjectId } from "../models/request/objectId.request.js"
+import { filterEntry } from "../util/filter.js"
 
 const newEntryLimiter = rateLimit({
 	windowMs: config.rateLimit.newEntries.timeframeMinutes * 60 * 1000,
@@ -27,7 +32,7 @@ export default class EntriesController {
 	@Get("/")
 	@Middleware( queryNumberParser("lat", "long", "page") )
 	@Middleware( queryArrayParser("offers", "attributes") )
-	@Middleware( validate( FilterQuery, { source: EValidationDataSource.Query }) )
+	@Middleware( validateFilterQuery )
 	async getEntries(req: IRequest<{}, FilterQuery>, res: IResponse<QueriedEntries>) {
 		res.send(await EntryService.filter( req.query ));
 	}
@@ -43,6 +48,39 @@ export default class EntriesController {
 		DiscordService.sendNewEntryNotification(req.body.name, req.body.type);
 	}
 	
+	@Get("unapproved")
+	@Middleware( authenticate() )
+	@Middleware( queryNumberParser("page") )
+	async authorizedGetUnapproved(req: IRequest<{}, {page: number}>, res: IResponse<QueriedEntries>) {
+		res.send(await EntryService.getUnapproved(req.query.page ? req.query.page : 0));
+	}
+	
+	@Get("backup")
+	@Middleware( authenticate({ admin: true }) )
+	async adminGetBackup(req: IRequest, res: IResponse) {
+		let exported = await Database.exportEntries();
+		
+		if (!exported) {
+			res.error!("backup_failed");
+			return;
+		}
+		
+		res.download(exported);
+	}
+	
+	@Post("full")
+	@Middleware( authenticate({ admin: true }) )
+	async adminGetFullFilteredEntries(req: IRequest<FilterFull>, res: IResponse<AdminFilteredEntries>) {
+		let entries = await EntryService.filterWithFilterLang(req.body);
+		
+		if (entries === null) {
+			res.error!("compilation_failed");
+			return;
+		}
+		
+		res.send(entries);
+	}
+	
 	@Get(":id")
 	@Middleware( validateId )
 	async getSingleEntry(req: IRequest<{}, {}, ObjectId>, res: IResponse<PublicEntry>) {
@@ -52,6 +90,8 @@ export default class EntriesController {
 			res.error!("not_found");
 			return;
 		}
+		
+		filterEntry(entry);
 		
 		res.send(entry);
 	}
@@ -77,39 +117,6 @@ export default class EntriesController {
 		}
 		
 		res.status(StatusCode.OK).end();
-	}
-	
-	@Get("unapproved")
-	@Middleware( authenticate() )
-	@Middleware( queryNumberParser("page") )
-	async authorizedGetUnapproved(req: IRequest<{}, {page: number}>, res: IResponse<QueriedEntries>) {
-		res.send(await EntryService.getUnapproved(req.query.page ? req.query.page : 0));
-	}
-	
-	@Get("backup")
-	@Middleware( authenticate({ admin: true }) )
-	async adminGetBackup(req: IRequest, res: IResponse) {
-		let exported = await Database.exportEntries();
-		
-		if (!exported) {
-			res.error!("backup_failed");
-			return;
-		}
-		
-		res.download(exported);
-	}
-	
-	@Post("full")
-	@Middleware( authenticate({ admin: true }) )
-	async adminGetFullFilteredEntries(req: IRequest<FilterFull>, res: IResponse<QueriedEntries>) {
-		let entries = await EntryService.filterWithFilterLang(req.body);
-		
-		if (entries === null) {
-			res.error!("compilation_failed");
-			return;
-		}
-		
-		res.send(entries);
 	}
 	
 	@Patch(":id/edit")
@@ -164,7 +171,7 @@ export default class EntriesController {
 		
 		let deleted = await Database.deleteEntry(req.params.id);
 
-		if (deleted) {
+		if (!deleted) {
 			res.error!("not_deleted");
 			return;
 		}
