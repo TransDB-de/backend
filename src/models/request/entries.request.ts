@@ -11,7 +11,7 @@ const types = [
 ] as const;
 
 
-const accessibility = [ "yes", "no", "unkown" ] as const;
+const accessibility = [ "yes", "no", "unknown" ] as const;
 
 
 const attributes = {

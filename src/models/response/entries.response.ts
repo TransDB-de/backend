@@ -2,7 +2,12 @@ import { DatabaseEntry } from "../database/entry.model.js"
 import ResponseBody from "../response.js"
 
 
-export type PublicEntry = Omit< DatabaseEntry<"out">, "approvedBy" >
+export interface PublicEntry extends Omit< DatabaseEntry<"out">, "approvedBy" | "approvedTimestamp" | "submittedTimestamp" | "location"> {
+	approvedBy?: never
+	approvedTimestamp?: never
+	submittedTimestamp?: never
+	location?: never
+}
 
 
 export interface QueriedEntries extends ResponseBody {

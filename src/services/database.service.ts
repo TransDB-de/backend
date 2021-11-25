@@ -1,21 +1,20 @@
 import MongoDB from "mongodb"
 import * as fs from "fs"
 
-import * as OSM from "./osm.service.js"
 import * as Config from "./config.service.js"
 
 import * as Shell from "../util/shell.js";
 import { convertToAscii } from "../util/asciiConverter.js"
 
 import { GeoJsonPoint, GeoPlace } from "../models/database/geodata.model.js"
-import { DatabaseAddress } from "../models/database/entry.model.js"
 
 import { PublicUser } from "../models/response/users.response.js";
 import { DatabaseEntry } from "../models/database/entry.model.js";
-import { DatabaseNewUser, DatabaseUser, Password } from "../models/database/user.model.js";
+import { DatabaseUser, Password } from "../models/database/user.model.js";
 import { GeoData } from "../models/database/geodata.model.js";
 import { CollectionMeta, EntriesCollectionMeta, CollectionMetaUpdateType } from "../models/database/collectionMeta.model.js";
 import { PublicEntry } from "../models/response/entries.response.js";
+import { filterEntries } from "../util/filter.js";
 
 // ------ Globals ------
 
@@ -88,7 +87,7 @@ export async function createUser(username: string, email: string, password: Pass
 		admin
 	};
 	
-	let res = await db
+	await db
 		.collection<DatabaseUser<"in">>("users")
 		.insertOne(user);
 	
@@ -219,11 +218,11 @@ export async function findEntries(query: MongoDB.Filter<DatabaseEntry<"out">>, p
 			},
 			{ $sort: { approvedTimestamp: -1, submittedTimestamp: -1, _id: -1 } },
 			{ $skip: skip },
-			{ $limit: limit },
-			{ $unset: ["location", "approvedBy", "approvedTimestamp", "submittedTimestamp"] }
+			{ $limit: limit }
 		]).toArray();
-
-	return entries as unknown as PublicEntry[];
+	
+	filterEntries(entries);
+	return entries;
 
 }
 
@@ -238,7 +237,7 @@ export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: Mong
 	let limit = Config.config.mongodb.itemsPerPage;
 	let skip = limit * page;
 
-	return await db
+	let entries =  await db
 		.collection<DatabaseEntry<"in">>("entries")
 		.aggregate([
 			{
@@ -252,9 +251,11 @@ export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: Mong
 			{ $sort: { distance: 1 } },
 			{ $skip: skip },
 			{ $limit: limit },
-			{ $set: { distance: { $round: [ "$distance", 2 ] } } },
-			{ $unset: ["location", "approvedBy", "approvedTimestamp", "submittedTimestamp"] }
-		]).toArray() as unknown as PublicEntry[];
+			{ $set: { distance: { $round: [ "$distance", 2 ] } } }
+		]).toArray();
+	
+	filterEntries(entries);
+	return entries;
 }
 
 /**
@@ -333,6 +334,7 @@ export async function exportEntries(): Promise<string | false> {
  * Updates the metadata for the entry collection.
  * Should be called after every write to the collection
  * @param type
+ * @param timestamp
  */
 async function updateEntriesCollectionMeta(type = CollectionMetaUpdateType.Changed, timestamp: number = Date.now()): Promise<void> {
 
@@ -351,7 +353,7 @@ async function updateEntriesCollectionMeta(type = CollectionMetaUpdateType.Chang
 		await db.collection<CollectionMeta<"in">>("meta").insertOne(entriesMeta);
 
 	} else {
-		let updater: Partial<EntriesCollectionMeta<"in">>= {};
+		let updater: Partial<EntriesCollectionMeta<"in">> = {};
 
 		if (type === CollectionMetaUpdateType.Changed) {
 

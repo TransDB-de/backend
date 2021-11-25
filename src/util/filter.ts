@@ -33,6 +33,9 @@ export function filterUsers(users: Partial< DatabaseUser<"out"> >[]): asserts us
  */
 export function filterEntry(entry: Partial< DatabaseEntry<"out"> >): asserts entry is PublicEntry {
 	delete entry.approvedBy;
+	delete entry.approvedTimestamp;
+	delete entry.submittedTimestamp;
+	delete entry.location;
 }
 
 /**

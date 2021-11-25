@@ -34,7 +34,7 @@ export default class UsersController {
 		res.send(register);
 	}
 	
-	@Get("me/login")
+	@Post("me/login")
 	@Middleware( validate(LoginBody) )
 	async login(req: IRequest<LoginBody>, res: IResponse) {
 		let login = await UserService.login(req.body);
