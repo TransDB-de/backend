@@ -11,6 +11,7 @@ import { GeoJsonPoint } from "../models/database/geodata.model.js"
 import { DatabaseEntry, DatabaseAddress } from "../models/database/entry.model.js"
 import { Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
+import { parsePhoneNumber, PhoneNumber } from "libphonenumber-js"
 
 /**
  * Add an entry
@@ -20,6 +21,16 @@ import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/res
 export async function addEntry(object: Entry) {
 	
 	let address: DatabaseAddress = object.address;
+	let nationalPhoneNumber = object.telephone ?? null;
+	
+	// Parse and unify phone number
+	if (object.telephone) {
+		let phoneNumber: PhoneNumber = parsePhoneNumber(object.telephone, "DE");
+		if (phoneNumber) {
+			nationalPhoneNumber = phoneNumber.formatNational();
+		}
+	}
+	
 	
 	// Build the entry object
 	let entry: DatabaseEntry<"in"> = {
@@ -30,7 +41,7 @@ export async function addEntry(object: Entry) {
 		lastName: object.lastName ?? null,
 		email: object.email,
 		website: object.website ?? null,
-		telephone: object.telephone ?? null,
+		telephone: nationalPhoneNumber,
 		address: address,
 		location: null,
 		meta: {

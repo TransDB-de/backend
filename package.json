@@ -31,6 +31,7 @@
 		"express-rate-limit": "^5.5.1",
 		"helmet": "^4.6.0",
 		"jsonwebtoken": "^8.5.1",
+		"libphonenumber-js": "^1.9.43",
 		"mongodb": "^4.2.0",
 		"nanoid": "^3.1.30",
 		"node-cleanup": "^2.1.2"
