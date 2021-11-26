@@ -33,7 +33,7 @@ export class Entry extends RequestBody {
 	@IsIn(types)
 	type !: typeof types[number];
 	
-	@Length(1, 100)
+	@Length(1, 160)
 	name !: string;
 	
 	@IsOptional()
@@ -50,7 +50,7 @@ export class Entry extends RequestBody {
 	email ?: string;
 	
 	@IsOptional()
-	@Length(5, 320)
+	@Length(5, 500)
 	@IsUrl()
 	website ?: string;
 	
