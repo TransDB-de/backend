@@ -1,7 +1,7 @@
 import { IsEmail, IsEmpty, IsIn, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
 import * as FilterLang from "@transdb-de/filter-lang"
-import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.js"
-import { allExcept, mergeArrays } from "../../util/arrayUtils.js"
+import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.util.js"
+import { allExcept, mergeArrays } from "../../util/array.util.js"
 import { RequestBody, Query } from "../request.js"
 import {Type} from "class-transformer";
 

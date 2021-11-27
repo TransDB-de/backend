@@ -5,7 +5,7 @@ import { config } from "./config.service.js"
 import * as Database from "./database.service.js"
 import * as OSM from "./osm.service.js"
 
-import { stringToRegex } from "../util/regExp.js"
+import { stringToRegex } from "../util/regExp.util.js"
 
 import { GeoJsonPoint } from "../models/database/geodata.model.js"
 import { DatabaseEntry, DatabaseAddress } from "../models/database/entry.model.js"

@@ -5,7 +5,7 @@ import { customAlphabet } from "nanoid"
 import * as Database from "./database.service.js"
 import { config } from "./config.service.js"
 
-import { filterUser } from "../util/filter.js"
+import { filterUser } from "../util/filter.util.js"
 
 // Data Interfaces
 import { DatabaseNewUser, DatabaseUser, Password } from "../models/database/user.model.js"

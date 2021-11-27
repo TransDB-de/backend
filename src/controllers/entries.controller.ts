@@ -19,7 +19,7 @@ import validate, {
 } from "../middleware/validation.middleware.js"
 import { StatusCode } from "../types/httpStatusCodes.js"
 import { ObjectId } from "../models/request/objectId.request.js"
-import { filterEntry } from "../util/filter.js"
+import { filterEntry } from "../util/filter.util.js"
 
 const newEntryLimiter = rateLimit({
 	windowMs: config.rateLimit.newEntries.timeframeMinutes * 60 * 1000,

@@ -3,8 +3,8 @@ import * as fs from "fs"
 
 import * as Config from "./config.service.js"
 
-import * as Shell from "../util/shell.js";
-import { convertToAscii } from "../util/asciiConverter.js"
+import * as Shell from "../util/shell.util.js";
+import { convertToAscii } from "../util/asciiConverter.util.js"
 
 import { GeoJsonPoint, GeoPlace } from "../models/database/geodata.model.js"
 
@@ -14,7 +14,7 @@ import { DatabaseUser, Password } from "../models/database/user.model.js";
 import { GeoData } from "../models/database/geodata.model.js";
 import { CollectionMeta, EntriesCollectionMeta, CollectionMetaUpdateType } from "../models/database/collectionMeta.model.js";
 import { PublicEntry } from "../models/response/entries.response.js";
-import { filterEntries } from "../util/filter.js";
+import { filterEntries } from "../util/filter.util.js";
 
 // ------ Globals ------
 
