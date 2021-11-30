@@ -3,7 +3,7 @@ import {registerDecorator, ValidationOptions, ValidationArguments} from "class-v
 export function ArrayExclusively(exclusively: readonly string[], validationOptions?: ValidationOptions) {
 	return function (object: Object, propertyName: string) {
 		registerDecorator({
-			name: "ArrayExclusively",
+			name: "arrayExclusively",
 			target: object.constructor,
 			propertyName: propertyName,
 			constraints: [exclusively],
@@ -28,7 +28,7 @@ export function ArrayExclusively(exclusively: readonly string[], validationOptio
 export function IsEmptyArray(validationOptions?: ValidationOptions) {
 	return function (object: Object, propertyName: string) {
 		registerDecorator({
-			name: "IsEmptyArray",
+			name: "isEmptyArray",
 			target: object.constructor,
 			propertyName: propertyName,
 			constraints: [],
