@@ -83,7 +83,7 @@ export class Entry extends RequestBody {
 
 
 export class Address {
-	@Length(1, 50)
+	@Length(2, 50)
 	city !: string;
 	
 	@IsOptional()

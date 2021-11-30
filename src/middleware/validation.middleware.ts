@@ -45,7 +45,11 @@ async function validateBody(req: IRequest<RequestBody, Query>, res: IResponse, n
 		forbidNonWhitelisted: true,
 		forbidUnknownValues: true,
 		skipMissingProperties: _options.skipMissingProperties,
-		groups: options?.groups ?? []
+		groups: options?.groups ?? [],
+		validationError: {
+			target: false,
+			value: false
+		}
 	};
 	
 	if (_options.validationGroupFromEntryType && req.body instanceof Entry) validatorOptions.groups = [req.body.type, ...validatorOptions.groups!];
