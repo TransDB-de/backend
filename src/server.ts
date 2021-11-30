@@ -6,12 +6,6 @@ import * as Config from "./services/config.service.js"
 import cors from "cors"
 
 import { errorFunctionMiddleware } from "./middleware/errorFunction.middleware.js"
-import DefaultController from "./controllers/default.controller.js"
-import EntriesController from "./controllers/entries.controller.js"
-import GeodataController from "./controllers/geodata.controller.js"
-import ReportController from "./controllers/report.controller.js"
-import UsersController from "./controllers/users.controller.js"
-
 
 export default class TransDBBackendServer extends Server {
 	private server!: HttpServer;
@@ -27,7 +21,14 @@ export default class TransDBBackendServer extends Server {
 		this.setupControllers();
 	}
 	
-	private setupControllers(): void {
+	private async setupControllers(): Promise<void> {
+		// Dynamic imports are required here to load these modules after the config has been loaded.
+		const DefaultController = (await import("./controllers/default.controller.js")).default;
+		const EntriesController = (await import("./controllers/entries.controller.js")).default;
+		const GeodataController = (await import("./controllers/geodata.controller.js")).default;
+		const ReportController = (await import("./controllers/report.controller.js")).default;
+		const UsersController = (await import("./controllers/users.controller.js")).default;
+		
 		super.addControllers([
 			new DefaultController(),
 			new EntriesController(),
