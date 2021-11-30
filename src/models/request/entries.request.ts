@@ -1,4 +1,14 @@
-import { IsEmail, IsEmpty, IsIn, IsNumber, IsOptional, IsUrl, Length, ValidateNested } from "class-validator"
+import {
+	ArrayNotEmpty,
+	IsEmail,
+	IsEmpty,
+	IsIn,
+	IsNumber,
+	IsOptional,
+	IsUrl,
+	Length,
+	ValidateNested
+} from "class-validator"
 import * as FilterLang from "@transdb-de/filter-lang"
 import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.util.js"
 import { allExcept, mergeArrays } from "../../util/array.util.js"
@@ -97,14 +107,15 @@ export class Meta {
 	@ArrayExclusively(attributes.surveyor, { groups: ["surveyor"] })
 	@ArrayExclusively(attributes.endocrinologist, { groups: ["endocrinologist"] })
 	@ArrayExclusively(attributes.hairremoval, { groups: ["hairremoval"] })
-	attributes !: string[];
+	attributes ?: string[];
 	
-	@IsOptional()
+	@IsOptional({ groups: allExcept(types, "therapist", "surgeon", "hairremoval") })
 	@IsEmptyArray({ groups: allExcept(types, "therapist", "surgeon", "hairremoval") })
+	@ArrayNotEmpty({ groups: ["therapist", "surgeon", "hairremoval"] })
 	@ArrayExclusively(offers.therapist, { groups: ["therapist"] })
 	@ArrayExclusively(offers.surgeon, { groups: ["surgeon"] })
 	@ArrayExclusively(offers.hairremoval, { groups: ["hairremoval"] })
-	offers !: string[];
+	offers ?: string[];
 	
 	@IsEmpty({ groups: allExcept(types, "group") })
 	@IsOptional({ groups: ["group"] })
