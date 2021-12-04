@@ -39,6 +39,10 @@ const defaultConfig = {
 		report: {
 			timeframeMinutes: 5,
 			maxRequests: 3
+		},
+		login: {
+			timeframeMinutes: 5,
+			maxRequests: 5
 		}
 	},
 	discordWebhookURL: "",
