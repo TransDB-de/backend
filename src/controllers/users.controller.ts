@@ -1,5 +1,6 @@
 import { Controller, Get, Middleware, Post, Put, Delete } from "@overnightjs/core"
 import { IRequest, IResponse } from "express"
+import rateLimit from "express-rate-limit"
 
 import authenticate from "../middleware/auth.middleware.js"
 import { LoginBody, CreateUser, UpdatePassword, UpdateEmail, UpdateUsername } from "../models/request/users.request.js"
@@ -12,6 +13,12 @@ import { DatabaseNewUser } from "../models/database/user.model.js"
 import * as Database from "../services/database.service.js"
 import * as UserService from "../services/users.service.js"
 import { ObjectId } from "../models/request/objectId.request.js"
+import { config } from "../services/config.service.js"
+
+const loginRateLimiter = rateLimit({
+	windowMs: config.rateLimit.login.timeframeMinutes * 60 * 1000,
+	max: config.rateLimit.login.maxRequests,
+});
 
 @Controller("users")
 export default class UsersController {
@@ -35,6 +42,7 @@ export default class UsersController {
 	}
 	
 	@Post("me/login")
+	@Middleware( loginRateLimiter )
 	@Middleware( validate(LoginBody) )
 	async login(req: IRequest<LoginBody>, res: IResponse) {
 		let login = await UserService.login(req.body);
