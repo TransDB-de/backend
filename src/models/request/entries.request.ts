@@ -159,7 +159,7 @@ export class FilterQuery extends Query {
 	location ?: string;
 	
 	@IsOptional()
-	@Length(2, 120)
+	@Length(0, 120)
 	text ?: string;
 	
 	@IsOptional()
