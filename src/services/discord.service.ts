@@ -1,7 +1,7 @@
 import axios from "axios"
-import IDictionary from "../types/dictionary"
 import { config } from "./config.service.js"
 import { DatabaseEntry } from "../models/database/entry.model.js"
+import IDictionary from "../types/dictionary"
 
 const typeMapping: IDictionary = {
 	group: "Gruppe/Verein",
@@ -11,6 +11,12 @@ const typeMapping: IDictionary = {
 	surgeon: "Operateur*in",
 	logopedics: "Logopäd*in",
 	hairremoval: "Haarentfernung"
+}
+
+const reportTypeMapping = {
+	edit: "Änderungsvorschlag",
+	report: "Nicht empfehlenswert",
+	other: "Sonstiges"
 }
 
 /**
@@ -54,9 +60,10 @@ export async function sendNewEntryNotification(name: string, type: string): Prom
 /**
  * Send a Discord webhook representing the report as an embed
  * @param entry Entry object
+ * @param type Type of the report
  * @param message Message
  */
-export async function sendReport(entry: DatabaseEntry<"out">, message: string): Promise<boolean> {
+export async function sendReport(entry: DatabaseEntry<"out">, type: keyof typeof reportTypeMapping, message: string): Promise<boolean> {
 
 	if(!config.discordWebhookURL) return false;
 
@@ -71,6 +78,10 @@ export async function sendReport(entry: DatabaseEntry<"out">, message: string): 
 			text: "Trans*DB Systembenachrichtigung"
 		},
 		fields: [
+			{
+				name: "Art der Meldung",
+				value: reportTypeMapping[type]
+			},
 			{
 				name: typeMapping[entry.type],
 				value: entry.name

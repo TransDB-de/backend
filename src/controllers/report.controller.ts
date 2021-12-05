@@ -27,7 +27,7 @@ export default class ReportController {
 		
 		if (!entry) return res.status(StatusCode.NotFound).send({ error: "entry_not_found" }).end();
 		
-		let sent = await Discord.sendReport(entry, req.body.message);
+		let sent = await Discord.sendReport(entry, req.body.type, req.body.message);
 		
 		if(!sent) return res.status(StatusCode.InternalServerError).end();
 		
