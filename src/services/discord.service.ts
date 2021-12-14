@@ -26,7 +26,7 @@ const reportTypeMapping = {
  */
 export async function sendNewEntryNotification(name: string, type: string): Promise<void> {
 
-	if(!config.discordWebhookURL) return;
+	if (!config.discordWebhookURL) return;
 
 	let embed: any = {
 		title: "📥 Neuer Eintrag",
@@ -65,7 +65,7 @@ export async function sendNewEntryNotification(name: string, type: string): Prom
  */
 export async function sendReport(entry: DatabaseEntry<"out">, type: keyof typeof reportTypeMapping, message: string): Promise<boolean> {
 
-	if(!config.discordWebhookURL) return false;
+	if (!config.discordWebhookURL) return false;
 
 
 	let embed: any = {

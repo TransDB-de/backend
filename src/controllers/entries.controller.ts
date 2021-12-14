@@ -86,7 +86,7 @@ export default class EntriesController {
 	async getSingleEntry(req: IRequest<{}, {}, ObjectId>, res: IResponse<PublicEntry>) {
 		let entry = await Database.getEntry(req.params.id);
 		
-		if(!entry) {
+		if (!entry) {
 			res.error!("not_found");
 			return;
 		}
@@ -126,14 +126,14 @@ export default class EntriesController {
 	async adminUpdateEntry(req: IRequest<Entry, {}, ObjectId>, res: IResponse) {
 		let entry = await Database.getEntry(req.params.id);
 		
-		if(!entry) {
+		if (!entry) {
 			res.error!("not_found");
 			return;
 		}
 		
 		let updated = await Database.updateEntry(entry, req.body);
 		
-		if(!updated) {
+		if (!updated) {
 			res.error!("not_updated");
 		}
 		
@@ -146,7 +146,7 @@ export default class EntriesController {
 	async adminUpdateGeo(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
 		let entry = await Database.getEntry(req.params.id);
 		
-		if(!entry) {
+		if (!entry) {
 			res.error!("not_found");
 			return;
 		}

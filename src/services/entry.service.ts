@@ -79,15 +79,15 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 		query.type = filters.type;
 	}
 	
-	if(filters.offers) {
+	if (filters.offers) {
 		query["meta.offers"] = { $in: filters.offers };
 	}
 	
-	if(filters.attributes) {
+	if (filters.attributes) {
 		query["meta.attributes"] = { $in: filters.attributes };
 	}
 	
-	if(filters.text) {
+	if (filters.text) {
 		query.$or = [
 			{ name: stringToRegex(filters.text, "i") },
 			{ firstName: stringToRegex(filters.text, "i") },
@@ -95,7 +95,7 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 		]
 	}
 	
-	if(filters.accessible) {
+	if (filters.accessible) {
 		query.accessible = filters.accessible;
 	}
 	

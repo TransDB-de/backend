@@ -14,7 +14,7 @@ function _queryArrayParser(req: Request, res: Response, next: NextFunction, fiel
 			
 			if ( !fields.includes(key) ) continue;
 			
-			if( !Array.isArray(value) && typeof value !== 'object') {
+			if ( !Array.isArray(value) && typeof value !== 'object') {
 				query[ key ] = [value];
 			}
 			

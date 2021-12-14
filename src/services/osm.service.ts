@@ -37,7 +37,7 @@ export async function getGeoByAddress(address: DatabaseAddress) {
 		return null;
 	}
 	
-	if( !data || !data.geometry ) {
+	if ( !data || !data.geometry ) {
 		return null
 	}
 	

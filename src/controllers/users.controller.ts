@@ -96,7 +96,7 @@ export default class UsersController {
 		
 		let reset = await UserService.resetPasswordDirectly(req.params.id);
 		
-		if(!reset) return res.error!("reset_failed");
+		if (!reset) return res.error!("reset_failed");
 		
 		res.send({ password: reset as string });
 	}

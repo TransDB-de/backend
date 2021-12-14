@@ -29,7 +29,7 @@ export default class ReportController {
 		
 		let sent = await Discord.sendReport(entry, req.body.type, req.body.message);
 		
-		if(!sent) return res.status(StatusCode.InternalServerError).end();
+		if (!sent) return res.status(StatusCode.InternalServerError).end();
 		
 		res.status(200).end();
 	}

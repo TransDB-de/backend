@@ -119,7 +119,7 @@ export async function validateId(req: IRequest, res: IResponse, next: NextFuncti
 	});
 	
 	// Go next if there is no errors
-	if(errors.length < 1) return next();
+	if (errors.length < 1) return next();
 
 	return res.error!("validation_error", errors);
 }

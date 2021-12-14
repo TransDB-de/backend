@@ -121,7 +121,7 @@ export async function resetPasswordDirectly(userId: string): Promise<string|bool
 
 	let res = await Database.updateUser(userId, { password: pwObject });
 
-	if(!res) {
+	if (!res) {
 		return false;
 	}
 
