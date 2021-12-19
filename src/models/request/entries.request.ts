@@ -1,5 +1,6 @@
 import {
 	ArrayNotEmpty,
+	IsBoolean,
 	IsEmail,
 	IsEmpty,
 	IsIn,
@@ -37,7 +38,6 @@ const offers = {
 	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms"],
 	hairremoval: ["laser", "ipl", "electro", "electroAE"]
 } as const;
-
 
 export class Entry extends RequestBody {
 	@IsIn(types)
@@ -130,6 +130,11 @@ export class Meta {
 	@IsEmpty({ groups: allExcept(types, "therapist") })
 	@IsIn(["therapist", "psychologist"], { groups: ["therapist"] })
 	subject ?: string;
+}
+
+export class EditEntry extends Entry {
+	@IsBoolean()
+	approved !: boolean;
 }
 
 

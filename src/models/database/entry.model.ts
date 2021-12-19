@@ -14,6 +14,7 @@ import { GeoJsonPoint } from "./geodata.model.js"
 export interface DatabaseEntry<io extends "in" | "out"> {
 	_id?: io extends "in" ? ObjectId : string,
 	approved?: boolean,
+	status?: "reported" | "observed" | "blacklisted" | null,
 	type: string,
 	name: string,
 	telephone?: string | null,
@@ -24,7 +25,7 @@ export interface DatabaseEntry<io extends "in" | "out"> {
 	address: DatabaseAddress,
 	location: GeoJsonPoint | null,
 	meta: DatabaseEntryMeta,
-	accessible?: "yes" | "no" | "unknown" | null
+	accessible?: "yes" | "no" | "unknown" | null,
 	
 	submittedTimestamp: number,
 	approvedTimestamp?: number,

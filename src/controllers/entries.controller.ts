@@ -11,7 +11,7 @@ import queryNumberParser from "../middleware/queryNumberParser.middleware.js"
 import queryArrayParser from "../middleware/queryArrayParser.middleware.js"
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 import authenticate from "../middleware/auth.middleware.js"
-import { Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
+import { EditEntry, Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
 import validate, {
 	validateFilterQuery,
 	validateId,
@@ -122,7 +122,7 @@ export default class EntriesController {
 	@Patch(":id/edit")
 	@Middleware( authenticate({ admin: true }) )
 	@Middleware( validateId )
-	@Middleware( validateOptional(Entry) )
+	@Middleware( validateOptional(EditEntry) )
 	async adminUpdateEntry(req: IRequest<Entry, {}, ObjectId>, res: IResponse) {
 		let entry = await Database.getEntry(req.params.id);
 		
