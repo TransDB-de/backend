@@ -4,7 +4,9 @@ import {
 	IsEmail,
 	IsEmpty,
 	IsIn,
+	IsInt,
 	IsNumber,
+	IsObject,
 	IsOptional,
 	IsUrl,
 	Length,
@@ -18,25 +20,31 @@ import {Type} from "class-transformer";
 
 const types = [
 	"group", "therapist", "surveyor", "endocrinologist",
-	"surgeon", "logopedics", "hairremoval"
+	"surgeon", "logopedics", "hairremoval", "urologist", "gynecologist", "GP"
 ] as const;
 
-
 const accessibility = [ "yes", "no", "unknown" ] as const;
-
 
 const attributes = {
 	group: ["trans", "regularMeetings", "consulting", "activities"],
 	surveyor: ["enby"],
+	surgeon: ["selfPayedOnly"],
 	endocrinologist: ["treatsNB"],
 	hairremoval: ["insurancePay", "transfriendly", "hasDoctor"],
+	therapist: ["selfPayedOnly", "youthOnly", "treatsNB"],
+	urologist: ["treatsNB", "transFem", "transMasc"],
+	gynecologist: ["treatsNB", "transFem", "transMasc"],
+	GP: ["treatsNB"]
 } as const;
 
 
 const offers = {
 	therapist: ["indication", "therapy"],
 	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms"],
-	hairremoval: ["laser", "ipl", "electro", "electroAE"]
+	hairremoval: ["laser", "ipl", "electro", "electroAE"],
+	urologist: ["hrt", "medication"],
+	gynecologist: ["hrt", "medication"],
+	GP: ["hrt", "medication"]
 } as const;
 
 export class Entry extends RequestBody {
@@ -128,15 +136,17 @@ export class Meta {
 	minAge ?: number;
 	
 	@IsEmpty({ groups: allExcept(types, "therapist") })
-	@IsIn(["therapist", "psychologist"], { groups: ["therapist"] })
+	@IsIn(["therapist", "psychologist", "naturopath", "other"], { groups: ["therapist"] })
 	subject ?: string;
 }
 
 export class EditEntry extends Entry {
 	@IsBoolean()
 	approved !: boolean;
+	
+	@IsBoolean()
+	blacklisted !: boolean
 }
-
 
 export class FilterQuery extends Query {
 	@IsEmpty({ groups: ["noCoords"] })
@@ -176,4 +186,10 @@ export class FilterQuery extends Query {
 	accessible ?: typeof accessibility[number];
 }
 
-export interface FilterFull { filter: FilterLang.IntermediateFormat.AbstractFilters, page: number }
+export class FilterFull {
+	@IsObject()
+	filter !: FilterLang.IntermediateFormat.AbstractFilters;
+	
+	@IsInt()
+	page !: number;
+}

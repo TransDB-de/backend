@@ -273,7 +273,7 @@ export async function findEntriesRaw(pipeline: object[] | undefined): Promise<Da
  * Update an entry by id
  * @param entry
  * @param updater
- * @returns Boolean indicating the success of the update
+ * @returns boolean indicating the success of the update
  */
 export async function updateEntry(entry: DatabaseEntry<"out">, updater: Partial<DatabaseEntry<"in">>): Promise<boolean> {
 	let res = await db
@@ -290,17 +290,15 @@ export async function updateEntry(entry: DatabaseEntry<"out">, updater: Partial<
 /**
  * Delete an entry by id
  * @param id
- * @returns Boolean indicating the success of the delete
+ * @returns boolean indicating the success of the delete
  */
 export async function deleteEntry(id: string): Promise<boolean> {
-	
 	let res = await db
 		.collection<DatabaseEntry<"in">>("entries")
 		.deleteOne({ _id: new MongoDB.ObjectId(id) });
 	
 	updateEntriesCollectionMeta();
 	return Boolean(res.deletedCount);
-	
 }
 
 export async function exportEntries(): Promise<string | false> {
@@ -417,7 +415,6 @@ export async function findGeoLocation(search: string): Promise<GeoPlace[]> {
 			_id: false
 		})
 		.toArray();
-		
 }
 
 /**

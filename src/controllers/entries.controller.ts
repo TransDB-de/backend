@@ -1,4 +1,4 @@
-import { Controller, Middleware, Get, Post, Patch, Delete } from "@overnightjs/core"
+import { Controller, Middleware, Get, Post, Patch, Put, Delete } from "@overnightjs/core"
 import rateLimit from "express-rate-limit"
 import { IRequest, IResponse } from "express"
 
@@ -69,7 +69,8 @@ export default class EntriesController {
 	}
 	
 	@Post("full")
-	@Middleware( authenticate({ admin: true }) )
+	@Middleware( authenticate() )
+	@Middleware( validate(FilterFull) )
 	async adminGetFullFilteredEntries(req: IRequest<FilterFull>, res: IResponse<AdminFilteredEntries>) {
 		let entries = await EntryService.filterWithFilterLang(req.body);
 		
@@ -108,10 +109,31 @@ export default class EntriesController {
 		}
 		
 		// Update entry with new approved state
-		try {
-			await EntryService.approve(entry, req.user!.id);
+		let updated = await EntryService.approve(entry, req.user!.id);
+		
+		if (!updated) {
+			res.error!("not_updated");
+			return;
 		}
-		catch {
+		
+		res.status(StatusCode.OK).end();
+	}
+	
+	@Patch(":id/blacklist")
+	@Middleware( authenticate() )
+	@Middleware( validateId )
+	async setEntryStatus(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
+		let entry = await Database.getEntry(req.params.id);
+		
+		if (!entry) {
+			res.error!("not_found");
+			return;
+		}
+		
+		// Update entry with new status
+		let updated = await EntryService.update(entry, { blacklisted: true });
+		
+		if (!updated) {
 			res.error!("not_updated");
 			return;
 		}
@@ -123,7 +145,7 @@ export default class EntriesController {
 	@Middleware( authenticate({ admin: true }) )
 	@Middleware( validateId )
 	@Middleware( validateOptional(EditEntry) )
-	async adminUpdateEntry(req: IRequest<Entry, {}, ObjectId>, res: IResponse) {
+	async adminUpdateEntry(req: IRequest<EditEntry, {}, ObjectId>, res: IResponse) {
 		let entry = await Database.getEntry(req.params.id);
 		
 		if (!entry) {
@@ -131,7 +153,7 @@ export default class EntriesController {
 			return;
 		}
 		
-		let updated = await Database.updateEntry(entry, req.body);
+		let updated = await EntryService.update(entry, req.body);
 		
 		if (!updated) {
 			res.error!("not_updated");
@@ -170,7 +192,7 @@ export default class EntriesController {
 		}
 		
 		let deleted = await Database.deleteEntry(req.params.id);
-
+		
 		if (!deleted) {
 			res.error!("not_deleted");
 			return;

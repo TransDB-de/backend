@@ -19,7 +19,6 @@ import { parsePhoneNumberFromString, PhoneNumber } from "libphonenumber-js"
  * @returns The new entry object
  */
 export async function addEntry(object: Entry) {
-	
 	let address: DatabaseAddress = object.address;
 	let internationalPhoneNumber = object.telephone ?? null;
 	
@@ -61,18 +60,18 @@ export async function addEntry(object: Entry) {
 }
 
 /**
- * Filter and get all entry objects
+ * Filter and get all entry objects (approved and non-blacklisted)
  * @param filters
  */
 export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
-	
 	let entries: PublicEntry[];
 	let page = filters.page ? filters.page : 0;
 	let geoLoc: GeoJsonPoint | null = null;
 	let locationName: string = "";
 	
 	let query: MongoDB.Filter<DatabaseEntry<"out">> = {
-		approved: true
+		approved: true,
+		blacklisted: { $ne: true }
 	};
 	
 	if (filters.type) {
@@ -213,11 +212,13 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
  * @param page (optional) Page number to get unapproved entries for. Defaults to 0
  */
 export async function getUnapproved(page = 0): Promise<QueriedEntries> {
-
-	let entries = await Database.findEntries( {approved: false}, page);
-
+	let entries = await Database.findEntries( {
+		approved: false,
+		blacklisted: { $ne: true }
+	}, page);
+	
 	let more = !(entries.length < config.mongodb.itemsPerPage);
-
+	
 	return { entries, more };
 }
 
@@ -226,8 +227,9 @@ export async function getUnapproved(page = 0): Promise<QueriedEntries> {
  * @param entry the entry to approve
  * @param userId the id of the user who approved the entry
  * @param approve (optional) set false to unapprove entry
+ * @return whether the entry was updated
  */
-export async function approve(entry: DatabaseEntry<"out">, userId: string, approve = true) {
+export async function approve(entry: DatabaseEntry<"out">, userId: string, approve = true): Promise<boolean> {
 	let updater: Partial< DatabaseEntry<"in"> > = {
 		approved: approve
 	};
@@ -237,16 +239,14 @@ export async function approve(entry: DatabaseEntry<"out">, userId: string, appro
 		updater.approvedTimestamp = Date.now();
 	}
 	
-	let updated = await update(entry, updater);
-	
-	if (!updated) throw "Database failed to update";
+	return await update(entry, updater);
 }
 
 /**
  * Update a single Entry and it's Geodata
  * @param entry Entry to update
  * @param updater Patrial Entry acting as updated
- * @returns boolean
+ * @returns whether the entry was updated
  */
 export async function update(entry: DatabaseEntry<"out">, updater: Partial< DatabaseEntry<"in"> >): Promise<boolean> {
 	let updated = await Database.updateEntry(entry, updater);
