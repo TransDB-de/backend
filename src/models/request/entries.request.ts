@@ -145,7 +145,7 @@ export class EditEntry extends Entry {
 	approved !: boolean;
 	
 	@IsBoolean()
-	blacklisted !: boolean
+	blocked !: boolean
 }
 
 export class FilterQuery extends Query {

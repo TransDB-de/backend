@@ -1,8 +1,8 @@
 import { StatusCode } from "../../types/httpStatusCodes";
-import ResponseBody from "../response"
 
 export const responseErrorCodes = {
 	"invalid_authorization_header": StatusCode.Unauthorized,
+	"invalid_csrf_token": StatusCode.Forbidden,
 	"unauthorized": StatusCode.Unauthorized,
 	"no_admin": StatusCode.Forbidden,
 	"user_exists": StatusCode.Conflict,

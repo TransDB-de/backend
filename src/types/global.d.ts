@@ -6,6 +6,7 @@ declare module "express" {
 	interface IRequest<Body = {}, Query = {}, Params = {}> extends express.Request<Params, {}, Body, Query> {
 		/** Request includes this field after the auth middleware was called */
 		user?: TokenData
+		clientUID?: string
 	}
 	
 	interface IResponse<Body = {}> extends express.Response<Body> {

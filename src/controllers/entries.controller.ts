@@ -1,5 +1,6 @@
 import { Controller, Middleware, Get, Post, Patch, Put, Delete } from "@overnightjs/core"
 import rateLimit from "express-rate-limit"
+import slowDown from "express-slow-down"
 import { IRequest, IResponse } from "express"
 
 import { config } from "../services/config.service.js"
@@ -26,10 +27,18 @@ const newEntryLimiter = rateLimit({
 	max: config.rateLimit.newEntries.maxRequests,
 });
 
+const entryDataSpeedLimiter = slowDown({
+	windowMs: config.slowDown.entries.timeframeSeconds * 1000,
+	delayAfter: config.slowDown.entries.maxRequests,
+	delayMs: config.slowDown.entries.delayMs,
+	maxDelayMs: config.slowDown.entries.maxDelayMs
+});
+
 
 @Controller("entries")
 export default class EntriesController {
 	@Get("/")
+	@Middleware( entryDataSpeedLimiter )
 	@Middleware( queryNumberParser("lat", "long", "page") )
 	@Middleware( queryArrayParser("offers", "attributes") )
 	@Middleware( validateFilterQuery )
@@ -85,7 +94,7 @@ export default class EntriesController {
 	@Get(":id")
 	@Middleware( validateId )
 	async getSingleEntry(req: IRequest<{}, {}, ObjectId>, res: IResponse<PublicEntry>) {
-		let entry = await Database.getEntry(req.params.id);
+		let entry = await Database.getEntryById(req.params.id);
 		
 		if (!entry) {
 			res.error!("not_found");
@@ -101,7 +110,7 @@ export default class EntriesController {
 	@Middleware( authenticate() )
 	@Middleware( validateId )
 	async approveEntry(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
-		let entry = await Database.getEntry(req.params.id);
+		let entry = await Database.getEntryById(req.params.id);
 		
 		if (!entry) {
 			res.error!("not_found");
@@ -119,11 +128,11 @@ export default class EntriesController {
 		res.status(StatusCode.OK).end();
 	}
 	
-	@Patch(":id/blacklist")
+	@Patch(":id/blocklist")
 	@Middleware( authenticate() )
 	@Middleware( validateId )
-	async setEntryStatus(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
-		let entry = await Database.getEntry(req.params.id);
+	async blockEntry(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
+		let entry = await Database.getEntryById(req.params.id);
 		
 		if (!entry) {
 			res.error!("not_found");
@@ -131,7 +140,7 @@ export default class EntriesController {
 		}
 		
 		// Update entry with new status
-		let updated = await EntryService.update(entry, { blacklisted: true });
+		let updated = await EntryService.update(entry, { blocked: true, possibleDuplicate: undefined });
 		
 		if (!updated) {
 			res.error!("not_updated");
@@ -146,7 +155,7 @@ export default class EntriesController {
 	@Middleware( validateId )
 	@Middleware( validateOptional(EditEntry) )
 	async adminUpdateEntry(req: IRequest<EditEntry, {}, ObjectId>, res: IResponse) {
-		let entry = await Database.getEntry(req.params.id);
+		let entry = await Database.getEntryById(req.params.id);
 		
 		if (!entry) {
 			res.error!("not_found");
@@ -166,7 +175,7 @@ export default class EntriesController {
 	@Middleware( authenticate({ admin: true }) )
 	@Middleware( validateId )
 	async adminUpdateGeo(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
-		let entry = await Database.getEntry(req.params.id);
+		let entry = await Database.getEntryById(req.params.id);
 		
 		if (!entry) {
 			res.error!("not_found");
@@ -184,7 +193,7 @@ export default class EntriesController {
 	@Middleware( authenticate() )
 	@Middleware( validateId )
 	async deleteEntry(req: IRequest<{}, {}, ObjectId>, res: IResponse) {
-		let entry = await Database.getEntry(req.params.id);
+		let entry = await Database.getEntryById(req.params.id);
 		
 		if (!entry) {
 			res.error!("not_found");

@@ -23,7 +23,7 @@ export default class ReportController {
 	@Middleware( newReportLimiter )
 	@Middleware( validate(Report) )
 	public async report(req: IRequest<Report>, res: IResponse) {
-		let entry = await Database.getEntry(req.body.id);
+		let entry = await Database.getEntryById(req.body.id);
 		
 		if (!entry) return res.status(StatusCode.NotFound).send({ error: "entry_not_found" }).end();
 		

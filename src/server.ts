@@ -2,10 +2,11 @@ import { Server } from "@overnightjs/core"
 import express from "express"
 import { Server as HttpServer } from "http"
 import helmet from "helmet"
-import * as Config from "./services/config.service.js"
+import { config } from "./services/config.service.js"
 import cors from "cors"
 
 import { errorFunctionMiddleware } from "./middleware/errorFunction.middleware.js"
+import csrfMiddleware from "./middleware/csrf.middleware.js"
 
 export default class TransDBBackendServer extends Server {
 	private server!: HttpServer;
@@ -13,10 +14,15 @@ export default class TransDBBackendServer extends Server {
 	constructor() {
 		super(process.env.NODE_ENV === "development");
 		
+		this.app.set("trust proxy", config.web.trustProxy);
 		this.app.use(helmet());
 		this.app.use(express.json());
-		this.app.use(cors({ origin: Config.config.web.CORSOrigins }));
+		this.app.use(cors({ origin: config.web.CORSOrigins }));
 		this.app.use(errorFunctionMiddleware);
+		
+		if (config.csrfProtection.active) {
+			this.app.use(csrfMiddleware);
+		}
 		
 		this.setupControllers();
 	}

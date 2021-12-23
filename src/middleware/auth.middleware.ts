@@ -1,7 +1,6 @@
 import { IRequest, IResponse, NextFunction } from "express"
-import jwt, { TokenExpiredError } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
-import { StatusCode } from "../types/httpStatusCodes.js"
 import { AuthOptions, TokenData } from "../types/auth"
 export { AuthOptions, TokenData }
 
@@ -33,6 +32,8 @@ function _authMiddleware(req: IRequest, res: IResponse, next: NextFunction, opti
 	// Try to verify the jwt
 	try {
 		decodedToken = jwt.verify(token, config.jwt.secret) as TokenData;
+		
+		if (!decodedToken["id"] || !decodedToken["admin"]) throw "invalid_claims";
 	} catch(err) {
 		res.error!("unauthorized");
 		

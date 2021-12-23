@@ -6,6 +6,7 @@ import * as Database from "./database.service.js"
 import * as OSM from "./osm.service.js"
 
 import { stringToRegex } from "../util/regExp.util.js"
+import slugify from "../util/slugify.util.js"
 
 import { GeoJsonPoint } from "../models/database/geodata.model.js"
 import { DatabaseEntry, DatabaseAddress } from "../models/database/entry.model.js"
@@ -32,6 +33,14 @@ export async function addEntry(object: Entry) {
 		}
 	}
 	
+	let possibleDuplicate: MongoDB.ObjectId | undefined = undefined;
+	
+	try {
+		possibleDuplicate = await findPossibleDuplicate(object);
+	} catch(e) {
+		console.error("Error while searching for possible duplicate:", e);
+	}
+	
 	
 	// Build the entry object
 	let entry: DatabaseEntry<"in"> = {
@@ -53,14 +62,15 @@ export async function addEntry(object: Entry) {
 			offers: object.meta.offers ?? null,
 		},
 		accessible: object.accessible ?? null,
-		submittedTimestamp: Date.now()
+		submittedTimestamp: Date.now(),
+		possibleDuplicate
 	};
 	
 	return await Database.addEntry(entry);
 }
 
 /**
- * Filter and get all entry objects (approved and non-blacklisted)
+ * Filter and get all entry objects (approved and non-blocked)
  * @param filters
  */
 export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
@@ -69,9 +79,9 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 	let geoLoc: GeoJsonPoint | null = null;
 	let locationName: string = "";
 	
-	let query: MongoDB.Filter<DatabaseEntry<"out">> = {
+	let query: MongoDB.Filter<DatabaseEntry<"in">> = {
 		approved: true,
-		blacklisted: { $ne: true }
+		blocked: { $ne: true }
 	};
 	
 	if (filters.type) {
@@ -214,7 +224,7 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
 export async function getUnapproved(page = 0): Promise<QueriedEntries> {
 	let entries = await Database.findEntries( {
 		approved: false,
-		blacklisted: { $ne: true }
+		blocked: { $ne: true }
 	}, page);
 	
 	let more = !(entries.length < config.mongodb.itemsPerPage);
@@ -231,7 +241,8 @@ export async function getUnapproved(page = 0): Promise<QueriedEntries> {
  */
 export async function approve(entry: DatabaseEntry<"out">, userId: string, approve = true): Promise<boolean> {
 	let updater: Partial< DatabaseEntry<"in"> > = {
-		approved: approve
+		approved: approve,
+		possibleDuplicate: undefined
 	};
 	
 	if (approve) {
@@ -266,11 +277,49 @@ export async function updateGeoLocation(entry: DatabaseEntry<"out">) {
 	try {
 		let loc = await OSM.getGeoByAddress( entry.address );
 		
-		if (loc === null) throw("location not found");
+		if (loc === null) throw new Error("location not found");
 		
 		Database.setGeolocation(entry._id!, loc);
 	} catch(e: any) {
 		// TODO : Error logging?
-		console.error("Failed to update GeoLocation: " + e.message)
+		console.error("Failed to update GeoLocation: " + e.message);
+	}
+}
+
+/**
+ * Find an entry that is simmilar to the given entry
+ * @param entry Entry to find simmilar to
+ * @returns Id of the simmilar entry or null if none was found
+ */
+export async function findPossibleDuplicate(entry: Entry): Promise<MongoDB.ObjectId | undefined> {
+	let filter: MongoDB.Filter<DatabaseEntry<"in">> = {
+		type: entry.type,
+		
+		$or: [
+			{
+				address: {
+					city: slugify(entry.address.city),
+					plz: entry.address.plz ? slugify(entry.address.plz) : undefined,
+					street: entry.address.street ? slugify(entry.address.street) : undefined
+				}
+			},
+			{
+				email: entry.email ? slugify(entry.email) : undefined
+			},
+			{
+				telephone: entry.telephone ? slugify(entry.telephone) : undefined
+			},
+			{
+				website: entry.website ? slugify(entry.website) : undefined
+			}
+		]
+	};
+	
+	let duplicate = await Database.findEntry(filter);
+	
+	if (duplicate) {
+		return new MongoDB.ObjectId(duplicate._id) ?? undefined;
+	} else {
+		return;
 	}
 }

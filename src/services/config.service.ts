@@ -21,6 +21,7 @@ const defaultConfig = {
 	web: {
 		port: 1300,
 		enableCORS: true,
+		trustProxy: true,
 		CORSOrigins: ["http://localhost:8080"]
 	},
 	osm: {
@@ -30,6 +31,10 @@ const defaultConfig = {
 	jwt: {
 		secret: "",
 		expiresIn: "1h"
+	},
+	csrfProtection: {
+		active: false,
+		secret: ""
 	},
 	rateLimit: {
 		newEntries: {
@@ -43,6 +48,14 @@ const defaultConfig = {
 		login: {
 			timeframeMinutes: 5,
 			maxRequests: 5
+		}
+	},
+	slowDown: {
+		entries: {
+			timeframeSeconds: 20,
+			maxRequests: 5,
+			delayMs: 200,
+			maxDelayMs: 1200,
 		}
 	},
 	discordWebhookURL: "",
@@ -62,6 +75,7 @@ export function initConfig() {
 	if (!fs.existsSync(configPath) || fs.readFileSync(configPath).toString() === "") {
 		
 		config.jwt.secret = nanoid();
+		config.csrfProtection.secret = nanoid();
 		
 		fs.writeFileSync(configPath, JSON.stringify(config, null, '\t'));
 		

@@ -191,12 +191,21 @@ export async function addEntry(entry: DatabaseEntry<"in">): Promise<boolean> {
  * @param entryId
  * @returns The entry
  */
-export async function getEntry(entryId: string | number): Promise< DatabaseEntry<"out"> | null > {
-
+export async function getEntryById(entryId: string | number): Promise< DatabaseEntry<"out"> | null > {
 	return await db
 		.collection<DatabaseEntry<"in">>("entries")
 		.findOne({ _id: new MongoDB.ObjectId(entryId) }) as unknown as DatabaseEntry<"out">;
+}
 
+/**
+ * Find an entry by a mongodb query
+ * @param query
+ * @returns The entry
+ */
+export async function findEntry(query: MongoDB.Filter<DatabaseEntry<"in">>): Promise< DatabaseEntry<"out"> | null > {
+	return await db
+		.collection<DatabaseEntry<"in">>("entries")
+		.findOne(query) as unknown as DatabaseEntry<"out">;
 }
 
 /**
@@ -205,7 +214,7 @@ export async function getEntry(entryId: string | number): Promise< DatabaseEntry
  * @param page
  * @returns Array with entry objects
  */
-export async function findEntries(query: MongoDB.Filter<DatabaseEntry<"out">>, page: number): Promise<PublicEntry[]> {
+export async function findEntries(query: MongoDB.Filter<DatabaseEntry<"in">>, page: number): Promise<PublicEntry[]> {
 
 	let limit = Config.config.mongodb.itemsPerPage;
 	let skip = limit * page;
@@ -233,7 +242,7 @@ export async function findEntries(query: MongoDB.Filter<DatabaseEntry<"out">>, p
  * @param page Defaults to 0
  * @returns Array with entry objects
  */
-export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: MongoDB.Filter<DatabaseEntry<"out">> = {}, page = 0): Promise<PublicEntry[]> {
+export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: MongoDB.Filter<DatabaseEntry<"in">> = {}, page = 0): Promise<PublicEntry[]> {
 	let limit = Config.config.mongodb.itemsPerPage;
 	let skip = limit * page;
 
