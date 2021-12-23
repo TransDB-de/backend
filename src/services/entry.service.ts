@@ -6,13 +6,13 @@ import * as Database from "./database.service.js"
 import * as OSM from "./osm.service.js"
 
 import { stringToRegex } from "../util/regExp.util.js"
-import slugify from "../util/slugify.util.js"
 
 import { GeoJsonPoint } from "../models/database/geodata.model.js"
 import { DatabaseEntry, DatabaseAddress } from "../models/database/entry.model.js"
 import { Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 import { parsePhoneNumberFromString, PhoneNumber } from "libphonenumber-js"
+import removeEmptyUtil from "../util/removeEmpty.util.js"
 
 /**
  * Add an entry
@@ -36,11 +36,10 @@ export async function addEntry(object: Entry) {
 	let possibleDuplicate: MongoDB.ObjectId | undefined = undefined;
 	
 	try {
-		possibleDuplicate = await findPossibleDuplicate(object);
+		possibleDuplicate = await findPossibleDuplicate(object, config.entryDuplicateSearchThreshold);
 	} catch(e) {
 		console.error("Error while searching for possible duplicate:", e);
 	}
-	
 	
 	// Build the entry object
 	let entry: DatabaseEntry<"in"> = {
@@ -62,9 +61,12 @@ export async function addEntry(object: Entry) {
 			offers: object.meta.offers ?? null,
 		},
 		accessible: object.accessible ?? null,
-		submittedTimestamp: Date.now(),
-		possibleDuplicate
+		submittedTimestamp: Date.now()
 	};
+	
+	if (possibleDuplicate) {
+		entry.possibleDuplicate = possibleDuplicate;
+	}
 	
 	return await Database.addEntry(entry);
 }
@@ -240,9 +242,8 @@ export async function getUnapproved(page = 0): Promise<QueriedEntries> {
  * @return whether the entry was updated
  */
 export async function approve(entry: DatabaseEntry<"out">, userId: string, approve = true): Promise<boolean> {
-	let updater: Partial< DatabaseEntry<"in"> > = {
-		approved: approve,
-		possibleDuplicate: undefined
+	let updater:  Partial<DatabaseEntry<"in">> = {
+		approved: approve
 	};
 	
 	if (approve) {
@@ -250,17 +251,18 @@ export async function approve(entry: DatabaseEntry<"out">, userId: string, appro
 		updater.approvedTimestamp = Date.now();
 	}
 	
-	return await update(entry, updater);
+	return await update(entry, updater, { $unset: { possibleDuplicate: 1 } });
 }
 
 /**
  * Update a single Entry and it's Geodata
  * @param entry Entry to update
  * @param updater Patrial Entry acting as updated
+ * @param additionalUpdater Additional MongoDB update commands
  * @returns whether the entry was updated
  */
-export async function update(entry: DatabaseEntry<"out">, updater: Partial< DatabaseEntry<"in"> >): Promise<boolean> {
-	let updated = await Database.updateEntry(entry, updater);
+export async function update(entry: DatabaseEntry<"out">, updater: Partial<DatabaseEntry<"in">>, additionalUpdater: MongoDB.UpdateFilter<DatabaseEntry<"in">> = {}): Promise<boolean> {
+	let updated = await Database.updateEntry(entry, updater, additionalUpdater);
 	
 	if (updated) {
 		updateGeoLocation(entry);
@@ -287,38 +289,58 @@ export async function updateGeoLocation(entry: DatabaseEntry<"out">) {
 }
 
 /**
- * Find an entry that is simmilar to the given entry
- * @param entry Entry to find simmilar to
- * @returns Id of the simmilar entry or null if none was found
+ * Find an entry that is similar to the given entry
+ * @param entry Entry to find similar to
+ * @param scoreThreshold minimum score to consider a similar entry (default 3: Address matches exactly)
+ * @returns Id of the similar entry or null if none was found
  */
-export async function findPossibleDuplicate(entry: Entry): Promise<MongoDB.ObjectId | undefined> {
-	let filter: MongoDB.Filter<DatabaseEntry<"in">> = {
-		type: entry.type,
-		
-		$or: [
-			{
-				address: {
-					city: slugify(entry.address.city),
-					plz: entry.address.plz ? slugify(entry.address.plz) : undefined,
-					street: entry.address.street ? slugify(entry.address.street) : undefined
+export async function findPossibleDuplicate(entry: Entry, scoreThreshold: number = 3): Promise<MongoDB.ObjectId | undefined> {
+	entry = removeEmptyUtil(entry) as Entry;
+	
+	let duplicates = await Database.findEntriesRaw([
+		{ $match: { type: entry.type } }, // Pre-filter by entry type to save the pipeline work in the next steps
+		{						// Address score is calculated separately because we want to match each address field individually
+			$addFields: {
+				scoreAddress: { // Gains one point per every matching address field
+					$size: {
+						$setIntersection: [ // Create array of all matching fields
+							{ $objectToArray: "$address" },
+							{ $objectToArray: entry.address }
+						]
+					}
+				},
+				scoreOther: { // Gains one point per every exactly matching field
+					$size: {
+						$setIntersection: [	// Create array of all matching fields
+							{ $objectToArray: "$$ROOT" },
+							{ $objectToArray: entry }
+						]
+					}
 				}
-			},
-			{
-				email: entry.email ? slugify(entry.email) : undefined
-			},
-			{
-				telephone: entry.telephone ? slugify(entry.telephone) : undefined
-			},
-			{
-				website: entry.website ? slugify(entry.website) : undefined
 			}
-		]
-	};
+		},
+		{
+			$addFields: {
+				score: { // Sum of all scores
+					$add: [
+						"$scoreOther",
+						{
+							$multiply: ["$scoreAddress", 0.5] // Address fields are worth half as much as other fields, because they are less specific
+						}
+					]
+				}
+			}
+		},
+		{
+			$match: { score: { $gt: scoreThreshold } } // Apply minimum score filter
+		},
+		{ $sort: { score: -1 } }, // Order descending by score
+		{ $project: { _id: 1, score: 1 } }, // Only get score
+		{ $limit: 1 } // We want only one result with the highest score
+	]);
 	
-	let duplicate = await Database.findEntry(filter);
-	
-	if (duplicate) {
-		return new MongoDB.ObjectId(duplicate._id) ?? undefined;
+	if (duplicates.length > 0) {
+		return new MongoDB.ObjectId(duplicates[0]._id) ?? undefined;
 	} else {
 		return;
 	}

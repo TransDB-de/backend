@@ -18,6 +18,7 @@ const defaultConfig = {
 		itemsPerPage: 10,
 		backupFolder: "./files/backups/"
 	},
+	entryDuplicateSearchThreshold: 3,
 	web: {
 		port: 1300,
 		enableCORS: true,

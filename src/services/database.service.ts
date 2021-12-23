@@ -198,17 +198,6 @@ export async function getEntryById(entryId: string | number): Promise< DatabaseE
 }
 
 /**
- * Find an entry by a mongodb query
- * @param query
- * @returns The entry
- */
-export async function findEntry(query: MongoDB.Filter<DatabaseEntry<"in">>): Promise< DatabaseEntry<"out"> | null > {
-	return await db
-		.collection<DatabaseEntry<"in">>("entries")
-		.findOne(query) as unknown as DatabaseEntry<"out">;
-}
-
-/**
  * Find entries with a custom mongodb query
  * @param query
  * @param page
@@ -282,12 +271,13 @@ export async function findEntriesRaw(pipeline: object[] | undefined): Promise<Da
  * Update an entry by id
  * @param entry
  * @param updater
+ * @param additionalUpdater
  * @returns boolean indicating the success of the update
  */
-export async function updateEntry(entry: DatabaseEntry<"out">, updater: Partial<DatabaseEntry<"in">>): Promise<boolean> {
+export async function updateEntry(entry: DatabaseEntry<"out">, updater: Partial<DatabaseEntry<"in">>, additionalUpdater: MongoDB.UpdateFilter<DatabaseEntry<"in">> = {}): Promise<boolean> {
 	let res = await db
 		.collection<DatabaseEntry<"in">>("entries")
-		.updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: updater });
+		.updateOne({ _id: new MongoDB.ObjectId(entry._id) }, { $set: updater, ...additionalUpdater });
 	
 	let updated = Boolean(res.modifiedCount);
 	
