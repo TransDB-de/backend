@@ -27,7 +27,7 @@ const defaultConfig = {
 	},
 	osm: {
 		apiUrl: "https://nominatim.openstreetmap.org/search",
-		userAgent: "transdb.de/0.1.0 (axios)"
+		userAgent: "transdb.de/2.0.0 (axios)"
 	},
 	jwt: {
 		secret: "",
