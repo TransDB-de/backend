@@ -32,11 +32,8 @@ function _authMiddleware(req: IRequest, res: IResponse, next: NextFunction, opti
 	// Try to verify the jwt
 	try {
 		decodedToken = jwt.verify(token, config.jwt.secret) as TokenData;
-		
-		if (!decodedToken["id"] || !decodedToken["admin"]) throw "invalid_claims";
 	} catch(err) {
 		res.error!("unauthorized");
-		
 		return;
 	}
 	
