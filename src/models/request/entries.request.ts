@@ -13,10 +13,10 @@ import {
 	ValidateNested
 } from "class-validator"
 import * as FilterLang from "@transdb-de/filter-lang"
-import { ArrayExclusively, IsEmptyArray } from "../../util/customValidators.util.js"
+import { ArrayExclusively, IsEmptyArray, KeyedArrayExclusively } from "../../util/customValidators.util.js"
 import { allExcept, mergeArrays } from "../../util/array.util.js"
 import { RequestBody, Query } from "../request.js"
-import {Type} from "class-transformer";
+import { Type } from "class-transformer"
 
 const types = [
 	"group", "therapist", "surveyor", "endocrinologist",
@@ -110,19 +110,14 @@ export class Address {
 
 export class Meta {
 	@IsOptional()
-	@IsEmptyArray({ groups: allExcept(types, "group", "surveyor", "endocrinologist", "hairremoval") })
-	@ArrayExclusively(attributes.group, { groups: ["group"] })
-	@ArrayExclusively(attributes.surveyor, { groups: ["surveyor"] })
-	@ArrayExclusively(attributes.endocrinologist, { groups: ["endocrinologist"] })
-	@ArrayExclusively(attributes.hairremoval, { groups: ["hairremoval"] })
+	@IsEmptyArray({ groups: allExcept(types, ...Object.keys(attributes)) })
+	@KeyedArrayExclusively(attributes)
 	attributes ?: string[];
 	
-	@IsOptional({ groups: allExcept(types, "therapist", "surgeon", "hairremoval") })
-	@IsEmptyArray({ groups: allExcept(types, "therapist", "surgeon", "hairremoval") })
-	@ArrayNotEmpty({ groups: ["therapist", "surgeon", "hairremoval"] })
-	@ArrayExclusively(offers.therapist, { groups: ["therapist"] })
-	@ArrayExclusively(offers.surgeon, { groups: ["surgeon"] })
-	@ArrayExclusively(offers.hairremoval, { groups: ["hairremoval"] })
+	@IsOptional({ groups: allExcept(types, ...Object.keys(offers)) })
+	@IsEmptyArray({ groups: allExcept(types, ...Object.keys(offers)) })
+	@ArrayNotEmpty({ groups: Object.keys(offers) })
+	@KeyedArrayExclusively(offers)
 	offers ?: string[];
 	
 	@IsEmpty({ groups: allExcept(types, "group") })

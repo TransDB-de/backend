@@ -10,6 +10,8 @@ import * as DiscordService from "../services/discord.service.js"
 
 import queryNumberParser from "../middleware/queryNumberParser.middleware.js"
 import queryArrayParser from "../middleware/queryArrayParser.middleware.js"
+import trimAndNullifyMiddleware from "../middleware/trimAndNullify.middleware.js"
+
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 import authenticate from "../middleware/auth.middleware.js"
 import { EditEntry, Entry, FilterFull, FilterQuery } from "../models/request/entries.request.js"
@@ -48,6 +50,7 @@ export default class EntriesController {
 	
 	@Post("/")
 	@Middleware( newEntryLimiter )
+	@Middleware( trimAndNullifyMiddleware )
 	@Middleware( validate(Entry, { validationGroupFromEntryType: true }) )
 	async submitNewEntry(req: IRequest<Entry>, res: IResponse<PublicEntry>) {
 		await EntryService.addEntry(req.body);
@@ -152,6 +155,7 @@ export default class EntriesController {
 	
 	@Patch(":id/edit")
 	@Middleware( authenticate({ admin: true }) )
+	@Middleware( trimAndNullifyMiddleware )
 	@Middleware( validateId )
 	@Middleware( validateOptional(EditEntry) )
 	async adminUpdateEntry(req: IRequest<EditEntry, {}, ObjectId>, res: IResponse) {
