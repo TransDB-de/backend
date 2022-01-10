@@ -405,7 +405,7 @@ export async function findGeoLocation(search: string): Promise<GeoPlace[]> {
 					$text: { $search: searchStr }
 				}
 			},
-			{ $sort: { score: { $meta: "textScore"  }, level: -1 } },
+			{ $sort: { score: { $meta: "textScore" }, level: 1 } },
 			{ $limit: 6 }
 		])
 		.project<GeoPlace>({
