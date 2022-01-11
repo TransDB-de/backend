@@ -113,6 +113,5 @@ config.json
 
 # Compiled Javascript
 
-js/
 dist/
 files/

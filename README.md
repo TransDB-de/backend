@@ -1,115 +1,108 @@
 # TransDB Backend & API
 
-The backend of the TransDB site
+The backend for the TransDB site, responsible for handling all PI traffic.
 
-## Copyright Notice
-(c) 2022 Trans\*DB. All rights reserved. 
+## Core Dependencies
 
-While this projects source code is public, it is not open source, as it does not have a usage license attached. Hosting, copying or redistributing this code is prohibited, unless explicitly allowed with a written permission from the Trans\*DB development team.
+- [TypeScript](https://www.typescriptlang.org/) Type-safe JavaScript superset.
+- [OvernightJS](https://github.com/seanpmaxwell/overnight) A TypeScript express.js wrapper for decorator support and eased type safety.
+- [Class Validator](https://github.com/typestack/class-validator) TypeScript compatible validation.
 
-## Dependencies
-
-- [ExpressJS](https://expressjs.com/) Node.js web framework.
-- [Axios](https://www.npmjs.com/package/axios) Library to send web requests.
-- [mongodb](https://mongodb.github.io/node-mongodb-native/) MongoDB database driver.
-- [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) Library for jwt authentication.
-- [validate.js](https://validatejs.org/) Javascript object validation. Used for input validation on post requests.
-- [helmet](https://www.npmjs.com/package/helmet) ExpressJS security middleware.
-- [cors](https://www.npmjs.com/package/cors) Middleware to enable cors in ExpressJS.
-- [nanoid](https://www.npmjs.com/package/nanoid) Library to generate random unique strings. Used for random user passwords.
-- [node-cleanup](https://www.npmjs.com/package/node-cleanup) Function to run cleanup operations (close server connections etc.) on application shutdown.
-- [axios-rate-limit](https://www.npmjs.com/package/axios-rate-limit) Rate limits axios requests.
-
-## Project structure
+## Project Structure
 
 ### Directories
 
-- `/api` Typescript api documentation. `api.d.ts` documents the api itself. The other files contain all types avalible to the api. Documentation is generic, and can be used for backend and frontend puproses.
-- `/models` Contains modules with objects that represent [validate.js](https://validatejs.org/) validation schemas.
-- `/routes` Contains modules with [express routers](https://expressjs.com/en/4x/api.html#router).
-- `/services` Modules that provide most of the backends funtionality.
-- `/utils` Modules with functions and [express middlewares](https://expressjs.com/en/guide/writing-middleware.html).
-- `/@types` Typedefs for modules, and custom express types which bind the api to the typechecker.
+All non-configuration files are within the `./src` parent directory.
+
+- `controllers` Api routes and endpoints. Each Controller is responsible for one route, and can contain multiple Endpoints.
+- `middleware` express.js middleware. Middleware modifies or validates incoming requests.
+- `models` Typed classes and interfaces used for compile-time and run-time type validation.
+- `services` ES-modules handling the bulk of the backend logic.
+- `types` Additional TypeScript types, and express type extensions.
+- `util` Collections of functions which can be used anywhere in the project.
 
 ### Services
 
-- `config.js` The config service is responsible for the application configuration.
-It creates a new config file on startup if no one exist and load the config if one exist.
-- `database.js` A Service to interact with the MongoDB database.
-It provides functions to get, insert and update data. This service is also sometimes called DAL (Data Access Layer).
-- `entry.js` This service has methods to create and manage entries.
-- `osm.js` A service to interact with the open street maps nominatim api. This will be used here to get coordinates from an address.
-- `user.js` This service contains methods for user management. Such as password generation and user registration.
+- `config.service.ts` Initializes, parses, and updates the backend configuration file.
+- `database.service.ts` Wraps database access in a type-safe manner.
+- `entry.service.ts` Handles the creation, management, and deletion of entries.
+- `osm.serivce.ts` OpenStreetMap Api interaction. Used to retrieve the GeoLocation of Entries.
+- `users.service.ts` Handles the creation, management, and deletion of users.
 
 ## Setup
 
 **Requirements:** NodeJS 14.15.4 or higher, NPM, a running MongoDB server, with MongoDB Database Tools installed.
+
+**Warning!** MongoDB Database Tools needs to be running on the same machine as NodeJS,
+not on MongoDB Server. If MongoDB Database Tools is not installed, database backups will fail!
 
 1. Download and extract latest release from [releases](/releases/latest).
 2. Run `npm install`.
 3. Run `npm start`.
 4. On first start the application will exit. A `config.json` file will now be in the root directory.
 5. Fill out all config fields.
-6. Open your mongodb, create a collection named "geodata" and import the data.json file in GeoDbJson.zip from [Tool Downloads](https://github.com/TransDB-de/Tools/releases/tag/0.1.2) into the collection as json.
+6. Open your MongoDB, create a collection named "geodata" and import the data.json file in GeoDbJson.zip from [Tool Downloads](https://github.com/TransDB-de/Tools/releases/tag/0.1.2) into the collection as json.
 7. Run `npm start` again.
 
-**Development Setup:**
+## Contributing
 
-**Requirements:**  In addition to all requirements above: Typescript 4.1.2+
+### Style Guide
 
-1. Clone the repository.
-2. Run `npm install`.
+#### Indents
 
-To make build that is suitable for production (no dev dependencies, no typescript files), use `npm run build`.
-A new folder will be created in `./dist` with it's own `package.json` and compiled javascript files.
+Use Tab-Stops instead of spaces. Make sure to configure your editor.
 
-## Hosting for production
+Do not remove the indents from empty lines. This is **not** the default behaviour of most code-editors, so be sure to change it.
 
-**Requirements:**
+Do not use Hanging indents.
 
-- NodeJS 14.15.4 LTS or higher
-- NPM (automatically installed with NodeJS)
-- A MongoDB server
-- [MongoDB Database Tools](https://docs.mongodb.com/database-tools/)
-- A reverse proxy with SSL
+#### Spacing
 
-## Geodata
+Leave two empty lines between top-level scopes (functions, classes and types).
 
-TransDB offers the functionality to filter by location, and sort by distance.
-But if you search by city-name or postalcode, instead of coordinates (user's geolocation), the backend has no coordinates to calculate the distance from.
-To fix this, we import data from [OpenGeoDB](http://opengeodb.giswiki.org/wiki/OpenGeoDB) to get the coordinates of cities, districts, and postalcodes.
-The data is also used to retrieve the name of a place, when a user searches by geolocation.
-This is useful for user feedback, in case the location determined by the front-end is incorrect.
-*The OpenStreetMaps API is not used because of rate limits.*
+Add an empty new-line to the end of a file.
 
-Unfortunatly, the data from OpenGeoDB is unsuitable for some MongoDB features.
-We use a [custom tool](https://github.com/TransDB-de/Tools/) to restructure the data for our project.
+Leave a space within curly brackets. eg. `import { IRequest } from "express"`
 
-## Contribution
+Leave a space between control statements and brackets. eg. `if (count >= 5) { ... }`
 
-### Coding conventions
+Do not leave a space between a function call and it's brackets. eg. `filterEntry(newEntry);`
 
-- Use 4 spaces indent and camelCase
-- Also camelCase filenames
-- Use es6 `import`/`export`, instead of `require`
-- Always leave enough empty lines in bigger code blocks
-- Comment your code (in english)
-- Use JSDoc comments above exported functions
-- Stick to the structure
-- Test your changes
-- Update the documentation
-- Use async/await instead of callbacks, when possible
+#### Case
 
-### Maintain Type Safety
+`camelCase` files, functions, and variables.
 
-- Do define parameter and return types for custom functions
-- When you make changes to the api, make sure to document them in `/api`
-- Do not use the types `'express.Router'` `'express.Request'` `'express.Response'` `'express.RequestHandler'`.
-    Use the custom global types `'IRouter<baseRoute>'` `'IRequest'` `'IResponse'` `'IMiddleware'`, instead. They link to the api documentation to provide type safety for routes.
-- Do not use `.js` files, or set tsc to accept `.js` files
+`PascalCase` Classes, Modules, and Decorators.
 
-### A Note On Types
+#### ES6
 
-This project uses custom definitions to bind the api documentation to the routes.
-If a code change leads to a typescript error, make sure your code is compatible with the routes defined in api.ts and vice-versa.
-The project is set-up in such a way that most types are automatically infered, and do not have to be specifically set.
+Use es6 module `import` `export` syntax.
+
+Use `async` `await` instead of call-backs where possible.
+
+#### Comments
+
+JSDoc comment exported functions. Comments should be in English. Capitalize Names. Do not place a full stop on single-line comments.
+
+#### Naming Convention
+
+Prefix routes which require a login with `authorized`.
+
+Prefix routes which require admin credentials with `admin`.
+
+Using I and E as prefixes to indicate interfaces and enums is optional.
+
+### Type Safety
+
+Avoid explicit `any` and `unkown` where possible. Unknown is sometimes required when interacting with the Database, but should not be used outside of the Database Service.
+Try using generics and `asserts` to avoid the use of unknown. The filter functions in `util/filter` can help with this for entries and users.
+
+Do not use `Request` and `Response` from express.js. Use `IRequest` and `IResponse` instead. See `controllers` for usage examples.
+
+Never try to avoid a type Error with an explicit `any` annotation.
+
+Make sure to annotate internal-only types with `never`. Omitting them is not sufficient, as typescript still allows this for interfaces. See `models/response` for usage examples.
+
+Do not use .js files.
+
+**Warning** You need to add .js endings when importing non-package modules. TypeScript does not throw an error if this is omitted, but a runtime error will be thrown.

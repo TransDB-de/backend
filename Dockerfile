@@ -10,7 +10,7 @@ COPY ["package.json", "package-lock.json*", "tsconfig.json", "./"]
 RUN npm install
 
 # copy source files
-COPY source/ ./source/
+COPY src/ ./src/
 
 # build
 RUN npm run build
