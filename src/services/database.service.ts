@@ -1,5 +1,6 @@
 import MongoDB from "mongodb"
 import * as fs from "fs"
+import path from "path"
 
 import * as Config from "./config.service.js"
 
@@ -304,17 +305,17 @@ export async function exportEntries(): Promise<string | false> {
 	
 	// get meta information about entries collection
 	let meta = await db.collection<CollectionMeta<"in">>("meta").findOne({ about: "entries" }) as unknown as EntriesCollectionMeta<"out">;
-	let path = Config.config.mongodb.backupFolder + meta.lastExportTimestamp + "/entries.json";
+	let backupPath = path.join(Config.config.mongodb.backupFolder, meta.lastExportTimestamp.toString(), "/entries.json");
 	let success = true;
 	
 	// Change occured after last export
-	if (meta.lastChangeTimestamp > meta.lastExportTimestamp || !fs.existsSync(path)) {
+	if (meta.lastChangeTimestamp > meta.lastExportTimestamp || !fs.existsSync(backupPath)) {
 		
 		let timestamp = Date.now();
 		
-		path = Config.config.mongodb.backupFolder + timestamp + "/entries.json";
+		backupPath = path.join(Config.config.mongodb.backupFolder, timestamp.toString(), "entries.json");
 		
-		success = await Shell.exportEntries( Config.getMongoUrl(), path );
+		success = await Shell.exportEntries( Config.getMongoUrl(), backupPath );
 		
 		if (success) {
 			updateEntriesCollectionMeta(CollectionMetaUpdateType.Exported, timestamp);
@@ -323,8 +324,19 @@ export async function exportEntries(): Promise<string | false> {
 	}
 	
 	// Return path to new export, or false if export failed
-	return success ? path : false;
+	return success ? backupPath : false;
 	
+}
+
+export function purgeBackups(): void {
+	
+	let backupFolder = Config.config.mongodb.backupFolder;
+	
+	if (!fs.existsSync(backupFolder)) {
+		return;
+	}
+	
+	fs.rmSync(backupFolder, { recursive: true, force: true });
 }
 
 /**
