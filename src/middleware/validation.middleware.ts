@@ -82,7 +82,8 @@ export default function validate(schema: Schema, options?: ValidationMiddlewareO
  */
 export function validateOptional(schema: Schema) {
 	let options = {
-		skipMissingProperties: true
+		skipMissingProperties: true,
+		validationGroupFromEntryType: true
 	}
 	
 	return (req: IRequest, res: IResponse, next: NextFunction) => validateBody(req, res, next, schema, options);
@@ -120,6 +121,6 @@ export async function validateId(req: IRequest, res: IResponse, next: NextFuncti
 	
 	// Go next if there is no errors
 	if (errors.length < 1) return next();
-
+	
 	return res.error!("validation_error", errors);
 }
