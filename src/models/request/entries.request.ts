@@ -39,12 +39,15 @@ const attributes = {
 
 
 const offers = {
-	therapist: ["indication", "therapy"],
-	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms"],
+	group: ["remote"],
+	surveyor: ["remote"],
+	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms", "remote"],
+	endocrinologist: ["remote"],
 	hairremoval: ["laser", "ipl", "electro", "electroAE"],
-	urologist: ["hrt", "medication"],
-	gynecologist: ["hrt", "medication"],
-	GP: ["hrt", "medication"]
+	therapist: ["indication", "therapy", "remote"],
+	urologist: ["hrt", "medication", "remote"],
+	gynecologist: ["hrt", "medication", "remote"],
+	GP: ["hrt", "medication", "remote"]
 } as const;
 
 export class Entry extends RequestBody {
