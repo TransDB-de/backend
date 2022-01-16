@@ -55,7 +55,7 @@ export function connect() {
 			db.collection<DatabaseEntry<"in">>("entries").createIndex({ location: "2dsphere" }),
 			db.collection<GeoData>("geodata").createIndex({ location: "2dsphere" }),
 
-			db.collection<DatabaseEntry<"in">>("entries").createIndex({ name: "text", firstName: "text", lastName: "text", email: "text", webiste: "text", telephone: "text", "address.city": "text", "address.plz": "text", "address.street": "text", "address.house": "text" , "meta.specials": "text" }),
+			db.collection<DatabaseEntry<"in">>("entries").createIndex({ name: "text", academicTitle: "text", firstName: "text", lastName: "text", email: "text", webiste: "text", telephone: "text", "address.city": "text", "address.plz": "text", "address.street": "text", "address.house": "text" , "meta.specials": "text" }),
 
 			db.collection<GeoData>("geodata").createIndex({ name: "text", plz: "text", ascii: "text" }),
 			db.collection<EntriesCollectionMeta<"in">>("meta").createIndex({ about: "text" })

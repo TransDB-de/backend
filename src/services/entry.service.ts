@@ -46,6 +46,7 @@ export async function addEntry(object: Entry) {
 		type: object.type,
 		approved: false,
 		name: object.name,
+		academicTitle: object.academicTitle ?? null,
 		firstName: object.firstName ?? null,
 		lastName: object.lastName ?? null,
 		email: object.email,

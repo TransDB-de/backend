@@ -23,31 +23,33 @@ const types = [
 	"surgeon", "logopedics", "hairremoval", "urologist", "gynecologist", "GP"
 ] as const;
 
+const academicTitles = [
+	"dr", "prof", "prof_dr"
+] as const;
+
 const accessibility = [ "yes", "no", "unknown" ] as const;
 
 const attributes = {
-	group: ["trans", "regularMeetings", "consulting", "activities"],
-	surveyor: ["enby"],
-	surgeon: ["selfPayedOnly"],
-	endocrinologist: ["treatsNB"],
+	group: ["trans", "regularMeetings", "consulting", "activities", "remote"],
+	surveyor: ["enby", "remote"],
+	surgeon: ["selfPayedOnly", "remote"],
+	endocrinologist: ["treatsNB", "remote"],
 	hairremoval: ["insurancePay", "transfriendly", "hasDoctor"],
-	therapist: ["selfPayedOnly", "youthOnly", "treatsNB"],
-	urologist: ["treatsNB", "transFem", "transMasc"],
-	gynecologist: ["treatsNB", "transFem", "transMasc"],
-	GP: ["treatsNB"]
+	therapist: ["selfPayedOnly", "youthOnly", "treatsNB", "remote"],
+	urologist: ["treatsNB", "transFem", "transMasc", "remote"],
+	gynecologist: ["treatsNB", "transFem", "transMasc", "remote"],
+	GP: ["treatsNB", "remote"],
+	logopedics: ["remote"]
 } as const;
 
 
 const offers = {
-	group: ["remote"],
-	surveyor: ["remote"],
-	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms", "remote"],
-	endocrinologist: ["remote"],
+	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms"],
 	hairremoval: ["laser", "ipl", "electro", "electroAE"],
-	therapist: ["indication", "therapy", "remote"],
-	urologist: ["hrt", "medication", "remote"],
-	gynecologist: ["hrt", "medication", "remote"],
-	GP: ["hrt", "medication", "remote"]
+	therapist: ["indication", "therapy"],
+	urologist: ["hrt", "medication"],
+	gynecologist: ["hrt", "medication"],
+	GP: ["hrt", "medication"]
 } as const;
 
 export class Entry extends RequestBody {
@@ -56,6 +58,10 @@ export class Entry extends RequestBody {
 	
 	@Length(1, 160)
 	name !: string;
+
+	@IsOptional()
+	@IsIn(academicTitles)
+	academicTitle ?: typeof academicTitles[number];
 	
 	@IsOptional()
 	@Length(2, 30)
