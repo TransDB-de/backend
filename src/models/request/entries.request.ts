@@ -12,6 +12,7 @@ import {
 	Length,
 	ValidateNested
 } from "class-validator"
+
 import * as FilterLang from "@transdb-de/filter-lang"
 import { ArrayExclusively, IsEmptyArray, KeyedArrayExclusively } from "../../util/customValidators.util.js"
 import { allExcept, mergeArrays } from "../../util/array.util.js"
@@ -58,7 +59,7 @@ export class Entry extends RequestBody {
 	
 	@Length(1, 160)
 	name !: string;
-
+	
 	@IsOptional()
 	@IsIn(academicTitles)
 	academicTitle ?: typeof academicTitles[number];
@@ -119,7 +120,6 @@ export class Address {
 
 export class Meta {
 	@IsOptional()
-	@IsEmptyArray({ groups: allExcept(types, ...Object.keys(attributes)) })
 	@KeyedArrayExclusively(attributes)
 	attributes ?: string[];
 	
