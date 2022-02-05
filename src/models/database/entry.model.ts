@@ -20,6 +20,7 @@ export interface DatabaseEntry<io extends "in" | "out"> {
 	telephone?: string | null,
 	website?: string | null,
 	email?: string | null,
+	academicTitle?: string | null,
 	firstName?: string | null,
 	lastName?: string | null,
 	address: DatabaseAddress,
