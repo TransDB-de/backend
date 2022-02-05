@@ -33,25 +33,25 @@ export async function exportEntries(dbUri: string, outFile: string): Promise<boo
  * @returns Tuple: [ did command succeed, command output ]
  */
 async function runCommand(command: keyof typeof commands, ...stringArgs: string[]): Promise<[boolean, string]> {
-
+	
 	try {
-
+		
 		let { stdout, stderr } = await asyncExec(
 			commands[command].getCommand( stringArgs )
 		);
-
+			
 		if (stderr) {
 			return [ false, stderr ];
 		} else {
 			return [ true, stdout ];
 		}
-
+		
 	} catch(e: any) {
-
+		
 		return [ false, e ];
-
+		
 	}
-
+	
 }
 
 /**
@@ -59,25 +59,25 @@ async function runCommand(command: keyof typeof commands, ...stringArgs: string[
  */
 export async function testForCommands(): Promise<void> {
 	let command = "";
-
+	
 	try {
 		
 		for (let [key, val] of Object.entries(commands) ) {
-
+			
 			command = val.getTest();
 			let { stderr } = await asyncExec( command );
-
+			
 			if (stderr) {
 				throw(stderr);
 			}
-
+			
 		}
-
+		
 	} catch(e) {
-
+		
 		console.log(`Command "${command}" failed to run.`);
 		console.log(`Check if the required command is installed on this machine!`);
 		console.error(e);
-
+		
 	}
 }
