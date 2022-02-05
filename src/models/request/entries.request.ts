@@ -129,9 +129,8 @@ export class Meta {
 	@KeyedArrayExclusively(offers)
 	offers ?: string[];
 	
-	@IsEmpty({ groups: allExcept(types, "group") })
-	@IsOptional({ groups: ["group"] })
-	@Length(0, 280, { groups: ["group"] })
+	@IsOptional()
+	@Length(0, 280)
 	specials ?: string;
 	
 	@IsEmpty({ groups: allExcept(types, "group") })
