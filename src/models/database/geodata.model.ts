@@ -5,7 +5,6 @@ export interface GeoJsonPoint {
 	coordinates: [number, number]
 }
 
-
 export interface GeoData {
 	_id: string | ObjectId,
 	level: number,
