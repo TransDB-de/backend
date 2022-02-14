@@ -163,9 +163,9 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
 		approvedBy: [
 			{
 				$lookup: {
-					from: "users", 
-					localField: "approvedBy", 
-					foreignField: "_id", 
+					from: "users",
+					localField: "approvedBy",
+					foreignField: "_id",
 					as: "users"
 				}
 			}, {
