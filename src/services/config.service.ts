@@ -16,7 +16,8 @@ const defaultConfig = {
 		password: "",
 		database: "transdb",
 		itemsPerPage: 10,
-		backupFolder: "./files/backups/"
+		backupFolder: "./files/backups/",
+		logTTL: 30
 	},
 	entryDuplicateSearchThreshold: 3,
 	web: {

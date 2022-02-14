@@ -4,18 +4,19 @@ import path from "path"
 
 import * as Config from "./config.service.js"
 
-import * as Shell from "../util/shell.util.js";
+import * as Shell from "../util/shell.util.js"
 import { convertToAscii } from "../util/asciiConverter.util.js"
+import { filterEntries } from "../util/filter.util.js"
 
-import { GeoJsonPoint, GeoPlace } from "../models/database/geodata.model.js"
+import { CollectionMeta, EntriesCollectionMeta, CollectionMetaUpdateType } from "../models/database/collectionMeta.model.js"
 
-import { PublicUser } from "../models/response/users.response.js";
-import { DatabaseEntry } from "../models/database/entry.model.js";
-import { DatabaseUser, Password } from "../models/database/user.model.js";
-import { GeoData } from "../models/database/geodata.model.js";
-import { CollectionMeta, EntriesCollectionMeta, CollectionMetaUpdateType } from "../models/database/collectionMeta.model.js";
-import { PublicEntry } from "../models/response/entries.response.js";
-import { filterEntries } from "../util/filter.util.js";
+import type { GeoJsonPoint, GeoPlace } from "../models/database/geodata.model"
+import type { PublicEntry } from "../models/response/entries.response"
+import type { PublicUser } from "../models/response/users.response"
+import type { DatabaseUser, Password } from "../models/database/user.model"
+import type { DatabaseEntry } from "../models/database/entry.model"
+import type { GeoData } from "../models/database/geodata.model"
+import type { DatabaseLog } from "../models/database/log.model"
 
 // ------ Globals ------
 
@@ -58,7 +59,9 @@ export function connect() {
 			db.collection<DatabaseEntry<"in">>("entries").createIndex({ name: "text", academicTitle: "text", firstName: "text", lastName: "text", email: "text", webiste: "text", telephone: "text", "address.city": "text", "address.plz": "text", "address.street": "text", "address.house": "text" , "meta.specials": "text" }),
 
 			db.collection<GeoData>("geodata").createIndex({ name: "text", plz: "text", ascii: "text" }),
-			db.collection<EntriesCollectionMeta<"in">>("meta").createIndex({ about: "text" })
+			db.collection<EntriesCollectionMeta<"in">>("meta").createIndex({ about: "text" }),
+			
+			db.collection<DatabaseLog<"in">>("log").createIndex({ "timestamp": 1 }, { expireAfterSeconds: 3600 * 24 * Config.config.mongodb.logTTL })
 
 		]).then(() => {
 			// Call connected method (specified in main.js)
@@ -258,7 +261,7 @@ export async function findEntriesAtLocation(locaction: GeoJsonPoint, query: Mong
 }
 
 /**
- * Find entries with all fields via mongodb pipeline
+ * Find entries via mongodb pipeline
  * @param pipeline aggregation pipeline
  */
 export async function findEntriesRaw(pipeline: object[] | undefined): Promise<DatabaseEntry<"out">[]> {
@@ -464,4 +467,29 @@ export async function setGeolocation(id: string, location: GeoJsonPoint): Promis
 			.updateOne({ _id: new MongoDB.ObjectId(id) }, { $set: { location } });
 			
 	return Boolean(updateResult.modifiedCount);
+}
+
+/**
+ * Create a new log event
+ * @param data DatabaseLog object
+ * @returns Boolean if the log was inserted
+ */
+export async function createLogEvent(data: DatabaseLog<"in">): Promise<boolean> {
+	let res = await db
+		.collection<DatabaseLog<"in">>("log")
+		.insertOne(data);
+		
+	return res.acknowledged;
+}
+
+/**
+ * Get log events by custom pipeline
+ * @param pipeline MongoDB aggregation pipeline
+ * @returns Array of DatabaseLog objects
+ */
+export async function getLogEventsRaw(pipeline: object[] | undefined): Promise<DatabaseLog<"out">[]> {
+	return await db
+		.collection<DatabaseLog<"in">>("log")
+		.aggregate(pipeline)
+		.toArray() as unknown as DatabaseLog<"out">[];
 }

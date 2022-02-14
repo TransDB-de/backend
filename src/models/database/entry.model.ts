@@ -1,5 +1,5 @@
-import { ObjectId } from "mongodb"
-import { GeoJsonPoint } from "./geodata.model.js"
+import type { ObjectId } from "mongodb"
+import type { GeoJsonPoint } from "./geodata.model"
 
 /**
  * Entry object as stored in database
