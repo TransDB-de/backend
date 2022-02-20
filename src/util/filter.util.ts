@@ -37,6 +37,7 @@ export function filterEntry(entry: Partial< DatabaseEntry<"out"> >): asserts ent
 	delete entry.submittedTimestamp;
 	delete entry.location;
 	delete entry.blocked;
+	delete entry.approved;
 }
 
 /**
