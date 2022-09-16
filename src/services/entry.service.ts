@@ -13,7 +13,6 @@ import { Entry, FilterFull, FilterQuery } from "../models/request/entries.reques
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 import { parsePhoneNumberFromString, PhoneNumber } from "libphonenumber-js"
 import removeEmptyUtil from "../util/removeEmpty.util.js"
-import { filterEntry } from "../util/filter.util.js"
 
 /**
  * Add an entry
@@ -298,11 +297,6 @@ export async function updateGeoLocation(entry: DatabaseEntry<"out">) {
  */
 export async function findPossibleDuplicate(entry: Entry, scoreThreshold: number = 3): Promise<MongoDB.ObjectId | undefined> {
 	entry = removeEmptyUtil(entry) as Entry;
-	
-	// Remove fields that should not be used for comparison
-	filterEntry(entry);
-	delete entry.accessible;
-	delete entry.academicTitle;
 	
 	let duplicates = await Database.findEntriesRaw([
 		{ $match: { type: entry.type } }, // Pre-filter by entry type to save the pipeline work in the next steps
