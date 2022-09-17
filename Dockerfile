@@ -1,4 +1,4 @@
-FROM node:14.16-alpine AS build
+FROM node:16.17.0-alpine AS build
 
 WORKDIR /tmp/
 
@@ -15,7 +15,7 @@ COPY src/ ./src/
 # build
 RUN npm run build
 
-FROM node:14.16-alpine
+FROM node:16.17.0-alpine
 
 # install required cli tools
 RUN apk add --no-cache git && \
