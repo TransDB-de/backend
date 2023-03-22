@@ -79,7 +79,7 @@ export class Entry extends RequestBody {
 	
 	@IsOptional()
 	@Length(5, 500)
-	@IsUrl()
+	@IsUrl({ require_protocol: true })
 	website ?: string;
 	
 	@IsOptional()
