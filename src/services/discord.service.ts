@@ -1,23 +1,7 @@
 import axios from "axios"
 import { config } from "./config.service.js"
 import { DatabaseEntry } from "../models/database/entry.model.js"
-import IDictionary from "../types/dictionary"
-
-const typeMapping: IDictionary = {
-	group: "Gruppe/Verein",
-	therapist: "Therapeut*in/Psychiater*in",
-	surveyor: "Gutachter*in",
-	endocrinologist: "Endokrinologische Praxis",
-	surgeon: "Operateur*in",
-	logopedics: "Logopäd*in",
-	hairremoval: "Haarentfernung"
-}
-
-const reportTypeMapping = {
-	edit: "Änderungsvorschlag",
-	report: "Nicht empfehlenswert",
-	other: "Sonstiges"
-}
+import { reportTypeMapping, typeMapping } from "../models/entryMapping.js";
 
 /**
  * Send a Discord webhook to notify the creation of a new entry

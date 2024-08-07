@@ -7,6 +7,7 @@ import { config } from "../services/config.service.js"
 import * as EntryService from "../services/entry.service.js"
 import * as Database from "../services/database.service.js"
 import * as DiscordService from "../services/discord.service.js"
+import * as AtlassianService from "../services/atlassian.service.js"
 
 import queryNumberParser from "../middleware/queryNumberParser.middleware.js"
 import queryArrayParser from "../middleware/queryArrayParser.middleware.js"
@@ -57,7 +58,8 @@ export default class EntriesController {
 		
 		res.status(StatusCode.Created).end();
 		
-		DiscordService.sendNewEntryNotification(req.body.name, req.body.type);
+		// DiscordService.sendNewEntryNotification(req.body.name, req.body.type);
+		AtlassianService.newEntryTicket(req.body.name);
 	}
 	
 	@Get("unapproved")

@@ -8,7 +8,7 @@ import validate from "../middleware/validation.middleware.js"
 
 import { config } from "../services/config.service.js"
 import * as Database from "../services/database.service.js"
-import * as Discord from "../services/discord.service.js"
+import * as Atlassian from "../services/atlassian.service.js"
 
 
 const newReportLimiter = rateLimit({
@@ -27,7 +27,7 @@ export default class ReportController {
 		
 		if (!entry) return res.status(StatusCode.NotFound).send({ error: "entry_not_found" }).end();
 		
-		let sent = await Discord.sendReport(entry, req.body.type, req.body.message);
+		let sent = await Atlassian.createReportTicket(entry, req.body.type, req.body.message);
 		
 		if (!sent) return res.status(StatusCode.InternalServerError).end();
 		
