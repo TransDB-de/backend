@@ -176,14 +176,14 @@ export async function deleteUser(userId: string | number): Promise<boolean> {
  * @param entry A full entry object
  * @returns Boolean indicating if the entry was added
  */
-export async function addEntry(entry: DatabaseEntry<"in">): Promise<boolean> {
+export async function addEntry(entry: DatabaseEntry<"in">): Promise<MongoDB.ObjectId> {
 
 	let res = await db
 		.collection<DatabaseEntry<"in">>("entries")
 		.insertOne(entry);
 
 	updateEntriesCollectionMeta();
-	return res.acknowledged;
+	return res.insertedId;
 
 }
 

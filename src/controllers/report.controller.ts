@@ -8,8 +8,8 @@ import validate from "../middleware/validation.middleware.js"
 
 import { config } from "../services/config.service.js"
 import * as Database from "../services/database.service.js"
-import * as Atlassian from "../services/atlassian.service.js"
-
+import * as CMS from "../services/cms.service.js"
+import { ECMSTicketType } from "../types/cms.js"
 
 const newReportLimiter = rateLimit({
 	windowMs: config.rateLimit.report.timeframeMinutes * 60 * 1000,
@@ -27,7 +27,12 @@ export default class ReportController {
 		
 		if (!entry) return res.status(StatusCode.NotFound).send({ error: "entry_not_found" }).end();
 		
-		let sent = await Atlassian.createReportTicket(entry, req.body.type, req.body.message);
+		let sent = await CMS.createTicket(
+			entry.name,
+			req.body.id,
+			req.body.type as ECMSTicketType,
+			req.body.message
+		);
 		
 		if (!sent) return res.status(StatusCode.InternalServerError).end();
 		

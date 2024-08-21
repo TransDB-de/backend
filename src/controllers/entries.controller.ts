@@ -6,8 +6,7 @@ import { IRequest, IResponse } from "express"
 import { config } from "../services/config.service.js"
 import * as EntryService from "../services/entry.service.js"
 import * as Database from "../services/database.service.js"
-import * as DiscordService from "../services/discord.service.js"
-import * as AtlassianService from "../services/atlassian.service.js"
+import * as CMS from "../services/cms.service.js"
 
 import queryNumberParser from "../middleware/queryNumberParser.middleware.js"
 import queryArrayParser from "../middleware/queryArrayParser.middleware.js"
@@ -24,6 +23,7 @@ import validate, {
 import { StatusCode } from "../types/httpStatusCodes.js"
 import { ObjectId } from "../models/request/objectId.request.js"
 import { filterEntry } from "../util/filter.util.js"
+import { ECMSTicketType } from "../types/cms.js"
 
 const newEntryLimiter = rateLimit({
 	windowMs: config.rateLimit.newEntries.timeframeMinutes * 60 * 1000,
@@ -54,12 +54,12 @@ export default class EntriesController {
 	@Middleware( trimAndNullifyMiddleware )
 	@Middleware( validate(Entry, { validationGroupFromEntryType: true }) )
 	async submitNewEntry(req: IRequest<Entry>, res: IResponse<PublicEntry>) {
-		await EntryService.addEntry(req.body);
+		const id = await EntryService.addEntry(req.body);
 		
 		res.status(StatusCode.Created).end();
 		
 		// DiscordService.sendNewEntryNotification(req.body.name, req.body.type);
-		AtlassianService.newEntryTicket(req.body.name);
+		CMS.createTicket(req.body.name, id.toString(), ECMSTicketType.NEW, null);
 	}
 	
 	@Get("unapproved")

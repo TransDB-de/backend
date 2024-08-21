@@ -59,24 +59,10 @@ const defaultConfig = {
 			maxDelayMs: 1200,
 		}
 	},
-	discordWebhookURL: "",
-	reportEntryURL: "https://transdb.de/manage/database?id=",
-	atlassian: {
-		apiURL: "",
-		username: "",
-		key: "",
-		projectId: "",
-		customfieldReportTypeMapping: {
-			edit: "10026",
-			report: "10027",
-			other: "10028"
-		},
-		issueTypes: {
-			report: "10003",
-			newEntry: "10014"
-		},
-		customfieldURL: "customfield_10040",
-		customFieldReportType: "customfield_10041"
+	cms: {
+		url: "",
+		access_token: "",
+		ticket_collection: ""
 	}
 };
 

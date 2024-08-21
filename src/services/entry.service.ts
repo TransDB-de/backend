@@ -36,7 +36,7 @@ export async function addEntry(object: Entry) {
 	let possibleDuplicate: MongoDB.ObjectId | undefined = undefined;
 	
 	try {
-		possibleDuplicate = await findPossibleDuplicate(object, config.entryDuplicateSearchThreshold);
+		//possibleDuplicate = await findPossibleDuplicate(object, config.entryDuplicateSearchThreshold);
 	} catch(e) {
 		console.error("Error while searching for possible duplicate:", e);
 	}
