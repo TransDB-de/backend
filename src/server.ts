@@ -33,14 +33,14 @@ export default class TransDBBackendServer extends Server {
 		const EntriesController = (await import("./controllers/entries.controller.js")).default;
 		const GeodataController = (await import("./controllers/geodata.controller.js")).default;
 		const ReportController = (await import("./controllers/report.controller.js")).default;
-		const UsersController = (await import("./controllers/users.controller.js")).default;
+		const AccessController = (await import("./controllers/access.controller.js")).default;
 		
 		super.addControllers([
 			new DefaultController(),
 			new EntriesController(),
 			new GeodataController(),
 			new ReportController(),
-			new UsersController()
+			new AccessController()
 		]);
 	}
 	

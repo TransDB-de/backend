@@ -62,7 +62,11 @@ const defaultConfig = {
 	cms: {
 		url: "",
 		access_token: "",
-		ticket_collection: ""
+		ticket_collection: "",
+		access_colelction: ""
+	},
+	legacyUsers: {
+		
 	}
 };
 

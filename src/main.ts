@@ -14,12 +14,9 @@ if(!process.argv.includes("--dev")) {
 
 Database.purgeBackups();
 
-// Database
-Database.events.connected = async () => {
-	await UserService.generateDefaultUserIfRequired();
-};
-
 Database.connect();
+
+UserService.loadUserNameCache();
 
 // Start server
 const server = new TransDBBackendServer();

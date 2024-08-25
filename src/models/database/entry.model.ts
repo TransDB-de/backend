@@ -32,7 +32,7 @@ export interface DatabaseEntry<io extends "in" | "out"> {
 	approvedTimestamp?: number,
 	
 	/** id of user who approved entry */
-	approvedBy?: io extends "in" ? ObjectId : string,
+	approvedBy?: string,
 	distance?: io extends "out" ? number : undefined
 	
 	possibleDuplicate?: io extends "in" ? ObjectId : string
