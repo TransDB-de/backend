@@ -1,0 +1,7 @@
+query {
+	users_me {
+		id
+		first_name
+		last_name
+	}
+}

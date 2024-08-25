@@ -13,6 +13,7 @@ import { Entry, FilterFull, FilterQuery } from "../models/request/entries.reques
 import { AdminFilteredEntries, PublicEntry, QueriedEntries } from "../models/response/entries.response.js"
 import { parsePhoneNumberFromString, PhoneNumber } from "libphonenumber-js"
 import removeEmptyUtil from "../util/removeEmpty.util.js"
+import { userNameCache } from "./users.service.js"
 
 /**
  * Add an entry
@@ -158,28 +159,6 @@ export async function filter(filters: FilterQuery) : Promise<QueriedEntries> {
 export async function filterWithFilterLang({filter, page}: FilterFull): Promise<AdminFilteredEntries | null> {
 	let pipeline: object[];
 	
-	// injects manual reference for "approvedBy" username
-	let userLookupInjection: FilterLang.Compiler.InjectedStages = {
-		approvedBy: [
-			{
-				$lookup: {
-					from: "users", 
-					localField: "approvedBy", 
-					foreignField: "_id", 
-					as: "users"
-				}
-			}, {
-				$set: {
-					approvedBy: {
-						$first: "$users.username"
-					}
-				}
-			}, {
-				$unset: [ "users" ]
-			}
-		]
-	}
-	
 	// fetch coordinates for location search
 	let loc: GeoJsonPoint | undefined;
 	if (filter.location && filter.location.locationName) {
@@ -199,7 +178,7 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
 	
 	// attempt compilation
 	try {
-		pipeline = FilterLang.Compiler.compileToMongoDB(filter, userLookupInjection, ["approvedBy"], loc, replacer);
+		pipeline = FilterLang.Compiler.compileToMongoDB(filter, {}, ["approvedBy"], loc, replacer);
 	} catch {
 		return null;
 	}
@@ -214,6 +193,26 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
 	];
 	
 	let entries = await Database.findEntriesRaw(pipeline);
+
+	// re map usernames
+	for (let entry of entries) {
+		let id = "";
+
+		if (entry.approvedBy) {
+			// legacy user treatment
+			if (entry.approvedBy["$oid" as any]) {
+				id = entry.approvedBy["$oid" as any]
+			} else {
+				id = entry.approvedBy;
+			}
+		}
+
+		const userName = userNameCache.get(id);
+
+		if (userName) {
+			entry.approvedBy = userName;
+		}
+	}
 	
 	let more = !(entries.length < config.mongodb.itemsPerPage);
 	
@@ -248,7 +247,7 @@ export async function approve(entry: DatabaseEntry<"out">, userId: string, appro
 	};
 	
 	if (approve) {
-		updater.approvedBy = new MongoDB.ObjectId(userId);
+		updater.approvedBy = userId;
 		updater.approvedTimestamp = Date.now();
 	}
 	

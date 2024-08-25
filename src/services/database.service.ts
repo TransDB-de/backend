@@ -9,9 +9,7 @@ import { convertToAscii } from "../util/asciiConverter.util.js"
 
 import { GeoJsonPoint, GeoPlace } from "../models/database/geodata.model.js"
 
-import { PublicUser } from "../models/response/users.response.js";
 import { DatabaseEntry } from "../models/database/entry.model.js";
-import { DatabaseUser, Password } from "../models/database/user.model.js";
 import { GeoData } from "../models/database/geodata.model.js";
 import { CollectionMeta, EntriesCollectionMeta, CollectionMetaUpdateType } from "../models/database/collectionMeta.model.js";
 import { PublicEntry } from "../models/response/entries.response.js";
@@ -66,106 +64,6 @@ export function connect() {
 		});
 
 	});
-
-}
-
-/*
-* User management
-* */
-
-/**
- * Create a user and save them into the database
- * @returns Boolean indicating if the user was created
- */
-export async function createUser(username: string, email: string, password: Password, admin = false): Promise<DatabaseUser<"in">> {
-	
-	let user: DatabaseUser<"in"> = {
-		username,
-		email,
-		password,
-		registerDate: new Date(),
-		lastLogin: null,
-		admin
-	};
-	
-	await db
-		.collection<DatabaseUser<"in">>("users")
-		.insertOne(user);
-	
-	return user;
-}
-
-/**
- * Get a user by id
- * @returns The user object
- */
-export async function getUser(userId: string | number): Promise< DatabaseUser<"out"> | null > {
-
-	return await db
-		.collection<DatabaseUser<"in">>("users")
-		.findOne({ _id: new MongoDB.ObjectId(userId) }) as unknown as DatabaseUser<"out">;
-
-}
-
-/**
- * Find a user with a custom mongodb query
- * @returns The user object
- */
-export async function findUser(query: MongoDB.Filter< DatabaseUser<"in"> >): Promise< DatabaseUser<"out"> | null > {
-
-	return await db
-		.collection<DatabaseUser<"in">>("users")
-		.findOne(query) as unknown as DatabaseUser<"out">;
-
-}
-
-/**
- * Get an array with all users (projects only unsensitive data)
- * @returns Array with all public users
- */
-export async function getAllUsers(): Promise<PublicUser[]> {
-
-	return await db
-		.collection<DatabaseUser<"in">>("users")
-		.find({})
-		.project({
-			username: true,
-			email: true,
-			registerDate: true,
-			lastLogin: true,
-			admin: true
-		})
-		.toArray() as PublicUser[];
-}
-
-/**
- * Update userdata by user id
- * @param userId
- * @param updater Fields to update
- * @returns {Promise<Boolean>} Boolean indicating the success of the update
- */
-export async function updateUser(userId: string | number, updater: Partial< DatabaseUser<"in"> > ): Promise<boolean> {
-
-	let res = await db
-		.collection<DatabaseUser<"in">>("users")
-		.updateOne({ _id: new MongoDB.ObjectId(userId) }, { $set: updater });
-
-	return Boolean(res.modifiedCount);
-
-}
-
-/**
- * Delete a user by id
- * @param userId
- * @returns {Promise<boolean>} Boolean indicating the success of the delete
- */
-export async function deleteUser(userId: string | number): Promise<boolean> {
-
-	let res = await db
-		.collection<DatabaseUser<"in">>("users")
-		.deleteOne({ _id: new MongoDB.ObjectId(userId) });
-
-	return Boolean(res.deletedCount);
 
 }
 
