@@ -200,8 +200,8 @@ export async function filterWithFilterLang({filter, page}: FilterFull): Promise<
 
 		if (entry.approvedBy) {
 			// legacy user treatment
-			if (entry.approvedBy["$oid" as any]) {
-				id = entry.approvedBy["$oid" as any]
+			if (MongoDB.ObjectId.isValid(entry.approvedBy)) {
+				id = (new MongoDB.ObjectId(entry.approvedBy)).toString();
 			} else {
 				id = entry.approvedBy;
 			}
