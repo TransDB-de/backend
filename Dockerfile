@@ -31,6 +31,7 @@ ENV NODE_ENV=production
 RUN npm install
 
 COPY --from=build tmp/dist/ ./dist/
+COPY --from=build tmp/src/graphql/ ./src/graphql/
 
 RUN apk del git
 
