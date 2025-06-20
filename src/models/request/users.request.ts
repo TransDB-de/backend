@@ -2,8 +2,8 @@ import { RequestBody } from "../request.js"
 import { Length, IsEmail, IsBoolean } from "class-validator"
 
 
-const usernameLength: [number, number] = [4, 16];
-const passwordLength: [number, number] = [8, 1024];
+const usernameLength: [number, number] = [4, 256];
+const passwordLength: [number, number] = [8, 2024];
 
 
 export class CreateUser extends RequestBody {
