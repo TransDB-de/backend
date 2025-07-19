@@ -16,6 +16,7 @@ export async function loadUserNameCache() {
 	try {
 		users = await fetchUsers();
 	} catch(e) {
+		console.error(e);
 		throw new Error("Failed to fetch users from cms");
 	}
 
