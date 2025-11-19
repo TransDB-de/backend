@@ -10,25 +10,36 @@ import {
 	IsOptional,
 	IsUrl,
 	Length,
-	ValidateNested
-} from "class-validator"
+	ValidateNested,
+} from "class-validator";
 
-import * as FilterLang from "@transdb-de/filter-lang"
-import { ArrayExclusively, IsEmptyArray, KeyedArrayExclusively } from "../../util/customValidators.util.js"
-import { allExcept, mergeArrays } from "../../util/array.util.js"
-import { RequestBody, Query } from "../request.js"
-import { Type } from "class-transformer"
+import * as FilterLang from "@transdb-de/filter-lang";
+import {
+	ArrayExclusively,
+	IsEmptyArray,
+	KeyedArrayExclusively,
+} from "../../util/customValidators.util.js";
+import { allExcept, mergeArrays } from "../../util/array.util.js";
+import { RequestBody, Query } from "../request.js";
+import { Type } from "class-transformer";
 
 const types = [
-	"group", "therapist", "surveyor", "endocrinologist",
-	"surgeon", "logopedics", "hairremoval", "urologist", "gynecologist", "GP"
+	"group",
+	"therapist",
+	"surveyor",
+	"endocrinologist",
+	"surgeon",
+	"logopedics",
+	"hairremoval",
+	"urologist",
+	"gynecologist",
+	"GP",
+	"pharmacy",
 ] as const;
 
-const academicTitles = [
-	"dr", "prof", "prof_dr"
-] as const;
+const academicTitles = ["dr", "prof", "prof_dr"] as const;
 
-const accessibility = [ "yes", "no", "unknown" ] as const;
+const accessibility = ["yes", "no", "unknown"] as const;
 
 const attributes = {
 	group: ["trans", "regularMeetings", "consulting", "activities", "remote"],
@@ -40,159 +51,173 @@ const attributes = {
 	urologist: ["treatsNB", "transFem", "transMasc", "remote"],
 	gynecologist: ["treatsNB", "transFem", "transMasc", "remote"],
 	GP: ["treatsNB", "remote"],
-	logopedics: ["remote"]
+	logopedics: ["remote"],
+	pharmacy: ["shipping", "singleUseVials", "reuseVial", "prefilled"],
 } as const;
 
-
 const offers = {
-	surgeon: ["mastectomy", "vaginPI", "vaginCombined", "ffs", "penoid", "breast", "hyst", "orch", "clitPI", "bodyfem", "glottoplasty", "fms"],
+	surgeon: [
+		"mastectomy",
+		"vaginPI",
+		"vaginCombined",
+		"ffs",
+		"penoid",
+		"breast",
+		"hyst",
+		"orch",
+		"clitPI",
+		"bodyfem",
+		"glottoplasty",
+		"fms",
+	],
 	hairremoval: ["laser", "ipl", "electro", "electroAE"],
 	therapist: ["indication", "therapy"],
 	urologist: ["hrt", "medication"],
 	gynecologist: ["hrt", "medication"],
-	GP: ["hrt", "medication"]
+	GP: ["hrt", "medication"],
+	pharmacy: ["eInjection", "cpa"],
 } as const;
 
 export class Entry extends RequestBody {
 	@IsIn(types)
-	type !: typeof types[number];
-	
+	type!: (typeof types)[number];
+
 	@Length(1, 160)
-	name !: string;
-	
+	name!: string;
+
 	@IsOptional()
 	@IsIn(academicTitles)
-	academicTitle ?: typeof academicTitles[number];
-	
+	academicTitle?: (typeof academicTitles)[number];
+
 	@IsOptional()
 	@Length(2, 30)
-	firstName ?: string;
-	
+	firstName?: string;
+
 	@IsOptional()
 	@Length(2, 30)
-	lastName ?: string;
-	
+	lastName?: string;
+
 	@IsOptional()
 	@Length(5, 320)
 	@IsEmail()
-	email ?: string;
-	
+	email?: string;
+
 	@IsOptional()
 	@Length(5, 500)
 	@IsUrl({ require_protocol: true })
-	website ?: string;
-	
+	website?: string;
+
 	@IsOptional()
 	@Length(5, 30)
-	telephone ?: string;
-	
+	telephone?: string;
+
 	@IsOptional()
 	@IsIn(accessibility)
-	accessible ?: typeof accessibility[number];
-	
+	accessible?: (typeof accessibility)[number];
+
 	@ValidateNested()
 	@Type(() => Address)
-	address !: Address
-	
+	address!: Address;
+
 	@ValidateNested()
 	@Type(() => Meta)
-	meta !: Meta
+	meta!: Meta;
 }
-
 
 export class Address {
 	@Length(2, 50)
-	city !: string;
-	
+	city!: string;
+
 	@IsOptional()
 	@Length(0, 10)
-	plz ?: string;
-	
+	plz?: string;
+
 	@IsOptional()
 	@Length(0, 50)
-	street ?: string;
-	
+	street?: string;
+
 	@IsOptional()
 	@Length(0, 10)
-	house ?: string;
+	house?: string;
 }
-
 
 export class Meta {
 	@IsOptional()
 	@KeyedArrayExclusively(attributes)
-	attributes ?: string[];
-	
+	attributes?: string[];
+
 	@IsOptional({ groups: allExcept(types, ...Object.keys(offers)) })
 	@IsEmptyArray({ groups: allExcept(types, ...Object.keys(offers)) })
 	@ArrayNotEmpty({ groups: Object.keys(offers) })
 	@KeyedArrayExclusively(offers)
-	offers ?: string[];
-	
+	offers?: string[];
+
 	@IsOptional()
 	@Length(0, 280)
-	specials ?: string;
-	
+	specials?: string;
+
 	@IsEmpty({ groups: allExcept(types, "group") })
 	@IsOptional({ groups: ["group"] })
 	@IsNumber({}, { groups: ["group"] })
-	minAge ?: number;
-	
+	minAge?: number;
+
 	@IsEmpty({ groups: allExcept(types, "therapist") })
-	@IsIn(["therapist", "psychologist", "naturopath", "other"], { groups: ["therapist"] })
-	subject ?: string;
+	@IsIn(["therapist", "psychologist", "naturopath", "other"], {
+		groups: ["therapist"],
+	})
+	subject?: string;
 }
 
 export class EditEntry extends Entry {
 	@IsBoolean()
-	approved !: boolean;
-	
+	approved!: boolean;
+
 	@IsBoolean()
-	blocked !: boolean
+	blocked!: boolean;
 }
 
 export class FilterQuery extends Query {
 	@IsEmpty({ groups: ["noCoords"] })
 	@IsNumber({}, { groups: ["hasCoords"] })
-	lat ?: number;
-	
+	lat?: number;
+
 	@IsEmpty({ groups: ["noCoords"] })
 	@IsNumber({}, { groups: ["hasCoords"] })
-	long ?: number;
-	
+	long?: number;
+
 	@IsOptional()
 	@IsIn(types)
-	type ?: typeof types[number];
-	
+	type?: (typeof types)[number];
+
 	@IsOptional()
-	@ArrayExclusively( mergeArrays(offers) )
-	offers ?: string[];
-	
+	@ArrayExclusively(mergeArrays(offers))
+	offers?: string[];
+
 	@IsOptional()
-	@ArrayExclusively( mergeArrays(attributes) )
-	attributes ?: string[];
-	
+	@ArrayExclusively(mergeArrays(attributes))
+	attributes?: string[];
+
 	@IsOptional()
 	@Length(2, 120)
-	location ?: string;
-	
+	location?: string;
+
 	@IsOptional()
 	@Length(0, 120)
-	text ?: string;
-	
+	text?: string;
+
 	@IsOptional()
 	@IsNumber()
-	page ?: number;
-	
+	page?: number;
+
 	@IsOptional()
 	@IsIn(accessibility)
-	accessible ?: typeof accessibility[number];
+	accessible?: (typeof accessibility)[number];
 }
 
 export class FilterFull {
 	@IsObject()
-	filter !: FilterLang.IntermediateFormat.AbstractFilters;
-	
+	filter!: FilterLang.IntermediateFormat.AbstractFilters;
+
 	@IsInt()
-	page !: number;
+	page!: number;
 }
