@@ -35,6 +35,7 @@ const types = [
 	"gynecologist",
 	"GP",
 	"pharmacy",
+	"cryo",
 ] as const;
 
 const academicTitles = ["dr", "prof", "prof_dr"] as const;
@@ -53,6 +54,7 @@ const attributes = {
 	GP: ["treatsNB", "remote"],
 	logopedics: ["remote"],
 	pharmacy: ["shipping", "singleUseVials", "reuseVial", "prefilled"],
+	cryo: ["insurancePay"],
 } as const;
 
 const offers = {
@@ -76,6 +78,7 @@ const offers = {
 	gynecologist: ["hrt", "medication"],
 	GP: ["hrt", "medication"],
 	pharmacy: ["eInjection", "cpa"],
+	cryo: ["freezesSperm", "freezesEggs"],
 } as const;
 
 export class Entry extends RequestBody {
