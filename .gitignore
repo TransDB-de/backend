@@ -1,0 +1,10 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+/transdb-migration/*
+!/transdb-migration/migrate.js
+.idea
+Properties
+*.DotSettings.user
