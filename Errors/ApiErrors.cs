@@ -44,7 +44,7 @@ public class CaptchaVerificationError(string? details = null)
 /// <param name="Code">Machine-readable constraint code for frontend i18n (e.g. <c>"required"</c>, <c>"length"</c>, <c>"email"</c>).</param>
 public partial class ValidationProblem(string property, string code)
 {
-    public string Property { get; set; }
+    public string Property { get; set; } = property;
     public string Code { get; set; } = code;
 }
 

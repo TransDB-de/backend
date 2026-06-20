@@ -159,7 +159,12 @@ public class EntryService(
         if (query.GeoLocation != null)
         {
             var nameResult = await geocoding.GetLocationNameAsync(query.GeoLocation);
-            if (nameResult.IsOk) locationName = nameResult.Value;
+            if (nameResult.IsOk)
+            {
+                locationName = nameResult.Value;
+            }
+
+            geoLocation = query.GeoLocation;
         }
         else if (!string.IsNullOrWhiteSpace(query.Location))
         {

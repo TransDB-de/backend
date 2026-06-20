@@ -16,8 +16,8 @@ public class EntriesFilterRequest
     public string? Text { get; set; }
     public string? Location { get; set; }
 
-    public double? Lat { get; set; }
-    public double? Long { get; set; }
+    public decimal? Lat { get; set; }
+    public decimal? Long { get; set; }
 
     /// <summary>
     /// Constructs a <see cref="GeoJsonPoint"/> from <see cref="Lat"/> and <see cref="Long"/> when both are provided.

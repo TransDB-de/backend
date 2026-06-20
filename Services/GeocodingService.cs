@@ -54,7 +54,7 @@ public class GeocodingService(HttpClient httpClient) : IGeocodingService
         var url = QueryHelpers.AddQueryString("/geocode", new Dictionary<string, string?>
         {
             ["lat"] = geoLocation.Lat.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            ["long"] = geoLocation.Lng.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            ["lon"] = geoLocation.Lng.ToString(System.Globalization.CultureInfo.InvariantCulture)
         });
         
         try

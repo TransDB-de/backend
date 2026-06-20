@@ -58,8 +58,8 @@ public class NominatimService(HttpClient httpClient) : INominatimService
             {
                 Coordinates =
                 [
-                    double.Parse(results[0].Lon, System.Globalization.CultureInfo.InvariantCulture),
-                    double.Parse(results[0].Lat, System.Globalization.CultureInfo.InvariantCulture)
+                    decimal.Parse(results[0].Lon, System.Globalization.CultureInfo.InvariantCulture),
+                    decimal.Parse(results[0].Lat, System.Globalization.CultureInfo.InvariantCulture)
                 ]
             });
         }
