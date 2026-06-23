@@ -13,9 +13,9 @@ using transdb_backend_net.Services;
 namespace transdb_backend_net.Controllers;
 
 [ApiController]
-[Route("admin/entries")]
+[Route("manage/entries")]
 [Authorize]
-public class AdminEntriesController(
+public class ManageEntriesController(
     IEntryService entryService,
     IEntryActivityService activityService) : ControllerBase
 {

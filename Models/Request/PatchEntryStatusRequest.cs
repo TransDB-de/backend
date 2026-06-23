@@ -3,11 +3,14 @@ using transdb_backend_net.Models.Database;
 
 namespace transdb_backend_net.Models.Request;
 
-public class PatchEntryStatusRequest : CommentedRequest, IValidatableObject
+public class PatchEntryStatusRequest : IValidatableObject
 {
     public bool? Approved { get; set; }
     public bool? Blocked { get; set; }
     public bool? Archived { get; set; }
+    
+    [StringLength(2000, ErrorMessage = "length")]
+    public string Comment { get; set; } = string.Empty;
     
     public bool? RemoveDuplication { get; set; }
 
