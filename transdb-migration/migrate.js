@@ -37,15 +37,23 @@ function activity(entryId, type, timestamp, userId = null, comment = null) {
 	const doc = {
 		entryId: oid(entryId),
 		type,
-		timestamp: date(timestamp),
-		comment
+		timestamp: timestamp !== null ? date(timestamp) : null,
 	};
 
 	if (userId !== null) {
 		doc.userId = userId;
 	}
+	if (comment !== null) {
+		doc.comment = comment;
+	}
 
 	return doc;
+}
+
+// Converts a plain object to MongoDB ArrayOfArrays format as required by
+// BsonDictionaryOptions(DictionaryRepresentation.ArrayOfArrays) in EntryActivity.
+function attachments(obj) {
+	return Object.entries(obj);
 }
 
 // ---------- Mapping tables ----------
@@ -259,7 +267,7 @@ for (const doc of docs) {
 		entry.possibleDuplicate = duplicateMatch;
 		activities.push({
 			...activity(entryId, "DuplicateDetected", submittedAt),
-			attachments: { PossibleDuplicate: duplicateMatch },
+			attachments: attachments({ PossibleDuplicate: duplicateMatch }),
 		});
 	}
 
@@ -309,10 +317,10 @@ if (ticketsFile) {
 		}
 
 		const act = activity(ticket.entry_id, "Reported", ticket.date_created, null, ticket.description);
-		act.attachments = {
+		act.attachments = attachments({
 			ReportType: reportType,
 			CmsTicketId: String(ticket.id),
-		};
+		});
 		activities.push(act);
 		ticketActivities++;
 	}
