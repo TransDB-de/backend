@@ -6,5 +6,4 @@ riderModule.iml
 /transdb-migration/*
 !/transdb-migration/migrate.js
 .idea
-Properties
 *.DotSettings.user
