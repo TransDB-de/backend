@@ -168,17 +168,17 @@ public class EntryActivity
         }
     };
 
-    public static EntryActivity Restored(ObjectId entryId, string userId, string? comment, ObjectId revertedActivityId) => new()
+    public static EntryActivity Restored(ObjectId entryId, string userId, string? comment, ObjectId? revertedActivityId = null) => new()
     {
         EntryId = entryId,
         UserId = userId,
         Comment = comment,
         Type = EntryActivityType.Restored,
         Timestamp = DateTime.UtcNow,
-        Attachments = new Dictionary<EntryActivityAttachment, object>
+        Attachments = revertedActivityId.HasValue ? new Dictionary<EntryActivityAttachment, object>
         {
-            [EntryActivityAttachment.RevertedActivityId] = revertedActivityId.ToString()
-        }
+            [EntryActivityAttachment.RevertedActivityId] =  revertedActivityId
+        } : new Dictionary<EntryActivityAttachment, object>()
     };
 
     /// <summary>Logged when an automatic geocoding update fails after an entry is approved or edited.</summary>

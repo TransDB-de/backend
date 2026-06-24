@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using transdb_backend_net.Exceptions;
 using transdb_backend_net.Models.Response;
 using transdb_backend_net.Services;
@@ -10,27 +11,29 @@ namespace transdb_backend_net.Controllers;
 [ApiController]
 [Route("users")]
 [Authorize]
-public class UsersController(ICmsService cms, IMemoryCache cache) : ControllerBase
+public class UsersController(ICmsService cms, IMemoryCache cache, IConfiguration config) : ControllerBase
 {
     private const string CacheKey = "cms_users";
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<UserResponse>> GetUser(string id)
+    [HttpGet()]
+    public async Task<ActionResult<List<UserResponse>>> GetUsers()
     {
-        var users = await GetCachedUsersAsync();
-        if (users == null)
+        var directusUsers = await GetCachedUsersAsync();
+        if (directusUsers == null)
         {
             return new OperationFailedApiError();
         }
-
-        var user = users.FirstOrDefault(u => u.Id == id);
         
-        if (user == null)
-        {
-            return new NotFoundApiError("user not found");
-        }
+        var users = directusUsers.Select(user => new UserResponse(user)).ToList();
 
-        return Ok(new UserResponse(user));
+        var legacyUsers = config.GetSection("LegacyUsers").Get<Dictionary<string, string>>();
+        
+        if (legacyUsers != null)
+        {
+            users.AddRange(legacyUsers.Select(u => new UserResponse(u.Key, u.Value)).ToList());
+        }
+        
+        return users;
     }
 
     private async Task<List<DirectusUser>?> GetCachedUsersAsync()

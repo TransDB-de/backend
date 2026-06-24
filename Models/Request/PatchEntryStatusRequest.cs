@@ -10,7 +10,7 @@ public class PatchEntryStatusRequest : IValidatableObject
     public bool? Archived { get; set; }
     
     [StringLength(2000, ErrorMessage = "length")]
-    public string Comment { get; set; } = string.Empty;
+    public string? Comment { get; set; } = string.Empty;
     
     public bool? RemoveDuplication { get; set; }
 

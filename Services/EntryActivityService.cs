@@ -57,6 +57,10 @@ public class EntryActivityService(IDatabaseService db, IOptions<MongoDbConfig> c
         {
             await LogAsync(EntryActivity.Archived(entryId, userId, c.Comment));
         }
+        else if (existing.Status.Archived && c.Archived == false)
+        {
+            await LogAsync(EntryActivity.Restored(entryId, userId, c.Comment, null));
+        }
     }
 
     /// <inheritdoc/>

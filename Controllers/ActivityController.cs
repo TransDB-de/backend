@@ -27,9 +27,6 @@ public class ActivityController(IEntryActivityService activityService, IEntrySer
     [HttpGet("entry/{id}")]
     public async Task<ActionResult<List<EntryActivity>>> GetByEntry(ObjectId id, [FromQuery] int page = 0)
     {
-        var entryResult = await entryService.GetEntryByIdAsync(id);
-        if (entryResult.IsFailed) return NotFound();
-
         var activities = await activityService.GetByEntryAsync(id, page);
         return Ok(activities);
     }

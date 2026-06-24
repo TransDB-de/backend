@@ -2,8 +2,20 @@ using transdb_backend_net.Services;
 
 namespace transdb_backend_net.Models.Response;
 
-public class UserResponse(DirectusUser user)
+public class UserResponse
 {
-    public string Id { get; set; } = user.Id;
-    public string Name => user.FirstName + (user.LastName != null ? " " + user.LastName : "");
+    public UserResponse(DirectusUser user)
+    {
+        Id = user.Id;
+        Name = user.FirstName + (user.LastName != null ? " " + user.LastName : "");
+    }
+    
+    public UserResponse(string id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
+    
+    public string Id { get; set; }
+    public string Name { get; set; }
 }

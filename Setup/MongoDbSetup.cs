@@ -3,6 +3,8 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.Serializers;
 using transdb_backend_net.Models.Config;
+using transdb_backend_net.Models.Database;
+using transdb_backend_net.Models.Request;
 using transdb_backend_net.Schema;
 using transdb_backend_net.Services;
 
@@ -32,6 +34,13 @@ public static class MongoDbSetup
         BsonSerializer.RegisterSerializer(new ObjectSerializer(type =>
             ObjectSerializer.DefaultAllowedTypes(type) ||
             type.FullName!.StartsWith("transdb_backend_net.")));
+
+        // Explicitly register types that are stored as object values in EntryActivity.Attachments
+        // so their _t discriminator can be resolved on deserialization even before any write in the process
+        BsonClassMap.RegisterClassMap<CreateEntryRequest>(cm => cm.AutoMap());
+        BsonClassMap.RegisterClassMap<EditEntryRequest>(cm => cm.AutoMap());
+        BsonClassMap.RegisterClassMap<Entry>(cm => cm.AutoMap());
+        BsonClassMap.RegisterClassMap<DuplicateMatch>(cm => cm.AutoMap());
 
         services.AddSingleton<IDatabaseService, DatabaseService>();
         services.AddSingleton<IEntryRevocationService, EntryRevocationService>();

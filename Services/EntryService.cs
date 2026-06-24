@@ -224,7 +224,7 @@ public class EntryService(
         var replaced = await db.ReplaceEntryAsync(id, existing);
         if (!replaced) return Result<Entry>.Failure("entry not found");
 
-        if (!wasApproved && existing.Status is { Approved: true })
+        if (!wasApproved && existing is { Status: { Approved: true }, Location: null })
         {
             _ = UpdateGeoLocationAndLogAsync(id);
         }
@@ -257,7 +257,7 @@ public class EntryService(
         if (locationResult.IsFailed) return Result.Failure(locationResult);
 
         var updated = await db.UpdateEntryFieldsAsync(id, Builders<Entry>.Update.Set(e => e.Location, locationResult.Value));
-        return updated ? Result.Ok() : Result.Failure("entry not found");
+        return updated ? Result.Ok() : Result.Failure("entry update failed");
     }
 
     /// <inheritdoc/>
@@ -272,7 +272,7 @@ public class EntryService(
         try
         {
             var result = await UpdateGeoLocationAsync(id);
-            if (result.IsFailed)
+            if (result.IsFailed && result.FailureType == EFailureType.Unexpected)
             {
                 logger.LogWarning("Geocoding failed for entry {Id}: {Details}", id, result.FailureDetails);
                 await activityService.LogAsync(EntryActivity.GeoLocationFailed(id));
