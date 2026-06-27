@@ -73,13 +73,17 @@ public class EntryActivity
                    .ToDictionary(kv => kv.Key, kv => kv.Value);
 
     [BsonConstructor]
-    private EntryActivity() { }
+    protected EntryActivity() { }
 
-    public static EntryActivity Submitted(ObjectId entryId) => new()
+    public static EntryActivity Submitted(ObjectId entryId, string? cmsTicketId = null) => new()
     {
         EntryId = entryId,
         Type = EntryActivityType.Submitted,
-        Timestamp = DateTime.UtcNow
+        Timestamp = DateTime.UtcNow,
+        Attachments = cmsTicketId != null ? new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.CmsTicketId] =  cmsTicketId
+        } : new Dictionary<EntryActivityAttachment, object>()
     };
 
     public static EntryActivity DuplicateDetected(ObjectId entryId, DuplicateMatch duplicate) => new()

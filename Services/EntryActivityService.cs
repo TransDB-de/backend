@@ -17,8 +17,8 @@ public interface IEntryActivityService
     /// <summary>Compares the existing entry state with the given status changes and logs the appropriate activities.</summary>
     Task LogStatusChangesAsync(ObjectId entryId, string userId, Entry existing, EntryStatusChange changes);
 
-    /// <summary>Returns a paginated list of all activity events across all entries.</summary>
-    Task<PaginatedResponse<EntryActivity>> GetAllAsync(int page);
+    /// <summary>Returns a paginated list of all activity events across all entries, enriched with entry names.</summary>
+    Task<PaginatedResponse<EntryActivityResponse>> GetAllAsync(int page);
 
     /// <summary>Returns a paginated list of activity events for a specific entry.</summary>
     Task<PaginatedResponse<EntryActivity>> GetByEntryAsync(ObjectId entryId, int page);
@@ -65,10 +65,15 @@ public class EntryActivityService(IDatabaseService db, IOptions<MongoDbConfig> c
     }
 
     /// <inheritdoc/>
-    public async Task<PaginatedResponse<EntryActivity>> GetAllAsync(int page)
+    public async Task<PaginatedResponse<EntryActivityResponse>> GetAllAsync(int page)
     {
         var items = await db.FindActivitiesAsync(Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
-        return new PaginatedResponse<EntryActivity>(items, _itemsPerPage);
+        var names = await db.FindEntryNamesByIdsAsync(items.Select(a => a.EntryId).Distinct());
+        foreach (var item in items)
+        {
+            item.EntryName = names.GetValueOrDefault(item.EntryId);
+        }
+        return new PaginatedResponse<EntryActivityResponse>(items, _itemsPerPage);
     }
 
     /// <inheritdoc/>

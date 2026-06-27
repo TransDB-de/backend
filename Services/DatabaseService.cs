@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using transdb_backend_net.Models.Config;
 using transdb_backend_net.Models.Database;
+using transdb_backend_net.Models.Response;
 using transdb_backend_net.Utils;
 
 namespace transdb_backend_net.Services;
@@ -42,8 +43,11 @@ public interface IDatabaseService
     /// <summary>Inserts a new activity document.</summary>
     Task InsertActivityAsync(EntryActivity activity);
 
-    /// <summary>Returns a paginated list of all activity documents, sorted by descending timestamp.</summary>
-    Task<List<EntryActivity>> FindActivitiesAsync(int skip, int limit);
+    /// <summary>Returns a paginated list of all activity documents as enriched responses, sorted by descending timestamp.</summary>
+    Task<List<EntryActivityResponse>> FindActivitiesAsync(int skip, int limit);
+
+    /// <summary>Returns a name lookup for the given entry IDs, keyed by ID. Entries not found are omitted.</summary>
+    Task<Dictionary<ObjectId, string>> FindEntryNamesByIdsAsync(IEnumerable<ObjectId> ids);
 
     /// <summary>Returns a paginated list of activity documents for a specific entry, sorted by ascending timestamp.</summary>
     Task<List<EntryActivity>> FindActivitiesByEntryAsync(ObjectId entryId, int skip, int limit);
@@ -201,12 +205,26 @@ public class DatabaseService : IDatabaseService
         await _activities.InsertOneAsync(activity);
 
     /// <inheritdoc/>
-    public async Task<List<EntryActivity>> FindActivitiesAsync(int skip, int limit) =>
+    public async Task<List<EntryActivityResponse>> FindActivitiesAsync(int skip, int limit) =>
         await _activities.Find(FilterDefinition<EntryActivity>.Empty)
             .SortByDescending(a => a.Timestamp)
             .Skip(skip)
             .Limit(limit)
+            .As<EntryActivityResponse>()
             .ToListAsync();
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<ObjectId, string>> FindEntryNamesByIdsAsync(IEnumerable<ObjectId> ids)
+    {
+        var filter = Builders<Entry>.Filter.In(e => e.Id, ids);
+        var projection = Builders<Entry>.Projection.Include(e => e.Id).Include(e => e.Name);
+        return await _entries.Find(filter)
+            .Project(projection)
+            .ToListAsync()
+            .ContinueWith(t => t.Result.ToDictionary(
+                d => d["_id"].AsObjectId,
+                d => d["name"].AsString));
+    }
 
     /// <inheritdoc/>
     public async Task<List<EntryActivity>> FindActivitiesByEntryAsync(ObjectId entryId, int skip, int limit) =>

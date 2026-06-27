@@ -16,9 +16,10 @@ namespace transdb_backend_net.Controllers;
 [Authorize]
 public class ActivityController(IEntryActivityService activityService, IEntryService entryService, IDatabaseService databaseService) : ControllerBase
 {
-    /// <summary>Returns a paginated list of all activity events across all entries.</summary>
+    /// <summary>Returns a paginated list of all activity events across all entries, enriched with entry names.</summary>
     [HttpGet]
-    public async Task<ActionResult<PaginatedResponse<EntryActivity>>> GetAll([FromQuery] int page = 0)
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<PaginatedResponse<EntryActivityResponse>>> GetAll([FromQuery] int page = 0)
     {
         var activities = await activityService.GetAllAsync(page);
         return Ok(activities);
