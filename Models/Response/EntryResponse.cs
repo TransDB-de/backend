@@ -62,21 +62,22 @@ public class CreateEntryResponse
 }
 
 /// <summary>
-/// Generic paginated response wrapper for entry list endpoints.
+/// Generic paginated response wrapper.
 /// <see cref="More"/> is <c>true</c> when the returned page is full, signalling that another page likely exists.
 /// </summary>
-public class PaginatedEntryResponse<T>
+public class PaginatedResponse<T>
 {
-    public List<T> Entries { get; set; } = [];
+    public List<T> Items { get; set; } = [];
     /// <summary>Indicates that at least one more page of results may be available.</summary>
     public bool More { get; set; }
     public string? LocationName { get; set; }
 
-    public PaginatedEntryResponse(List<T> entries, string? locationName, int itemsPerPage)
+    public PaginatedResponse(List<T> items, int itemsPerPage, string? locationName = null)
     {
-        this.Entries = entries;
+        Items = items;
         // If the page is exactly full there may be more results, if its short, this was the last page.
-        this.More = entries.Count >= itemsPerPage;
-        this.LocationName = locationName;
+        More = items.Count >= itemsPerPage;
+        LocationName = locationName;
     }
 }
+

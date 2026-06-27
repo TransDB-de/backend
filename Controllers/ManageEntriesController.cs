@@ -25,7 +25,7 @@ public class ManageEntriesController(
     /// Returns all entries when no filters are applied.
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<PaginatedEntryResponse<Entry>>> GetEntries([FromQuery] AdminEntriesFilterRequest filter)
+    public async Task<ActionResult<PaginatedResponse<Entry>>> GetEntries([FromQuery] AdminEntriesFilterRequest filter)
     {
         var result = await entryService.GetFullEntriesForElevatedUsageAsync(filter);
         return Ok(result);

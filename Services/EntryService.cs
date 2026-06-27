@@ -18,13 +18,13 @@ public interface IEntryService
     /// Returns a paginated, publicly visible list of approved entries matching the given filters.
     /// Supports full-text search, type/offer/attribute filtering, and optional geospatial sorting.
     /// </summary>
-    Task<PaginatedEntryResponse<PublicEntryResponse>> FilterEntriesForPublicUsageAsync(EntriesFilterRequest filter);
+    Task<PaginatedResponse<PublicEntryResponse>> FilterEntriesForPublicUsageAsync(EntriesFilterRequest filter);
 
     /// <summary>
     /// Returns a paginated list of entries for admin review.
     /// Supports optional filtering by approved/blocked/archived status and full-text search.
     /// </summary>
-    Task<PaginatedEntryResponse<Entry>> GetFullEntriesForElevatedUsageAsync(AdminEntriesFilterRequest filter);
+    Task<PaginatedResponse<Entry>> GetFullEntriesForElevatedUsageAsync(AdminEntriesFilterRequest filter);
 
     /// <summary>Returns a single entry by its ID. Returns a failed result if not found.</summary>
     Task<Result<Entry>> GetEntryByIdAsync(ObjectId id);
@@ -130,24 +130,24 @@ public class EntryService(
     }
 
     /// <inheritdoc/>
-    public async Task<PaginatedEntryResponse<PublicEntryResponse>> FilterEntriesForPublicUsageAsync(EntriesFilterRequest filter)
+    public async Task<PaginatedResponse<PublicEntryResponse>> FilterEntriesForPublicUsageAsync(EntriesFilterRequest filter)
     {
         filter.DatabaseConditions.Add(Builders<Entry>.Filter.Eq(e => e.Status.Approved, true));
         filter.DatabaseConditions.Add(Builders<Entry>.Filter.Ne(e => e.Status.Blocked, true));
         filter.DatabaseConditions.Add(Builders<Entry>.Filter.Eq(e => e.Status.Archived, false));
 
         var (entries, locationName) = await FetchFilteredEntriesAsync(filter, _itemsPerPage);
-        return new PaginatedEntryResponse<PublicEntryResponse>(
+        return new PaginatedResponse<PublicEntryResponse>(
             entries.Select(e => new PublicEntryResponse(e)).ToList(),
-            locationName,
-            _itemsPerPage);
+            _itemsPerPage,
+            locationName);
     }
 
     /// <inheritdoc/>
-    public async Task<PaginatedEntryResponse<Entry>> GetFullEntriesForElevatedUsageAsync(AdminEntriesFilterRequest filter)
+    public async Task<PaginatedResponse<Entry>> GetFullEntriesForElevatedUsageAsync(AdminEntriesFilterRequest filter)
     {
         var (entries, locationName) = await FetchFilteredEntriesAsync(filter, _adminItemsPerPage);
-        return new PaginatedEntryResponse<Entry>(entries.ToList(), locationName, _adminItemsPerPage);
+        return new PaginatedResponse<Entry>(entries.ToList(), _adminItemsPerPage, locationName);
     }
 
     private async Task<(IEnumerable<Entry> Entries, string? LocationName)> FetchFilteredEntriesAsync(EntriesFilterRequest query, int limit)

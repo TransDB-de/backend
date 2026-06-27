@@ -25,7 +25,7 @@ public class EntriesController(
     /// </summary>
     [HttpGet]
     [ValidateCaptcha]
-    public async Task<ActionResult<PaginatedEntryResponse<PublicEntryResponse>>> Filter([FromQuery] EntriesFilterRequest filter)
+    public async Task<ActionResult<PaginatedResponse<PublicEntryResponse>>> Filter([FromQuery] EntriesFilterRequest filter)
     {
         var result = await entryService.FilterEntriesForPublicUsageAsync(filter);
         return Ok(result);

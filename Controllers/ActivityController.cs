@@ -6,6 +6,7 @@ using System.Text.Json;
 using transdb_backend_net.Exceptions;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Models.Request;
+using transdb_backend_net.Models.Response;
 using transdb_backend_net.Services;
 
 namespace transdb_backend_net.Controllers;
@@ -17,7 +18,7 @@ public class ActivityController(IEntryActivityService activityService, IEntrySer
 {
     /// <summary>Returns a paginated list of all activity events across all entries.</summary>
     [HttpGet]
-    public async Task<ActionResult<List<EntryActivity>>> GetAll([FromQuery] int page = 0)
+    public async Task<ActionResult<PaginatedResponse<EntryActivity>>> GetAll([FromQuery] int page = 0)
     {
         var activities = await activityService.GetAllAsync(page);
         return Ok(activities);
@@ -25,7 +26,7 @@ public class ActivityController(IEntryActivityService activityService, IEntrySer
 
     /// <summary>Returns a paginated list of activity events for a specific entry.</summary>
     [HttpGet("entry/{id}")]
-    public async Task<ActionResult<List<EntryActivity>>> GetByEntry(ObjectId id, [FromQuery] int page = 0)
+    public async Task<ActionResult<PaginatedResponse<EntryActivity>>> GetByEntry(ObjectId id, [FromQuery] int page = 0)
     {
         var activities = await activityService.GetByEntryAsync(id, page);
         return Ok(activities);

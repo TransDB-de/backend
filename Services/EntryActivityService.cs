@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using transdb_backend_net.Models.Config;
 using transdb_backend_net.Models.Database;
+using transdb_backend_net.Models.Response;
 using transdb_backend_net.Utils;
 
 
@@ -17,10 +18,10 @@ public interface IEntryActivityService
     Task LogStatusChangesAsync(ObjectId entryId, string userId, Entry existing, EntryStatusChange changes);
 
     /// <summary>Returns a paginated list of all activity events across all entries.</summary>
-    Task<List<EntryActivity>> GetAllAsync(int page);
+    Task<PaginatedResponse<EntryActivity>> GetAllAsync(int page);
 
     /// <summary>Returns a paginated list of activity events for a specific entry.</summary>
-    Task<List<EntryActivity>> GetByEntryAsync(ObjectId entryId, int page);
+    Task<PaginatedResponse<EntryActivity>> GetByEntryAsync(ObjectId entryId, int page);
 
     /// <summary>
     /// Reverts the effect of a logged activity and logs the appropriate follow-up activity.
@@ -64,12 +65,18 @@ public class EntryActivityService(IDatabaseService db, IOptions<MongoDbConfig> c
     }
 
     /// <inheritdoc/>
-    public Task<List<EntryActivity>> GetAllAsync(int page) =>
-        db.FindActivitiesAsync(Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
+    public async Task<PaginatedResponse<EntryActivity>> GetAllAsync(int page)
+    {
+        var items = await db.FindActivitiesAsync(Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
+        return new PaginatedResponse<EntryActivity>(items, _itemsPerPage);
+    }
 
     /// <inheritdoc/>
-    public Task<List<EntryActivity>> GetByEntryAsync(ObjectId entryId, int page) =>
-        db.FindActivitiesByEntryAsync(entryId, Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
+    public async Task<PaginatedResponse<EntryActivity>> GetByEntryAsync(ObjectId entryId, int page)
+    {
+        var items = await db.FindActivitiesByEntryAsync(entryId, Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
+        return new PaginatedResponse<EntryActivity>(items, _itemsPerPage);
+    }
 
     /// <inheritdoc/>
     public async Task<Result> RevertAsync(EntryActivity activity, string userId, string comment)
