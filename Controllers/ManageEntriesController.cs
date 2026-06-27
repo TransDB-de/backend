@@ -71,7 +71,6 @@ public class ManageEntriesController(
     /// A geo location update is triggered in the background if the address changed.
     /// </summary>
     [HttpPut("{id}")]
-    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> EditEntry(ObjectId id, [FromBody] EditEntryRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;

@@ -142,12 +142,10 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
             ["filter[user][_eq]"] = userId,
             ["limit"] = "1"
         });
-        var request = new HttpRequestMessage(HttpMethod.Get, managementUrl);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _config.AccessToken);
 
         try
         {
-            var response = await httpClient.SendAsync(request);
+            var response = await httpClient.GetAsync(managementUrl);
             if (!response.IsSuccessStatusCode) return Result<DirectusManagementUser>.Failure($"cms management user failed with status code {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
@@ -172,12 +170,10 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
             ["fields"] = "user.id,user.first_name,user.last_name",
             ["limit"] = "-1"
         });
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _config.AccessToken);
-
+        
         try
         {
-            var response = await httpClient.SendAsync(request);
+            var response = await httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
                 return Result<List<DirectusUser>>.Failure($"cms users request failed with status {response.StatusCode}");
 

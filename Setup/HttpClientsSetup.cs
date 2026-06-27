@@ -13,6 +13,7 @@ public static class HttpClientsSetup
         services.AddHttpClient<ICmsService, CmsService>(client =>
         {
             client.BaseAddress = new Uri(cmsConfig.Url);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", cmsConfig.AccessToken);
         });
 
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.ConfigKey));

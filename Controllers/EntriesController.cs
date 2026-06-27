@@ -17,6 +17,8 @@ namespace transdb_backend_net.Controllers;
 public class EntriesController(
     IEntryService entryService,
     IEntryRevocationService revocationService,
+    ICmsService cmsService,
+    ILogger<EntriesController> logger,
     IEntryActivityService activityService) : ControllerBase
 {
     /// <summary>
@@ -42,11 +44,21 @@ public class EntriesController(
     {
         var result = await entryService.CreateEntryAsync(request);
         if (result.IsFailed) return new OperationFailedApiError(result.FailureDetails);
-
+        
         var entry = result.Value!;
-        await activityService.LogAsync(EntryActivity.Submitted(entry.Id));
+        
+        var cmsResult = await cmsService.CreateTicketAsync(entry.Name, entry.Id.ToString(), CmsTicketType.NewEntry, null);
+
+        if (cmsResult.IsFailed)
+        {
+            logger.LogCritical(cmsResult.FailureDetails);
+        }
+        
+        await activityService.LogAsync(EntryActivity.Submitted(entry.Id, cmsResult.Value));
         if (entry.PossibleDuplicate != null)
+        {
             await activityService.LogAsync(EntryActivity.DuplicateDetected(entry.Id, entry.PossibleDuplicate));
+        }
 
         var userAgent = Request.Headers.UserAgent.ToString();
         var revocationToken = await revocationService.GenerateTokenAsync(entry.Id, userAgent);

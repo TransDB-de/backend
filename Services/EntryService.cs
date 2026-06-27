@@ -118,9 +118,6 @@ public class EntryService(
                 entry.PossibleDuplicate = duplicate;
             
             var created = await db.InsertEntryAsync(entry);
-
-            //_ = CreateCmsTicketAsync(entry.Name, created.Id.ToString());
-
             return Result<Entry>.Success(created);
         }
         catch (Exception e)

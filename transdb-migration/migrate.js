@@ -159,6 +159,8 @@ for (let i = 3; i < process.argv.length - 1; i++) {
 const docs = JSON.parse(fs.readFileSync(inputFile, "utf8"));
 const entries = [];
 const activities = [];
+const submittedActivityByEntryId = {};
+const approvedActivityByEntryId = {};
 let warnings = 0;
 let skipped = 0;
 
@@ -274,10 +276,14 @@ for (const doc of docs) {
 	entries.push(entry);
 
 	// Activities
-	activities.push(activity(entryId, "Submitted", submittedAt));
+	const submittedActivity = activity(entryId, "Submitted", submittedAt);
+	submittedActivityByEntryId[entryId] = submittedActivity;
+	activities.push(submittedActivity);
 
 	if (approvedAt !== null) {
-		activities.push(activity(entryId, "Approved", approvedAt, approvedBy));
+		const approvedActivity = activity(entryId, "Approved", approvedAt, approvedBy);
+		approvedActivityByEntryId[entryId] = approvedActivity;
+		activities.push(approvedActivity);
 	}
 
 	if (doc.blocked) {
@@ -299,13 +305,24 @@ if (ticketsFile) {
 	let ticketActivities = 0;
 
 	for (const ticket of tickets) {
-		if (ticket.type === "new-entry") {
-			continue;
-		}
-
 		if (!ticket.entry_id) {
 			console.error(`[WARN] Ticket #${ticket.id} ("${ticket.title}") has no entry_id, skipping`);
 			warnings++;
+			continue;
+		}
+		
+		if (ticket.type === "new-entry") {
+			const submitted = submittedActivityByEntryId[ticket.entry_id];
+			if (!submitted) {
+				console.error(`[WARN] new-entry ticket #${ticket.id} references unknown entry ${ticket.entry_id}, skipping`);
+				warnings++;
+				continue;
+			}
+			const cms = attachments({ CmsTicketId: String(ticket.id) });
+			submitted.attachments = cms;
+			const approved = approvedActivityByEntryId[ticket.entry_id];
+			if (approved) approved.attachments = cms;
+			ticketActivities++;
 			continue;
 		}
 
