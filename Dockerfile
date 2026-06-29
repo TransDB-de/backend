@@ -7,8 +7,8 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["transdb-backend-net/transdb-backend-net.csproj", "transdb-backend-net/"]
-RUN dotnet restore "transdb-backend-net/transdb-backend-net.csproj"
+COPY ["transdb-backend-net.csproj", "."]
+RUN dotnet restore "transdb-backend-net.csproj"
 COPY . .
 WORKDIR "/src/transdb-backend-net"
 RUN dotnet build "./transdb-backend-net.csproj" -c $BUILD_CONFIGURATION -o /app/build
