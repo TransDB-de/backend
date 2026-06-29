@@ -59,6 +59,7 @@ public class CorsConfig
 
     /// <summary>Allowed origins for the development CORS policy (used when <c>ASPNETCORE_ENVIRONMENT=Development</c>).</summary>
     public string[] DevOrigins { get; set; } = ["http://localhost:5173"];
+    public string[] ProdOrigins { get; set; } = ["https://transdb.de"];
 }
 
 public class RateLimiterConfig

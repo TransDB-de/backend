@@ -96,7 +96,7 @@ builder.Services.AddCors(options =>
     });
     options.AddPolicy("prod", policy =>
     {
-        policy.WithOrigins("https://transdb.de", "https://www.transdb.de");
+        policy.WithOrigins(corsConfig.ProdOrigins);
         policy.AllowCredentials();
         policy.AllowAnyHeader();
         policy.AllowAnyMethod();
