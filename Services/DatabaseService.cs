@@ -168,7 +168,7 @@ public class DatabaseService : IDatabaseService
     /// <inheritdoc/>
     public async Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, PaginationOptions pagination)
     {
-        return await _entries.Find(filter).Skip(pagination.Skip).Limit(pagination.LimitWithOverhead).ToListAsync();
+        return await _entries.Find(filter).SortByDescending(f => f.Id).Skip(pagination.Skip).Limit(pagination.LimitWithOverhead).ToListAsync();
     }
 
     /// <inheritdoc/>
