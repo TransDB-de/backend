@@ -77,6 +77,7 @@ public class EntriesController(
 
     /// <summary>Returns a single publicly visible entry by its ID.</summary>
     [HttpGet("{id}")]
+    [ValidateCaptcha]
     public async Task<ActionResult<PublicEntryResponse>> GetEntry(ObjectId id)
     {
         var result = await entryService.GetPublicEntryByIdAsync(id);
