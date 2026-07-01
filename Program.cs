@@ -25,6 +25,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.ConfigureOptions<ConfigureApiValidationMessages>();
 builder.Services.ConfigureOptions<ConfigureApiValidationBehaviour>();
 
+builder.Services.Configure<EntryConfig>(builder.Configuration.GetSection(EntryConfig.ConfigKey));
+
 builder.Services.AddOpenApi();
 builder.Services.AddMongoDb(builder.Configuration);
 builder.Services.AddApplicationHttpClients(builder.Configuration);

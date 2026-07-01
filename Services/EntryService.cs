@@ -57,16 +57,18 @@ public interface IEntryService
 
 }
 
+public record FetchFilteredEntriesResponse(IEnumerable<Entry> Entries, string LocationName, bool HasMore);
+
 public class EntryService(
     IDatabaseService db,
-    ICmsService cms,
     IGeocodingService geocoding,
     INominatimService nominatim,
     IEntryActivityService activityService,
     ILogger<EntryService> logger,
-    IOptions<MongoDbConfig> config) : IEntryService
+    IOptions<EntryConfig> config) : IEntryService
 {
     private readonly int _itemsPerPage = config.Value.ItemsPerPage;
+    private readonly int _maxPageNumber = config.Value.MaxPageNumber;
     private readonly int _adminItemsPerPage = config.Value.AdminItemsPerPage;
     private readonly double _duplicateThreshold = config.Value.DuplicateProbabilityThreshold;
 
@@ -133,23 +135,23 @@ public class EntryService(
         filter.DatabaseConditions.Add(Builders<Entry>.Filter.Ne(e => e.Status.Blocked, true));
         filter.DatabaseConditions.Add(Builders<Entry>.Filter.Eq(e => e.Status.Archived, false));
 
-        var (entries, locationName) = await FetchFilteredEntriesAsync(filter, _itemsPerPage);
+        var res = await FetchFilteredEntriesAsync(filter, _itemsPerPage, _maxPageNumber);
+        
         return new PaginatedResponse<PublicEntryResponse>(
-            entries.Select(e => new PublicEntryResponse(e)).ToList(),
-            _itemsPerPage,
-            locationName);
+            res.Entries.Select(e => new PublicEntryResponse(e)).ToList(),
+            res.HasMore,
+            res.LocationName);
     }
 
     /// <inheritdoc/>
     public async Task<PaginatedResponse<Entry>> GetFullEntriesForElevatedUsageAsync(AdminEntriesFilterRequest filter)
     {
-        var (entries, locationName) = await FetchFilteredEntriesAsync(filter, _adminItemsPerPage);
-        return new PaginatedResponse<Entry>(entries.ToList(), _adminItemsPerPage, locationName);
+        var res = await FetchFilteredEntriesAsync(filter, _adminItemsPerPage);
+        return new PaginatedResponse<Entry>(res.Entries.ToList(), res.HasMore, res.LocationName);
     }
 
-    private async Task<(IEnumerable<Entry> Entries, string? LocationName)> FetchFilteredEntriesAsync(EntriesFilterRequest query, int limit)
+    private async Task<FetchFilteredEntriesResponse> FetchFilteredEntriesAsync(EntriesFilterRequest query, int limit, int? maxPage = null)
     {
-        var skip = Math.Max(0, query.Page) * limit;
         string? locationName = null;
         GeoJsonPoint? geoLocation = null;
 
@@ -176,18 +178,20 @@ public class EntryService(
         var combinedFilters = query.DatabaseConditions.Count > 0
             ? Builders<Entry>.Filter.And(query.DatabaseConditions)
             : Builders<Entry>.Filter.Empty;
-
-        IEnumerable<Entry> entries;
+        
         if (geoLocation != null)
         {
-            entries = await db.FindEntriesWithGeoAsync(combinedFilters, geoLocation, skip, limit);
+            var paginationHelper = new PaginationHelper<EntryWithDistance>(limit, query.Page, maxPage);
+            var (entries, more) = await paginationHelper.Paginate(options =>
+                db.FindEntriesWithGeoAsync(combinedFilters, geoLocation, options));
+            return new FetchFilteredEntriesResponse(entries, locationName, more);
         }
         else
         {
-            entries = await db.FindEntriesAsync(combinedFilters, skip, limit);
+            var paginationHelper = new PaginationHelper<Entry>(limit, query.Page, maxPage);
+            var (entries, more) = await paginationHelper.Paginate(options => db.FindEntriesAsync(combinedFilters, options));
+            return new FetchFilteredEntriesResponse(entries, locationName, more);
         }
-
-        return (entries, locationName);
     }
 
     /// <inheritdoc/>

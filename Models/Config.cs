@@ -32,7 +32,14 @@ public class MongoDbConfig
     public const string ConfigKey = "MongoDB";
 
     public string ConnectionUri { get; set; } = string.Empty;
+}
+
+public class EntryConfig
+{
+    public const string ConfigKey = "Entry";
+    
     public int ItemsPerPage { get; set; } = 10;
+    public int MaxPageNumber { get; set; } = 7;
     public int AdminItemsPerPage { get; set; } = 20;
     public int ActivityItemsPerPage { get; set; } = 35;
     public double DuplicateProbabilityThreshold { get; set; } = 0.55;

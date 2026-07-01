@@ -19,7 +19,7 @@ public interface IEntryRevocationService
     Task InvalidateTokenAsync(string token);
 }
 
-public class EntryRevocationService(IDatabaseService db, IOptions<MongoDbConfig> config) : IEntryRevocationService
+public class EntryRevocationService(IDatabaseService db, IOptions<EntryConfig> config) : IEntryRevocationService
 {
     private readonly TimeSpan _tokenTtl = config.Value.RevocationTokenLifetime;
 

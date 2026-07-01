@@ -30,7 +30,7 @@ public interface IEntryActivityService
     Task<Result> RevertAsync(EntryActivity activity, string userId, string comment);
 }
 
-public class EntryActivityService(IDatabaseService db, IOptions<MongoDbConfig> config) : IEntryActivityService
+public class EntryActivityService(IDatabaseService db, IOptions<EntryConfig> config) : IEntryActivityService
 {
     private readonly int _itemsPerPage = config.Value.ActivityItemsPerPage;
 
@@ -67,20 +67,23 @@ public class EntryActivityService(IDatabaseService db, IOptions<MongoDbConfig> c
     /// <inheritdoc/>
     public async Task<PaginatedResponse<EntryActivityResponse>> GetAllAsync(int page)
     {
-        var items = await db.FindActivitiesAsync(Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
+        var paginationHelper = new PaginationHelper<EntryActivityResponse>(_itemsPerPage, page);
+
+        var (items, more) = await paginationHelper.Paginate(db.FindActivitiesAsync);
         var names = await db.FindEntryNamesByIdsAsync(items.Select(a => a.EntryId).Distinct());
         foreach (var item in items)
         {
             item.EntryName = names.GetValueOrDefault(item.EntryId);
         }
-        return new PaginatedResponse<EntryActivityResponse>(items, _itemsPerPage);
+        return new PaginatedResponse<EntryActivityResponse>(items, more);
     }
 
     /// <inheritdoc/>
     public async Task<PaginatedResponse<EntryActivity>> GetByEntryAsync(ObjectId entryId, int page)
     {
-        var items = await db.FindActivitiesByEntryAsync(entryId, Math.Max(0, page) * _itemsPerPage, _itemsPerPage);
-        return new PaginatedResponse<EntryActivity>(items, _itemsPerPage);
+        var paginationHelper = new PaginationHelper<EntryActivity>(_itemsPerPage, page);
+        var (items, more) = await paginationHelper.Paginate(options => db.FindActivitiesByEntryAsync(entryId, options));
+        return new PaginatedResponse<EntryActivity>(items, more);
     }
 
     /// <inheritdoc/>

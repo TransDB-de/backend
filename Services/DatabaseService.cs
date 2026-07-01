@@ -32,25 +32,25 @@ public interface IDatabaseService
     Task<bool> DeleteEntryAsync(ObjectId id);
 
     /// <summary>Returns a paginated list of entries matching the given filter.</summary>
-    Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, int skip, int limit);
+    Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, PaginationOptions pagination);
 
     /// <summary>
     /// Returns a paginated list of entries sorted by distance from <paramref name="location"/>
     /// using a $geoNear aggregation pipeline. Distance is stored in kilometres.
     /// </summary>
-    Task<List<EntryWithDistance>> FindEntriesWithGeoAsync(FilterDefinition<Entry> filter, GeoJsonPoint location, int skip, int limit);
+    Task<List<EntryWithDistance>> FindEntriesWithGeoAsync(FilterDefinition<Entry> filter, GeoJsonPoint location, PaginationOptions pagination);
 
     /// <summary>Inserts a new activity document.</summary>
     Task InsertActivityAsync(EntryActivity activity);
 
     /// <summary>Returns a paginated list of all activity documents as enriched responses, sorted by descending timestamp.</summary>
-    Task<List<EntryActivityResponse>> FindActivitiesAsync(int skip, int limit);
+    Task<List<EntryActivityResponse>> FindActivitiesAsync(PaginationOptions pagination);
 
     /// <summary>Returns a name lookup for the given entry IDs, keyed by ID. Entries not found are omitted.</summary>
     Task<Dictionary<ObjectId, string>> FindEntryNamesByIdsAsync(IEnumerable<ObjectId> ids);
 
     /// <summary>Returns a paginated list of activity documents for a specific entry, sorted by ascending timestamp.</summary>
-    Task<List<EntryActivity>> FindActivitiesByEntryAsync(ObjectId entryId, int skip, int limit);
+    Task<List<EntryActivity>> FindActivitiesByEntryAsync(ObjectId entryId, PaginationOptions pagination);
 
     /// <summary>Finds a single activity document by its ID. Returns null if not found.</summary>
     Task<EntryActivity?> GetActivityByIdAsync(ObjectId id);
@@ -166,13 +166,13 @@ public class DatabaseService : IDatabaseService
     }
 
     /// <inheritdoc/>
-    public async Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, int skip, int limit)
+    public async Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, PaginationOptions pagination)
     {
-        return await _entries.Find(filter).Skip(skip).Limit(limit).ToListAsync();
+        return await _entries.Find(filter).Skip(pagination.Skip).Limit(pagination.LimitWithOverhead).ToListAsync();
     }
 
     /// <inheritdoc/>
-    public async Task<List<EntryWithDistance>> FindEntriesWithGeoAsync(FilterDefinition<Entry> filter, GeoJsonPoint location, int skip, int limit)
+    public async Task<List<EntryWithDistance>> FindEntriesWithGeoAsync(FilterDefinition<Entry> filter, GeoJsonPoint location, PaginationOptions pagination)
     {
         var serializer = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry.GetSerializer<Entry>();
         var registry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
@@ -193,8 +193,8 @@ public class DatabaseService : IDatabaseService
                 { "spherical", true },
                 { "query", matchDoc }
             }),
-            new BsonDocument("$skip", skip),
-            new BsonDocument("$limit", limit)
+            new BsonDocument("$skip", pagination.Skip),
+            new BsonDocument("$limit", pagination.LimitWithOverhead)
         };
 
         return await _entries.Aggregate<EntryWithDistance>(pipeline).ToListAsync();
@@ -205,11 +205,11 @@ public class DatabaseService : IDatabaseService
         await _activities.InsertOneAsync(activity);
 
     /// <inheritdoc/>
-    public async Task<List<EntryActivityResponse>> FindActivitiesAsync(int skip, int limit) =>
+    public async Task<List<EntryActivityResponse>> FindActivitiesAsync(PaginationOptions pagination) =>
         await _activities.Find(FilterDefinition<EntryActivity>.Empty)
             .SortByDescending(a => a.Timestamp)
-            .Skip(skip)
-            .Limit(limit)
+            .Skip(pagination.Skip)
+            .Limit(pagination.LimitWithOverhead)
             .As<EntryActivityResponse>()
             .ToListAsync();
 
@@ -227,11 +227,11 @@ public class DatabaseService : IDatabaseService
     }
 
     /// <inheritdoc/>
-    public async Task<List<EntryActivity>> FindActivitiesByEntryAsync(ObjectId entryId, int skip, int limit) =>
+    public async Task<List<EntryActivity>> FindActivitiesByEntryAsync(ObjectId entryId, PaginationOptions pagination) =>
         await _activities.Find(a => a.EntryId == entryId)
             .SortByDescending(a => a.Timestamp)
-            .Skip(skip)
-            .Limit(limit)
+            .Skip(pagination.Skip)
+            .Limit(pagination.LimitWithOverhead)
             .ToListAsync();
 
     /// <inheritdoc/>

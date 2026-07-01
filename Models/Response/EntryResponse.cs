@@ -72,11 +72,11 @@ public class PaginatedResponse<T>
     public bool More { get; set; }
     public string? LocationName { get; set; }
 
-    public PaginatedResponse(List<T> items, int itemsPerPage, string? locationName = null)
+    public PaginatedResponse(List<T> items, bool hasMore, string? locationName = null)
     {
         Items = items;
         // If the page is exactly full there may be more results, if its short, this was the last page.
-        More = items.Count >= itemsPerPage;
+        More = hasMore;
         LocationName = locationName;
     }
 }
