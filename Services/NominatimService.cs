@@ -44,14 +44,14 @@ public class NominatimService(HttpClient httpClient) : INominatimService
             
             if (!response.IsSuccessStatusCode)
             {
-                return Result<GeoJsonPoint>.Failure($"nominatim request failed with status {response.StatusCode}", EFailureType.Unexpected);
+                return Result<GeoJsonPoint>.Failure($"OSM Nominatim request failed with status {response.StatusCode}", EFailureType.Unexpected);
             }
 
             var json = await response.Content.ReadAsStringAsync();
             var results = JsonSerializer.Deserialize<NominatimResult[]>(json, JsonOptions);
             if (results == null || results.Length == 0)
             {
-                return Result<GeoJsonPoint>.Failure("no coordinates found for address");
+                return Result<GeoJsonPoint>.Failure("No coordinates found for address, please check manually with OpenStreetMaps if this address is correct.");
             }
 
             return Result<GeoJsonPoint>.Success(new GeoJsonPoint

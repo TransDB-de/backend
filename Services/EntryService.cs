@@ -276,8 +276,8 @@ public class EntryService(
             if (result.IsFailed && result.FailureType == EFailureType.Unexpected)
             {
                 logger.LogWarning("Geocoding failed for entry {Id}: {Details}", id, result.FailureDetails);
-                await activityService.LogAsync(EntryActivity.GeoLocationFailed(id));
             }
+            await activityService.LogAsync(EntryActivity.GeoLocationFailed(id, result.FailureDetails));
         }
         catch (Exception ex)
         {

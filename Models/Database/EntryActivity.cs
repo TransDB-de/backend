@@ -186,10 +186,11 @@ public class EntryActivity
     };
 
     /// <summary>Logged when an automatic geocoding update fails after an entry is approved or edited.</summary>
-    public static EntryActivity GeoLocationFailed(ObjectId entryId) => new()
+    public static EntryActivity GeoLocationFailed(ObjectId entryId, string? comment = null) => new()
     {
         EntryId = entryId,
         Type = EntryActivityType.GeoLocationFailed,
-        Timestamp = DateTime.UtcNow
+        Timestamp = DateTime.UtcNow,
+        Comment = comment
     };
 }
