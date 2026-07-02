@@ -61,7 +61,7 @@ public class ConfigureApiValidationBehaviour : IConfigureOptions<ApiBehaviorOpti
     private static List<ValidationProblem> GetJsonPathProblems(ActionContext ctx) =>
         ctx.ModelState
             .Where(kv => kv.Key.StartsWith("$.") && kv.Value?.Errors.Count > 0)
-            .SelectMany(kv => kv.Value!.Errors.Select(_ => new ValidationProblem(kv.Key, "format")))
+            .SelectMany(kv => kv.Value!.Errors.Select(_ => new ValidationProblem(kv.Key.Replace("$.", string.Empty), "format")))
             .ToList();
 
     // Errors on non-$. keys with a recognised code come from DataAnnotations/IValidatableObject
@@ -69,6 +69,6 @@ public class ConfigureApiValidationBehaviour : IConfigureOptions<ApiBehaviorOpti
         ctx.ModelState
             .Where(kv => !kv.Key.StartsWith("$.") && kv.Value?.Errors.Count > 0)
             .SelectMany(kv => kv.Value!.Errors
-                .Select(e => new ValidationProblem(kv.Key, e.ErrorMessage)))
+                .Select(e => new ValidationProblem(kv.Key.Replace("$.", string.Empty), e.ErrorMessage)))
             .ToList();
 }
