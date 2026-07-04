@@ -22,6 +22,8 @@ public interface IGeocodingService
     /// Reverse-geocodes a coordinate pair to a human-readable location name.
     /// </summary>
     Task<Result<string>> GetLocationNameAsync(GeoJsonPoint geoLocation);
+    
+    Task<Result<GeocodingResult>> ResolveLocationAsync(string? query, GeoJsonPoint? location);
 }
 
 public class GeocodingService(HttpClient httpClient) : IGeocodingService
@@ -73,5 +75,35 @@ public class GeocodingService(HttpClient httpClient) : IGeocodingService
         {
             return Result<string>.Failure(e);
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<GeocodingResult>> ResolveLocationAsync(string? query, GeoJsonPoint? location)
+    {
+        // if user has provided geolocation, we only need to resolve the name.
+        if (location != null)
+        {
+            var nameResult = await this.GetLocationNameAsync(location);
+            if (nameResult.IsFailed)
+            {
+                return Result<GeocodingResult>.Failure(nameResult);
+            }
+            
+            // reuse user's geolocation as it is more accurate
+            return Result<GeocodingResult>.Success(new GeocodingResult() { Location = location,  Name = nameResult.Value! });
+        }
+        
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var geoResult = await this.SearchByNameAsync(query);
+            if (geoResult.IsFailed)
+            {
+                return Result<GeocodingResult>.Failure(geoResult);
+            }
+            
+            return Result<GeocodingResult>.Success(new GeocodingResult() { Location = geoResult.Value.Location,  Name = geoResult.Value.Name });
+        }
+        
+        return  Result<GeocodingResult>.Failure("geocoding failed");
     }
 }

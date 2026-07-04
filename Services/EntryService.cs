@@ -154,42 +154,41 @@ public class EntryService(
     {
         string? locationName = null;
         GeoJsonPoint? geoLocation = null;
-
-        if (query.GeoLocation != null)
+        
+        if (query.IsGeolocatedQuery)
         {
-            var nameResult = await geocoding.GetLocationNameAsync(query.GeoLocation);
-            if (nameResult.IsOk)
-            {
-                locationName = nameResult.Value;
-            }
+            var geoResult = await geocoding.ResolveLocationAsync(query.Location, query.GeoLocation);
 
-            geoLocation = query.GeoLocation;
-        }
-        else if (!string.IsNullOrWhiteSpace(query.Location))
-        {
-            var geoResult = await geocoding.SearchByNameAsync(query.Location);
             if (geoResult.IsOk && geoResult.Value != null)
             {
-                geoLocation = geoResult.Value.Location;
                 locationName = geoResult.Value.Name;
+                geoLocation = geoResult.Value.Location;
             }
         }
 
-        var combinedFilters = query.DatabaseConditions.Count > 0
+        var actualFilters = query.DatabaseConditions.Count > 0
             ? Builders<Entry>.Filter.And(query.DatabaseConditions)
             : Builders<Entry>.Filter.Empty;
-        
+
         if (geoLocation != null)
         {
+            // mongodb doesn't allow fulltext search and geospartial in one query
+            // we resolve the text search to id's beforehand
+            if (query.HasText)
+            {
+                var ids = await db.FindEntryIdsAsync(actualFilters);
+                actualFilters = Builders<Entry>.Filter.In(e => e.Id, ids);
+            }
+            
             var paginationHelper = new PaginationHelper<EntryWithDistance>(limit, query.Page, maxPage);
             var (entries, more) = await paginationHelper.Paginate(options =>
-                db.FindEntriesWithGeoAsync(combinedFilters, geoLocation, options));
+                db.FindEntriesWithGeoAsync(actualFilters, geoLocation, options));
             return new FetchFilteredEntriesResponse(entries, locationName, more);
         }
         else
         {
             var paginationHelper = new PaginationHelper<Entry>(limit, query.Page, maxPage);
-            var (entries, more) = await paginationHelper.Paginate(options => db.FindEntriesAsync(combinedFilters, options));
+            var (entries, more) = await paginationHelper.Paginate(options => db.FindEntriesAsync(actualFilters, options));
             return new FetchFilteredEntriesResponse(entries, locationName, more);
         }
     }

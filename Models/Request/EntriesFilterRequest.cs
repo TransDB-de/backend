@@ -14,10 +14,14 @@ public class EntriesFilterRequest
     [EnumDataType(typeof(EEntryType), ErrorMessage = "invalid_value")]
     public EEntryType? Type { get; set; }
     public string? Text { get; set; }
+    public bool HasText => !string.IsNullOrWhiteSpace(Text);
+    
     public string? Location { get; set; }
 
     public decimal? Lat { get; set; }
     public decimal? Long { get; set; }
+    
+    public bool IsGeolocatedQuery => !string.IsNullOrWhiteSpace(Location) || (Lat.HasValue && Long.HasValue);
 
     /// <summary>
     /// Constructs a <see cref="GeoJsonPoint"/> from <see cref="Lat"/> and <see cref="Long"/> when both are provided.

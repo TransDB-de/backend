@@ -34,6 +34,9 @@ public interface IDatabaseService
     /// <summary>Returns a paginated list of entries matching the given filter.</summary>
     Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, PaginationOptions pagination);
 
+    /// <summary>Returns the IDs of all entries matching the given filter.</summary>
+    Task<List<ObjectId>> FindEntryIdsAsync(FilterDefinition<Entry> filter);
+
     /// <summary>
     /// Returns a paginated list of entries sorted by distance from <paramref name="location"/>
     /// using a $geoNear aggregation pipeline. Distance is stored in kilometres.
@@ -169,6 +172,14 @@ public class DatabaseService : IDatabaseService
     public async Task<List<Entry>> FindEntriesAsync(FilterDefinition<Entry> filter, PaginationOptions pagination)
     {
         return await _entries.Find(filter).SortByDescending(f => f.Id).Skip(pagination.Skip).Limit(pagination.LimitWithOverhead).ToListAsync();
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<ObjectId>> FindEntryIdsAsync(FilterDefinition<Entry> filter)
+    {
+        var projection = Builders<Entry>.Projection.Include(e => e.Id);
+        var docs = await _entries.Find(filter).Project(projection).ToListAsync();
+        return docs.Select(d => d["_id"].AsObjectId).ToList();
     }
 
     /// <inheritdoc/>
