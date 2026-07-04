@@ -14,6 +14,9 @@ public interface IEntryActivityService
     /// <summary>Persists an activity event for an entry.</summary>
     Task LogAsync(EntryActivity activity);
 
+    /// <summary>Deletes all activity events for an entry. Used when a submission is revoked, leaving no trace behind.</summary>
+    Task PurgeAsync(ObjectId entryId);
+
     /// <summary>Compares the existing entry state with the given status changes and logs the appropriate activities.</summary>
     Task LogStatusChangesAsync(ObjectId entryId, string userId, Entry existing, EntryStatusChange changes);
 
@@ -36,6 +39,9 @@ public class EntryActivityService(IDatabaseService db, IOptions<EntryConfig> con
 
     /// <inheritdoc/>
     public Task LogAsync(EntryActivity activity) => db.InsertActivityAsync(activity);
+
+    /// <inheritdoc/>
+    public Task PurgeAsync(ObjectId entryId) => db.DeleteActivitiesByEntryAsync(entryId);
 
     /// <inheritdoc/>
     public async Task LogStatusChangesAsync(ObjectId entryId, string userId, Entry existing, EntryStatusChange c)

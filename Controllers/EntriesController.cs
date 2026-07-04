@@ -103,6 +103,8 @@ public class EntriesController(
             return new InvalidRequestApiError(result.FailureDetails);
         }
 
+        // revoking is meant to leave no trace, as if the entry was never submitted.
+        await activityService.PurgeAsync(id);
         await revocationService.InvalidateTokenAsync(token);
 
         return Ok();

@@ -46,6 +46,9 @@ public interface IDatabaseService
     /// <summary>Inserts a new activity document.</summary>
     Task InsertActivityAsync(EntryActivity activity);
 
+    /// <summary>Deletes all activity documents for a given entry. Used when a submission is revoked, to leave no trace.</summary>
+    Task DeleteActivitiesByEntryAsync(ObjectId entryId);
+
     /// <summary>Returns a paginated list of all activity documents as enriched responses, sorted by descending timestamp.</summary>
     Task<List<EntryActivityResponse>> FindActivitiesAsync(PaginationOptions pagination);
 
@@ -214,6 +217,10 @@ public class DatabaseService : IDatabaseService
     /// <inheritdoc/>
     public async Task InsertActivityAsync(EntryActivity activity) =>
         await _activities.InsertOneAsync(activity);
+
+    /// <inheritdoc/>
+    public async Task DeleteActivitiesByEntryAsync(ObjectId entryId) =>
+        await _activities.DeleteManyAsync(a => a.EntryId == entryId);
 
     /// <inheritdoc/>
     public async Task<List<EntryActivityResponse>> FindActivitiesAsync(PaginationOptions pagination) =>
