@@ -97,6 +97,8 @@ public enum EEntryAttribute
     SingleUseVials,
     ReuseVial,
     Prefilled,
+    
+    TreatsInter
 }
 
 public enum AcademicTitle
