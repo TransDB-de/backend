@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Scalar.AspNetCore;
 using transdb_backend_net.Models.Config;
 using transdb_backend_net.Services;
 using transdb_backend_net.Setup;
@@ -118,6 +119,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
     app.UseCors();
 }
 else
