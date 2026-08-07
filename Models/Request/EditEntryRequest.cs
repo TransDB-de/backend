@@ -12,10 +12,6 @@ public record EditEntryRequestApplyResult(bool IsAddressChanged);
 /// </summary>
 public class EditEntryRequest : CreateEntryRequest
 {
-    public EntryStatus Status { get; set; } = new();
-    
-    public bool? RemoveDuplication { get; set; }
-
     [Required(ErrorMessage = "required"), StringLength(2000, MinimumLength = 1, ErrorMessage = "length")]
     public string Comment { get; set; } = string.Empty;
 
@@ -40,17 +36,39 @@ public class EditEntryRequest : CreateEntryRequest
         entry.Offers = Offers;
         entry.Specials = Specials;
         entry.Subject = Subject;
-        entry.Status.Approved = Status.Approved;
-        entry.Status.Blocked = Status.Blocked;
-        entry.Status.Archived = Status.Archived;
-
-        if (RemoveDuplication == true)
-        {
-            entry.PossibleDuplicate = null;
-        }
 
         return new EditEntryRequestApplyResult(AddressChanged(entry.Address));
     }
+
+    public bool HasChanged(Entry entry)
+    {
+        if (this.Type != entry.Type) return true;
+        
+        if (this.Name != entry.Name) return true;
+        if (this.Email != entry.Email) return true;
+        if (this.Telephone != entry.Telephone) return true;
+        if (this.Website != entry.Website) return true;
+        if (this.Accessible != entry.Accessible) return true;
+        
+        if (ContactChanged(entry.Contact)) return true;
+        
+        if (!this.Offers.SequenceEqual(entry.Offers)) return true;
+        if (!this.Attributes.SequenceEqual(entry.Attributes)) return true;
+        
+        if (this.Specials != entry.Specials) return true;
+        if (this.Subject != entry.Subject) return true;
+        
+        if (this.Type != entry.Type) return true;
+
+        if (AddressChanged(entry.Address)) return true;
+        
+        return false;
+    }
+    
+    private bool ContactChanged(ContactPerson? existing) => 
+        existing?.AcademicTitle != this.Contact?.AcademicTitle || 
+        existing?.FirstName != this.Contact?.FirstName || 
+        existing?.LastName != this.Contact?.LastName;
     
     /// <summary>
     /// Checks if this request intent to update the address compared to an existing address

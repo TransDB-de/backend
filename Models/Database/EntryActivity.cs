@@ -22,7 +22,11 @@ public enum EntryActivityType
     Reported,
     Deleted,
     Restored,
-    GeoLocationFailed
+    GeoLocationFailed,
+    ChangeProposal,
+    ChangeAccepted,
+    ChangeRejected,
+    ProposalDeleted
 }
 
 /// <summary>Keys for the <see cref="EntryActivity.Attachments"/> dictionary.</summary>
@@ -33,7 +37,8 @@ public enum EntryActivityAttachment
     OriginalEntryState,
     EntryChangeState,
     PossibleDuplicate,
-    RevertedActivityId
+    RevertedActivityId,
+    ProposalId
 }
 
 /// <summary>An immutable audit record describing a single state change on an entry.</summary>
@@ -192,5 +197,56 @@ public class EntryActivity
         Type = EntryActivityType.GeoLocationFailed,
         Timestamp = DateTime.UtcNow,
         Comment = comment
+    };
+    
+    public static EntryActivity ChangeProposed(ObjectId entryId, string? userId, string? comment, ObjectId proposalId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Comment = comment,
+        Type = EntryActivityType.ChangeProposal,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] =  proposalId
+        }
+    };
+
+    public static EntryActivity ChangeAccepted(ObjectId entryId, string userId, ObjectId proposalId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Type = EntryActivityType.ChangeAccepted,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] = proposalId
+        }
+    };
+
+    public static EntryActivity ChangeRejected(ObjectId entryId, string userId, string? comment, ObjectId proposalId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Comment = comment,
+        Type = EntryActivityType.ChangeRejected,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] = proposalId
+        }
+    };
+
+    public static EntryActivity ProposalDeleted(ObjectId entryId, string userId, string? comment, ObjectId proposalId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Comment = comment,
+        Type = EntryActivityType.ProposalDeleted,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] = proposalId
+        }
     };
 }

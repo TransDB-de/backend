@@ -75,6 +75,20 @@ public interface IDatabaseService
 
     /// <summary>Deletes a revocation token by its token string.</summary>
     Task DeleteRevocationTokenAsync(string token);
+
+    Task<EntryChangeProposal> InsertEntryChangeProposal(EntryChangeProposal proposal);
+
+    /// <summary>Finds a change proposal by its ID. Returns null if no document is found.</summary>
+    Task<EntryChangeProposal?> GetEntryChangeProposalByIdAsync(ObjectId id);
+
+    /// <summary>Returns a paginated list of change proposals matching the given filter.</summary>
+    Task<List<EntryChangeProposal>> FindEntryChangeProposalsAsync(FilterDefinition<EntryChangeProposal> filter, PaginationOptions pagination);
+
+    /// <summary>Updates the status of a change proposal. Returns true if a document was modified.</summary>
+    Task<bool> UpdateEntryChangeProposalStatusAsync(ObjectId id, EEntryChangeProposalStatus status);
+
+    /// <summary>Permanently deletes a change proposal. Returns true if a document was deleted.</summary>
+    Task<bool> DeleteEntryChangeProposalAsync(ObjectId id);
 }
 
 public class DatabaseService : IDatabaseService
@@ -83,6 +97,7 @@ public class DatabaseService : IDatabaseService
     private readonly IMongoCollection<Entry> _entries;
     private readonly IMongoCollection<EntryActivity> _activities;
     private readonly IMongoCollection<EntryRevocationToken> _revocationTokens;
+    private readonly IMongoCollection<EntryChangeProposal> _changeProposals;
 
     public DatabaseService(IOptions<MongoDbConfig> config, ILogger<DatabaseService> logger)
     {
@@ -91,6 +106,7 @@ public class DatabaseService : IDatabaseService
         _entries = _db.GetCollection<Entry>("entries");
         _activities = _db.GetCollection<EntryActivity>("activities");
         _revocationTokens = _db.GetCollection<EntryRevocationToken>("revocation_tokens");
+        _changeProposals = _db.GetCollection<EntryChangeProposal>("change_proposals");
 
         CreateIndexes();
         logger.LogInformation("MongoDB successfully initialized");
@@ -125,6 +141,9 @@ public class DatabaseService : IDatabaseService
         _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
             Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.ExpiresAt),
             new CreateIndexOptions { ExpireAfter = TimeSpan.Zero }));
+        
+        _changeProposals.Indexes.CreateOne(new CreateIndexModel<EntryChangeProposal>(
+            Builders<EntryChangeProposal>.IndexKeys.Ascending(a => a.EntryId)));
     }
 
     /// <inheritdoc/>
@@ -293,6 +312,40 @@ public class DatabaseService : IDatabaseService
     /// <inheritdoc/>
     public async Task DeleteRevocationTokenAsync(string token) =>
         await _revocationTokens.DeleteOneAsync(t => t.Token == token);
+
+    public async Task<EntryChangeProposal> InsertEntryChangeProposal(EntryChangeProposal proposal)
+    {
+        await _changeProposals.InsertOneAsync(proposal);
+        return proposal;
+    }
+
+    /// <inheritdoc/>
+    public async Task<EntryChangeProposal?> GetEntryChangeProposalByIdAsync(ObjectId id) =>
+        await _changeProposals.Find(p => p.Id == id).FirstOrDefaultAsync();
+
+    /// <inheritdoc/>
+    public async Task<List<EntryChangeProposal>> FindEntryChangeProposalsAsync(FilterDefinition<EntryChangeProposal> filter, PaginationOptions pagination) =>
+        await _changeProposals.Find(filter)
+            .SortByDescending(p => p.Id)
+            .Skip(pagination.Skip)
+            .Limit(pagination.LimitWithOverhead)
+            .ToListAsync();
+
+    /// <inheritdoc/>
+    public async Task<bool> UpdateEntryChangeProposalStatusAsync(ObjectId id, EEntryChangeProposalStatus status)
+    {
+        var result = await _changeProposals.UpdateOneAsync(p => p.Id == id,
+            Builders<EntryChangeProposal>.Update.Set(p => p.Status, status));
+        return result.ModifiedCount > 0;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> DeleteEntryChangeProposalAsync(ObjectId id)
+    {
+        var result = await _changeProposals.DeleteOneAsync(p => p.Id == id);
+        return result.DeletedCount > 0;
+    }
+
 
     /// <summary>Extracts the database name from a MongoDB connection URI.</summary>
     private static string GetDatabaseName(string uri)

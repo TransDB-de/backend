@@ -19,6 +19,7 @@ public class EntriesController(
     IEntryRevocationService revocationService,
     ICmsService cmsService,
     ILogger<EntriesController> logger,
+    IDatabaseService databaseService,
     IEntryActivityService activityService) : ControllerBase
 {
     /// <summary>
@@ -84,6 +85,30 @@ public class EntriesController(
         if (result.IsFailed) return new NotFoundApiError(result.FailureDetails);
 
         return Ok(new PublicEntryResponse(result.Value!));
+    }
+    
+    /// <summary>
+    /// Propose a change to an entry
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> ProposeChange(ObjectId id, [FromBody] EditEntryRequest request)
+    {
+        var existingResult = await entryService.GetEntryByIdAsync(id);
+        if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
+        var existing = existingResult.Value!;
+
+        if (!request.HasChanged(existing))
+        {
+            return new NoChangesError();
+        }
+
+        var proposal = new EntryChangeProposal(existing, request, EDataOrigin.User, null);
+
+        proposal = await databaseService.InsertEntryChangeProposal(proposal);
+
+        await activityService.LogAsync(EntryActivity.ChangeProposed(existing.Id, null, request.Comment, proposal.Id));
+
+        return Ok();
     }
 
     /// <summary>Permanently deletes a newly created entry using a single-use revocation token.</summary>

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using System.Security.Claims;
 using System.Text.Json;
-using MongoDB.Bson.IO;
 using transdb_backend_net.Exceptions;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Models.Request;
@@ -17,7 +16,8 @@ namespace transdb_backend_net.Controllers;
 [Authorize]
 public class ManageEntriesController(
     IEntryService entryService,
-    IEntryActivityService activityService) : ControllerBase
+    IEntryActivityService activityService,
+    IDatabaseService databaseService) : ControllerBase
 {
     /// <summary>
     /// Returns a paginated list of entries for admin review with full field visibility.
@@ -80,6 +80,7 @@ public class ManageEntriesController(
         var existing = existingResult.Value!;
 
         var originalEntry = JsonSerializer.Deserialize<Entry>(JsonSerializer.Serialize(existing));
+        var hasChanged = request.HasChanged(existing);
 
         var result = await entryService.EditEntryAsync(id, request);
         if (result.IsFailed)
@@ -90,9 +91,16 @@ public class ManageEntriesController(
             );
         }
 
+        if (hasChanged)
+        {
+            var proposal = new EntryChangeProposal(existing, request, EDataOrigin.Member, userId)
+            {
+                Status = EEntryChangeProposalStatus.Accepted
+            };
+            await databaseService.InsertEntryChangeProposal(proposal);
+        }
+
         await activityService.LogAsync(EntryActivity.Edited(id, userId, request.Comment, originalEntry, request));
-        await activityService.LogStatusChangesAsync(id, userId, existing,
-            new EntryStatusChange(request.Status.Approved, request.Status.Blocked, null, request.Comment));
 
         return Ok();
     }

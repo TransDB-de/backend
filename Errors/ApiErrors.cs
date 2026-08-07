@@ -69,3 +69,6 @@ public class ApplicationUnhealthyApiError(string? details = null)
 /// <summary>400 — a CMS interaction was attempted but failed (e.g. ticket creation rejected by Directus).</summary>
 public class CmsInteractionFailedError(string? details = null)
     : ApiError(StatusCodes.Status400BadRequest, "cms_interaction_failed", details);
+
+public class NoChangesError(string? details = null)
+    : ApiError(StatusCodes.Status400BadRequest, "no_changes", details);
