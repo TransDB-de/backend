@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using transdb_backend_net.Models.Database;
 
 namespace transdb_backend_net.Models.Request;
@@ -7,4 +8,5 @@ public class EntryChangeProposalFilterRequest
 {
     public EEntryChangeProposalStatus? Status { get; set; }
     public int Page { get; set; } = 0;
+    public ObjectId? EntryId { get; set; }
 }
