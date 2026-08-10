@@ -106,7 +106,7 @@ public class EntriesController(
 
         proposal = await databaseService.InsertEntryChangeProposal(proposal);
 
-        await activityService.LogAsync(EntryActivity.ChangeProposed(existing.Id, null, request.Comment, proposal.Id));
+        await activityService.LogAsync(EntryActivity.ChangeProposed(existing.Id, null, request.Comment, proposal.Id, proposal.SnowflakeId));
 
         return Ok();
     }

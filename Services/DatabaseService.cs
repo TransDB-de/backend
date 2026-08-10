@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using transdb_backend_net.Models.Config;
 using transdb_backend_net.Models.Database;
+using transdb_backend_net.Models.Request;
 using transdb_backend_net.Models.Response;
 using transdb_backend_net.Utils;
 
@@ -84,8 +85,11 @@ public interface IDatabaseService
     /// <summary>Returns a paginated list of change proposals matching the given filter.</summary>
     Task<List<EntryChangeProposal>> FindEntryChangeProposalsAsync(FilterDefinition<EntryChangeProposal> filter, PaginationOptions pagination);
 
-    /// <summary>Updates the status of a change proposal. Returns true if a document was modified.</summary>
-    Task<bool> UpdateEntryChangeProposalStatusAsync(ObjectId id, EEntryChangeProposalStatus status);
+    /// <summary>
+    /// Marks a change proposal as decided (accepted or rejected) and records the entry's content
+    /// state from right before and after, in one write. Returns true if a document was modified.
+    /// </summary>
+    Task<bool> ResolveEntryChangeProposalAsync(ObjectId id, EEntryChangeProposalStatus status, CreateEntryRequest before, CreateEntryRequest after);
 
     /// <summary>Permanently deletes a change proposal. Returns true if a document was deleted.</summary>
     Task<bool> DeleteEntryChangeProposalAsync(ObjectId id);
@@ -332,10 +336,13 @@ public class DatabaseService : IDatabaseService
             .ToListAsync();
 
     /// <inheritdoc/>
-    public async Task<bool> UpdateEntryChangeProposalStatusAsync(ObjectId id, EEntryChangeProposalStatus status)
+    public async Task<bool> ResolveEntryChangeProposalAsync(ObjectId id, EEntryChangeProposalStatus status, CreateEntryRequest before, CreateEntryRequest after)
     {
-        var result = await _changeProposals.UpdateOneAsync(p => p.Id == id,
-            Builders<EntryChangeProposal>.Update.Set(p => p.Status, status));
+        var update = Builders<EntryChangeProposal>.Update
+            .Set(p => p.Status, status)
+            .Set(p => p.DecisionEntryStateBefore, before)
+            .Set(p => p.DecisionEntryStateAfter, after);
+        var result = await _changeProposals.UpdateOneAsync(p => p.Id == id, update);
         return result.ModifiedCount > 0;
     }
 

@@ -23,11 +23,11 @@ public class ChangeProposalController(
     IEntryActivityService activityService,
     IOptions<EntryConfig> config) : ControllerBase
 {
-    private readonly int _itemsPerPage = config.Value.AdminItemsPerPage;
+    private readonly int _itemsPerPage = config.Value.ProposalsPerPage;
 
     /// <summary>Returns a paginated list of change proposals, optionally filtered by status.</summary>
     [HttpGet]
-    public async Task<ActionResult<PaginatedResponse<EntryChangeProposal>>> GetProposals([FromQuery] EntryChangeProposalFilterRequest filter)
+    public async Task<ActionResult<PaginatedResponse<PublicChangeProposal>>> GetProposals([FromQuery] EntryChangeProposalFilterRequest filter)
     {
         var filters = new List<FilterDefinition<EntryChangeProposal>>();
 
@@ -42,35 +42,60 @@ public class ChangeProposalController(
         }
         
         var dbFilter =  Builders<EntryChangeProposal>.Filter.And(filters);
-        
+
         var paginationHelper = new PaginationHelper<EntryChangeProposal>(_itemsPerPage, filter.Page);
         var (items, more) = await paginationHelper.Paginate(options => databaseService.FindEntryChangeProposalsAsync(dbFilter, options));
 
-        return Ok(new PaginatedResponse<EntryChangeProposal>(items, more));
+        var proposals = items.Select(i => new PublicChangeProposal(i)).ToList();
+        
+        return new PaginatedResponse<PublicChangeProposal>(proposals, more);
     }
 
-    /// <summary>Returns a single change proposal by ID.</summary>
+    /// <summary>
+    /// Returns a single change proposal by ID, together with the entry's current state and a live
+    /// preview of applying the (rebased) proposal right now (<see cref="ChangeProposalDetailResponse.RebasedProposal"/>
+    /// vs. <c>CurrentEntry</c>). Once the proposal has been decided (accepted or rejected), use
+    /// <see cref="EntryChangeProposal.DecisionEntryStateBefore"/> and <see cref="EntryChangeProposal.DecisionEntryStateAfter"/>
+    /// on <c>Proposal</c> instead, they hold what the entry actually looked like at that moment.
+    /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<EntryChangeProposal>> GetProposal(ObjectId id)
+    public async Task<ActionResult<ChangeProposalDetailResponse>> GetProposal(ObjectId id)
     {
         var proposal = await databaseService.GetEntryChangeProposalByIdAsync(id);
         if (proposal == null) return new NotFoundApiError("proposal not found");
 
-        return Ok(proposal);
+        var entry = await entryService.GetEntryByIdAsync(proposal.EntryId);
+        if (entry.IsFailed) return new NotFoundApiError("entry not found");
+
+        var rebased = EntryChangeProposalRebase.Rebase(proposal.OriginalEntryState, proposal.ChangeProposal, entry.Value);
+
+        return new ChangeProposalDetailResponse(proposal, entry.Value, rebased);
     }
 
-    /// <summary>Accepts a proposal: applies the proposed changes to the entry and marks it Accepted.</summary>
+    /// <summary>
+    /// Accepts a proposal: applies the proposed changes to the entry and marks it Accepted.
+    /// By default, only the fields the proposal actually changed get applied on top of the
+    /// entry's current state, so unrelated changes made in the meantime don't get overwritten
+    /// (see <see cref="AcceptProposalRequest.UseRebase"/>). Turning rebase off is only allowed
+    /// for admins, since it can silently overwrite changes made in the meantime.
+    /// </summary>
     [HttpPatch("{id}/accept")]
-    public async Task<IActionResult> AcceptProposal(ObjectId id)
+    public async Task<IActionResult> AcceptProposal(ObjectId id, [FromBody] AcceptProposalRequest? request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var useRebase = request?.UseRebase ?? true;
+        if (!useRebase && !User.HasClaim("isAdmin", "true"))
+        {
+            return new ForbiddenApiError("only admins can accept a proposal without rebase");
+        }
 
         var proposal = await databaseService.GetEntryChangeProposalByIdAsync(id);
         if (proposal == null) return new NotFoundApiError("proposal not found");
         if (proposal.Status != EEntryChangeProposalStatus.Open)
             return new InvalidRequestApiError("proposal already resolved");
 
-        var result = await entryService.EditEntryAsync(proposal.EntryId, proposal.ChangeProposal);
+        var result = await entryService.AcceptChangeProposalAsync(proposal, useRebase);
         if (result.IsFailed)
         {
             return result.SelectApiError(
@@ -79,13 +104,16 @@ public class ChangeProposalController(
             );
         }
 
-        await databaseService.UpdateEntryChangeProposalStatusAsync(id, EEntryChangeProposalStatus.Accepted);
-        await activityService.LogAsync(EntryActivity.ChangeAccepted(proposal.EntryId, userId, proposal.Id));
+        await activityService.LogAsync(EntryActivity.ChangeAccepted(proposal.EntryId, userId, proposal.Id, proposal.SnowflakeId));
 
         return Ok();
     }
 
-    /// <summary>Rejects a proposal with a mandatory comment explaining why.</summary>
+    /// <summary>
+    /// Rejects a proposal with a mandatory comment explaining why. The entry itself is left
+    /// untouched, but we still save what rebasing would have produced, so the proposal's history
+    /// stays useful later on.
+    /// </summary>
     [HttpPatch("{id}/reject")]
     public async Task<IActionResult> RejectProposal(ObjectId id, [FromBody] CommentedRequest request)
     {
@@ -95,8 +123,16 @@ public class ChangeProposalController(
         if (proposal == null) return new NotFoundApiError("proposal not found");
         if (proposal.Status != EEntryChangeProposalStatus.Open) return new InvalidRequestApiError("proposal already resolved");
 
-        await databaseService.UpdateEntryChangeProposalStatusAsync(id, EEntryChangeProposalStatus.Rejected);
-        await activityService.LogAsync(EntryActivity.ChangeRejected(proposal.EntryId, userId, request.Comment, proposal.Id));
+        var result = await entryService.RejectChangeProposalAsync(proposal);
+        if (result.IsFailed)
+        {
+            return result.SelectApiError(
+                expected: new NotFoundApiError(result.FailureDetails),
+                unexpected: new OperationFailedApiError(result.FailureDetails)
+            );
+        }
+
+        await activityService.LogAsync(EntryActivity.ChangeRejected(proposal.EntryId, userId, request.Comment, proposal.Id, proposal.SnowflakeId));
 
         return Ok();
     }
@@ -116,7 +152,7 @@ public class ChangeProposalController(
         }
 
         await databaseService.DeleteEntryChangeProposalAsync(id);
-        await activityService.LogAsync(EntryActivity.ProposalDeleted(proposal.EntryId, userId, request.Comment, proposal.Id));
+        await activityService.LogAsync(EntryActivity.ProposalDeleted(proposal.EntryId, userId, request.Comment));
 
         return Ok();
     }

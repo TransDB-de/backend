@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using PhoneNumbers;
+using transdb_backend_net.Models.Database;
 using transdb_backend_net.Schema;
 
 namespace transdb_backend_net.Models.Request;
@@ -40,6 +41,35 @@ public class ContactPersonRequest
 /// </summary>
 public class CreateEntryRequest : IValidatableObject
 {
+    public CreateEntryRequest() { }
+    
+    public CreateEntryRequest(Entry entry)
+    {
+        Type = entry.Type;
+        Name = entry.Name;
+        Contact = entry.Contact == null ? null : new ContactPersonRequest
+        {
+            AcademicTitle = entry.Contact.AcademicTitle,
+            FirstName = entry.Contact.FirstName,
+            LastName = entry.Contact.LastName,
+        };
+        Email = entry.Email;
+        Telephone = entry.Telephone;
+        Website = entry.Website;
+        Accessible = entry.Accessible;
+        Address = new AddressRequest
+        {
+            City = entry.Address.City,
+            Plz = entry.Address.Plz,
+            Street = entry.Address.Street,
+            House = entry.Address.House,
+        };
+        Offers = entry.Offers;
+        Attributes = entry.Attributes;
+        Specials = entry.Specials;
+        Subject = entry.Subject;
+    }
+
     [Required(ErrorMessage = "required"), StringLength(260, MinimumLength = 1, ErrorMessage = "length")]
     public string Name { get; set; } = string.Empty;
 

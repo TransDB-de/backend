@@ -41,6 +41,7 @@ public class EntryConfig
     public int ItemsPerPage { get; set; } = 10;
     public int MaxPageNumber { get; set; } = 7;
     public int AdminItemsPerPage { get; set; } = 20;
+    public int ProposalsPerPage { get; set; } = 5;
     public int ActivityItemsPerPage { get; set; } = 35;
     public double DuplicateProbabilityThreshold { get; set; } = 0.55;
     public TimeSpan RevocationTokenLifetime { get; set; } = TimeSpan.FromHours(24);

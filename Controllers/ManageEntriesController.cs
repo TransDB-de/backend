@@ -97,10 +97,10 @@ public class ManageEntriesController(
             {
                 Status = EEntryChangeProposalStatus.Accepted
             };
-            await databaseService.InsertEntryChangeProposal(proposal);
+            proposal = await databaseService.InsertEntryChangeProposal(proposal);
+            
+            await activityService.LogAsync(EntryActivity.Edited(id, userId, request.Comment, proposal.Id, proposal.SnowflakeId));
         }
-
-        await activityService.LogAsync(EntryActivity.Edited(id, userId, request.Comment, originalEntry, request));
 
         return Ok();
     }

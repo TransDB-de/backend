@@ -38,7 +38,8 @@ public enum EntryActivityAttachment
     EntryChangeState,
     PossibleDuplicate,
     RevertedActivityId,
-    ProposalId
+    ProposalId,
+    ProposalSnowflakeId
 }
 
 /// <summary>An immutable audit record describing a single state change on an entry.</summary>
@@ -119,7 +120,7 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow
     };
 
-    public static EntryActivity Edited(ObjectId entryId, string userId, string? comment, Entry original, EditEntryRequest changes) => new()
+    public static EntryActivity Edited(ObjectId entryId, string userId, string? comment, ObjectId changeProposalId, string changeProposalSnowflakeId) => new()
     {
         EntryId = entryId,
         UserId = userId,
@@ -128,8 +129,8 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow,
         Attachments = new Dictionary<EntryActivityAttachment, object>
         {
-            [EntryActivityAttachment.OriginalEntryState] = original,
-            [EntryActivityAttachment.EntryChangeState] = changes
+            [EntryActivityAttachment.ProposalId] = changeProposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = changeProposalSnowflakeId
         }
     };
 
@@ -199,7 +200,7 @@ public class EntryActivity
         Comment = comment
     };
     
-    public static EntryActivity ChangeProposed(ObjectId entryId, string? userId, string? comment, ObjectId proposalId) => new()
+    public static EntryActivity ChangeProposed(ObjectId entryId, string? userId, string? comment, ObjectId proposalId, string proposalSnowflakeId) => new()
     {
         EntryId = entryId,
         UserId = userId,
@@ -208,11 +209,12 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow,
         Attachments = new Dictionary<EntryActivityAttachment, object>
         {
-            [EntryActivityAttachment.ProposalId] =  proposalId
+            [EntryActivityAttachment.ProposalId] = proposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = proposalSnowflakeId
         }
     };
 
-    public static EntryActivity ChangeAccepted(ObjectId entryId, string userId, ObjectId proposalId) => new()
+    public static EntryActivity ChangeAccepted(ObjectId entryId, string userId, ObjectId proposalId, string proposalSnowflakeId) => new()
     {
         EntryId = entryId,
         UserId = userId,
@@ -220,11 +222,12 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow,
         Attachments = new Dictionary<EntryActivityAttachment, object>
         {
-            [EntryActivityAttachment.ProposalId] = proposalId
+            [EntryActivityAttachment.ProposalId] = proposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = proposalSnowflakeId
         }
     };
 
-    public static EntryActivity ChangeRejected(ObjectId entryId, string userId, string? comment, ObjectId proposalId) => new()
+    public static EntryActivity ChangeRejected(ObjectId entryId, string userId, string? comment, ObjectId proposalId, string proposalSnowflakeId) => new()
     {
         EntryId = entryId,
         UserId = userId,
@@ -233,20 +236,17 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow,
         Attachments = new Dictionary<EntryActivityAttachment, object>
         {
-            [EntryActivityAttachment.ProposalId] = proposalId
+            [EntryActivityAttachment.ProposalId] = proposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = proposalSnowflakeId
         }
     };
 
-    public static EntryActivity ProposalDeleted(ObjectId entryId, string userId, string? comment, ObjectId proposalId) => new()
+    public static EntryActivity ProposalDeleted(ObjectId entryId, string userId, string? comment) => new()
     {
         EntryId = entryId,
         UserId = userId,
         Comment = comment,
         Type = EntryActivityType.ProposalDeleted,
-        Timestamp = DateTime.UtcNow,
-        Attachments = new Dictionary<EntryActivityAttachment, object>
-        {
-            [EntryActivityAttachment.ProposalId] = proposalId
-        }
+        Timestamp = DateTime.UtcNow
     };
 }
