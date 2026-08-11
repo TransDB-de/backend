@@ -29,19 +29,7 @@ public class ChangeProposalController(
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<PublicChangeProposal>>> GetProposals([FromQuery] EntryChangeProposalFilterRequest filter)
     {
-        var filters = new List<FilterDefinition<EntryChangeProposal>>();
-
-        if (filter.Status != null)
-        {
-            filters.Add(Builders<EntryChangeProposal>.Filter.Eq(p => p.Status, filter.Status.Value));
-        }
-
-        if (filter.EntryId != null)
-        {
-            filters.Add(Builders<EntryChangeProposal>.Filter.Eq(p => p.EntryId, filter.EntryId));
-        }
-        
-        var dbFilter =  Builders<EntryChangeProposal>.Filter.And(filters);
+        var dbFilter = filter.GetDatabaseFilters();
 
         var paginationHelper = new PaginationHelper<EntryChangeProposal>(_itemsPerPage, filter.Page);
         var (items, more) = await paginationHelper.Paginate(options => databaseService.FindEntryChangeProposalsAsync(dbFilter, options));
