@@ -2,6 +2,9 @@ using System.Text;
 
 namespace transdb_backend_net.Utils;
 
+/// <summary>
+/// Base 36 util, cause it can store more data than hex but is also case-insensitive compared to base 64
+/// </summary>
 public static class Base36
 {
     private const string Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -11,9 +14,9 @@ public static class Base36
     /// </summary>
     /// <param name="value">numeric value</param>
     /// <returns>Base36 uppercase string</returns>
-    public static string Encode(long value)
+    public static string Encode(ulong value)
     {
-        if (value <= 0)
+        if (value == 0)
         {
             return "0";
         }
@@ -32,4 +35,7 @@ public static class Base36
 
         return digits.ToString();
     }
+
+    /// <inheritdoc cref="Encode(ulong)" />
+    public static string Encode(long value) => Encode((ulong)Math.Max(value, 0));
 }
