@@ -19,7 +19,7 @@ public static class EntryChangeProposalRebase
     /// Used to figure out which fields the proposal actually touched.
     /// </param>
     /// <param name="changeset">
-    /// The proposal itself (<see cref="EntryChangeProposal.ChangeProposal"/>): a full copy of
+    /// The proposal itself (<see cref="EntryChangeProposal.ChangeProposal"/>): a copy of
     /// <paramref name="original"/> with the wanted changes applied on top.
     /// </param>
     /// <param name="current">The entry's live state, right before applying the proposal.</param>

@@ -44,8 +44,8 @@ public class PublicChangeProposal
 /// <see cref="RebasedProposal"/> is <see cref="EntryChangeProposal.ChangeProposal"/> rebased
 /// against <see cref="CurrentEntry"/>, so it shows what applying this proposal right now would
 /// look like. Once the proposal has been decided, use <c>Proposal.DecisionEntryStateBefore</c>
-/// and <c>DecisionEntryStateAfter</c> instead - those were saved at decision time and stay
-/// correct even as the entry keeps changing afterwards, unlike this live preview.
+/// and <c>DecisionEntryStateAfter</c> instead (those were saved at decision time and stay
+/// correct even as the entry keeps changing afterward)
 /// </summary>
 public class ChangeProposalDetailResponse(EntryChangeProposal proposal, Entry current, EditEntryRequest rebased)
 {

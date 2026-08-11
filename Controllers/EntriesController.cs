@@ -16,7 +16,7 @@ namespace transdb_backend_net.Controllers;
 [Route("entries")]
 public class EntriesController(
     IEntryService entryService,
-    IEntryRevocationService revocationService,
+    IActionTokenService revocationService,
     ICmsService cmsService,
     ILogger<EntriesController> logger,
     IDatabaseService databaseService,
@@ -41,7 +41,7 @@ public class EntriesController(
     [HttpPost]
     [EnableRateLimiting("newEntry")]
     [ValidateCaptcha]
-    public async Task<ActionResult<CreateEntryResponse>> CreateEntry([FromBody] CreateEntryRequest request)
+    public async Task<ActionResult<EntryCreatedResponse>> CreateEntry([FromBody] CreateEntryRequest request)
     {
         var result = await entryService.CreateEntryAsync(request);
         if (result.IsFailed) return new OperationFailedApiError(result.FailureDetails);
@@ -62,7 +62,7 @@ public class EntriesController(
         }
 
         var userAgent = Request.Headers.UserAgent.ToString();
-        var revocationToken = await revocationService.GenerateTokenAsync(entry.Id, userAgent);
+        var revocationToken = await revocationService.GenerateTokenAsync(EActionTokenPurpose.EntryRevocation, entry.Id, userAgent);
 
         DuplicateMatch? possibleDuplicate = null;
 
@@ -73,7 +73,7 @@ public class EntriesController(
                 possibleDuplicate = entry.PossibleDuplicate;
         }
 
-        return Ok(new CreateEntryResponse(entry, revocationToken, possibleDuplicate));
+        return Ok(new EntryCreatedResponse(entry, revocationToken, possibleDuplicate));
     }
 
     /// <summary>Returns a single publicly visible entry by its ID.</summary>
@@ -117,7 +117,7 @@ public class EntriesController(
     public async Task<IActionResult> RevokeEntry(ObjectId id, string token)
     {
         var userAgent = Request.Headers.UserAgent.ToString();
-        if (!await revocationService.ValidateTokenAsync(token, id, userAgent))
+        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.EntryRevocation, id, userAgent))
         {
             return new InvalidRequestApiError("revocation token not found or already used");
         }

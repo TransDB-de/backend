@@ -69,10 +69,10 @@ public interface IDatabaseService
     Task<List<Entry>> GetDuplicateCandidatesAsync(Entry entry);
 
     /// <summary>Inserts a revocation token document.</summary>
-    Task InsertRevocationTokenAsync(EntryRevocationToken token);
+    Task InsertRevocationTokenAsync(ActionToken token);
 
     /// <summary>Finds a revocation token by its token string. Returns null if not found.</summary>
-    Task<EntryRevocationToken?> FindRevocationTokenAsync(string token);
+    Task<ActionToken?> FindRevocationTokenAsync(string token);
 
     /// <summary>Deletes a revocation token by its token string.</summary>
     Task DeleteRevocationTokenAsync(string token);
@@ -100,7 +100,7 @@ public class DatabaseService : IDatabaseService
     private readonly IMongoDatabase _db;
     private readonly IMongoCollection<Entry> _entries;
     private readonly IMongoCollection<EntryActivity> _activities;
-    private readonly IMongoCollection<EntryRevocationToken> _revocationTokens;
+    private readonly IMongoCollection<ActionToken> _revocationTokens;
     private readonly IMongoCollection<EntryChangeProposal> _changeProposals;
 
     public DatabaseService(IOptions<MongoDbConfig> config, ILogger<DatabaseService> logger)
@@ -109,7 +109,7 @@ public class DatabaseService : IDatabaseService
         _db = client.GetDatabase(GetDatabaseName(config.Value.ConnectionUri));
         _entries = _db.GetCollection<Entry>("entries");
         _activities = _db.GetCollection<EntryActivity>("activities");
-        _revocationTokens = _db.GetCollection<EntryRevocationToken>("revocation_tokens");
+        _revocationTokens = _db.GetCollection<ActionToken>("revocation_tokens");
         _changeProposals = _db.GetCollection<EntryChangeProposal>("change_proposals");
 
         CreateIndexes();
@@ -138,12 +138,12 @@ public class DatabaseService : IDatabaseService
         _activities.Indexes.CreateOne(new CreateIndexModel<EntryActivity>(
             Builders<EntryActivity>.IndexKeys.Descending(a => a.Timestamp)));
 
-        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
-            Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.Token),
+        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
+            Builders<ActionToken>.IndexKeys.Ascending(t => t.Token),
             new CreateIndexOptions { Unique = true }));
 
-        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
-            Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.ExpiresAt),
+        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
+            Builders<ActionToken>.IndexKeys.Ascending(t => t.ExpiresAt),
             new CreateIndexOptions { ExpireAfter = TimeSpan.Zero }));
         
         _changeProposals.Indexes.CreateOne(new CreateIndexModel<EntryChangeProposal>(
@@ -306,11 +306,11 @@ public class DatabaseService : IDatabaseService
     }
 
     /// <inheritdoc/>
-    public async Task InsertRevocationTokenAsync(EntryRevocationToken token) =>
+    public async Task InsertRevocationTokenAsync(ActionToken token) =>
         await _revocationTokens.InsertOneAsync(token);
 
     /// <inheritdoc/>
-    public async Task<EntryRevocationToken?> FindRevocationTokenAsync(string token) =>
+    public async Task<ActionToken?> FindRevocationTokenAsync(string token) =>
         await _revocationTokens.Find(t => t.Token == token).FirstOrDefaultAsync();
 
     /// <inheritdoc/>

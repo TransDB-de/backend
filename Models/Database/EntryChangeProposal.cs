@@ -29,7 +29,7 @@ public class EntryChangeProposal
         this.OriginalEntryState = entry;
         this.ChangeProposal = changeProposal;
         this.Origin = origin;
-        this.Timestamp =  DateTime.UtcNow;
+        this.Timestamp = DateTime.UtcNow;
         this.UserId = userId;
     }
     
@@ -66,10 +66,10 @@ public class EntryChangeProposal
     /// Null while the proposal is still open.
     /// </summary>
     public CreateEntryRequest? DecisionEntryStateAfter { get; set; } = null;
-
+    
     private static readonly DateTime SnowflakeEpoch = new(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc);
 
     /// <summary>Short id used for display in the frontend. Made from the timestamp, doesn't mean anything on its own.</summary>
     [BsonIgnore]
-    public string SnowflakeId => Base36.Encode((long)((this.Timestamp ?? DateTime.UtcNow) - SnowflakeEpoch).TotalMilliseconds);
+    public string SnowflakeId => Base36.Encode(TokenUtil.CustomTimestampFromEpoch(this.Timestamp ?? DateTime.UtcNow, SnowflakeEpoch));
 }
