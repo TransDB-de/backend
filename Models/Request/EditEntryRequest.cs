@@ -18,6 +18,8 @@ public class EditEntryRequest : CreateEntryRequest
     /// <summary>Applies all request fields onto an existing entry, preserving identity and audit metadata.</summary>
     public EditEntryRequestApplyResult ApplyTo(Entry entry)
     {
+        var addressChanged = AddressChanged(entry.Address);
+
         entry.Type = Type;
         entry.Name = Name;
         entry.Contact = Contact != null ? new ContactPerson(Contact) : null;
@@ -26,18 +28,18 @@ public class EditEntryRequest : CreateEntryRequest
         entry.Website = Website;
         entry.Accessible = Accessible;
         entry.Telephone = Telephone;
-        
+
         entry.Address.City = Address.City;
         entry.Address.Plz  = Address.Plz;
         entry.Address.Street = Address.Street;
         entry.Address.House = Address.House;
-        
+
         entry.Attributes = Attributes;
         entry.Offers = Offers;
         entry.Specials = Specials;
         entry.Subject = Subject;
 
-        return new EditEntryRequestApplyResult(AddressChanged(entry.Address));
+        return new EditEntryRequestApplyResult(addressChanged);
     }
 
     public bool HasChanged(Entry entry)
@@ -75,9 +77,5 @@ public class EditEntryRequest : CreateEntryRequest
     /// </summary>
     /// <param name="existing">Address object from database entry</param>
     /// <returns>if address has been updated</returns>
-    private bool AddressChanged(Address existing) =>
-        existing.City != this.Address.City ||
-        existing.Plz != this.Address.Plz ||
-        existing.Street != this.Address.Street ||
-        existing.House != this.Address.House;
+    private bool AddressChanged(Address existing) => existing.CompareTo(this.Address);
 }

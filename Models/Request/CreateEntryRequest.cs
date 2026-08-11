@@ -33,6 +33,16 @@ public class ContactPersonRequest
 
     [StringLength(50, MinimumLength = 2, ErrorMessage = "length")]
     public string? LastName { get; set; }
+
+    public static ContactPersonRequest From(ContactPerson contact)
+    {
+        return new ContactPersonRequest()
+        {
+            AcademicTitle = contact.AcademicTitle,
+            FirstName = contact.FirstName,
+            LastName = contact.LastName
+        };
+    }
 }
 
 /// <summary>
