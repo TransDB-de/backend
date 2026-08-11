@@ -67,7 +67,7 @@ public class ChangeProposalController(
         var entry = await entryService.GetEntryByIdAsync(proposal.EntryId);
         if (entry.IsFailed) return new NotFoundApiError("entry not found");
 
-        var rebased = EntryChangeProposalRebase.Rebase(proposal.OriginalEntryState, proposal.ChangeProposal, entry.Value);
+        var rebased = new EntryChangeProposalRebase(proposal).Rebase(entry.Value!);
 
         return new ChangeProposalDetailResponse(proposal, entry.Value, rebased);
     }

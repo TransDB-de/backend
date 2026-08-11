@@ -310,7 +310,7 @@ public class EntryService(
         // actually wanted to change, on top of the entry's live state, instead of just
         // overwriting it with the proposal's full snapshot. See EntryChangeProposalRebase.
         var requestToApply = useRebase
-            ? EntryChangeProposalRebase.Rebase(proposal.OriginalEntryState, proposal.ChangeProposal, current)
+            ? new EntryChangeProposalRebase(proposal).Rebase(current)
             : proposal.ChangeProposal;
 
         var applyResult = await ApplyEditRequestAsync(proposal.EntryId, current, requestToApply);
@@ -335,7 +335,7 @@ public class EntryService(
 
         var before = new CreateEntryRequest(current);
 
-        var rebased = EntryChangeProposalRebase.Rebase(proposal.OriginalEntryState, proposal.ChangeProposal, current);
+        var rebased = new EntryChangeProposalRebase(proposal).Rebase(current);
 
         // Apply it onto a fresh copy - this is only a preview, the real entry must stay untouched.
         var previewEntry = JsonSerializer.Deserialize<Entry>(JsonSerializer.Serialize(current))!;
