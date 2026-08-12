@@ -42,9 +42,7 @@ public class ChangeProposalController(
     /// <summary>
     /// Returns a single change proposal by ID, together with the entry's current state and a live
     /// preview of applying the (rebased) proposal right now (<see cref="ChangeProposalDetailResponse.RebasedProposal"/>
-    /// vs. <c>CurrentEntry</c>). Once the proposal has been decided (accepted or rejected), use
-    /// <see cref="EntryChangeProposal.DecisionEntryStateBefore"/> and <see cref="EntryChangeProposal.DecisionEntryStateAfter"/>
-    /// on <c>Proposal</c> instead, they hold what the entry actually looked like at that moment.
+    /// vs. <c>CurrentEntry</c>).
     /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<ChangeProposalDetailResponse>> GetProposal(ObjectId id)
