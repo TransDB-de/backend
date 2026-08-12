@@ -19,6 +19,8 @@ public enum CmsTicketType
     Report,
     [JsonStringEnumMemberName("edit")]
     Edit,
+    [JsonStringEnumMemberName("change-proposal")]
+    ChangeProposal,
     [JsonStringEnumMemberName("other")]
     Other,
 }
@@ -75,7 +77,7 @@ public interface ICmsService
     /// Creates a review ticket in Directus CMS for the given entry.
     /// Returns the created ticket's ID.
     /// </summary>
-    Task<Result<string>> CreateTicketAsync(string title, string? entryId, CmsTicketType type, string? description);
+    Task<Result<string>> CreateTicketAsync(string title, string? entryId, CmsTicketType type, string? description, string? proposalId);
 }
 
 public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICmsService
@@ -195,12 +197,12 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
     }
 
     /// <inheritdoc/>
-    public async Task<Result<string>> CreateTicketAsync(string title, string? entryId, CmsTicketType type, string? description)
+    public async Task<Result<string>> CreateTicketAsync(string title, string? entryId, CmsTicketType type, string? description, string? proposalId)
     {
         try
         {
             var url = QueryHelpers.AddQueryString($"/items/{_config.TicketCollection}", "fields", "id");
-            var response = await httpClient.PostAsJsonAsync(url, new { title, description, type, entry_id = entryId }, CmsPostOptions);
+            var response = await httpClient.PostAsJsonAsync(url, new { title, description, type, entry_id = entryId, proposal_id = proposalId }, CmsPostOptions);
             if (!response.IsSuccessStatusCode)
             {
                 return Result<string>.Failure($"cms ticket creation failed with status {response.StatusCode}", EFailureType.Unexpected);

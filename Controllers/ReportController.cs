@@ -34,7 +34,7 @@ public class ReportController(IEntryService entryService, ICmsService cms, IEntr
             _ => CmsTicketType.Report,
         };
 
-        var ticketResult = await cms.CreateTicketAsync(entryResult.Value!.Name, request.Id.ToString(), cmsType, request.Message);
+        var ticketResult = await cms.CreateTicketAsync(entryResult.Value!.Name, request.Id.ToString(), cmsType, request.Message, null);
         if (ticketResult.IsFailed)
         {
             return new OperationFailedApiError(ticketResult.FailureDetails);

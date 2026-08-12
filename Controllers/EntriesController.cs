@@ -48,7 +48,7 @@ public class EntriesController(
         
         var entry = result.Value!;
         
-        var cmsResult = await cmsService.CreateTicketAsync(entry.Name, entry.Id.ToString(), CmsTicketType.NewEntry, null);
+        var cmsResult = await cmsService.CreateTicketAsync(entry.Name, entry.Id.ToString(), CmsTicketType.NewEntry, null, null);
 
         if (cmsResult.IsFailed)
         {
@@ -110,6 +110,9 @@ public class EntriesController(
 
         var userAgent = Request.Headers.UserAgent.ToString();
         var revocationToken = await revocationService.GenerateTokenAsync(EActionTokenPurpose.ChangeProposalRevocation, proposal.Id, userAgent);
+        
+        await cmsService.CreateTicketAsync(existing.Name, existing.Id.ToString(), CmsTicketType.ChangeProposal, request.Comment, proposal.Id.ToString());
+
         
         return new ChangeProposalCreatedResponse(proposal, revocationToken);
     }
