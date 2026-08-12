@@ -62,7 +62,7 @@ public class EntryChangeProposalRebase(EntryChangeProposal proposal)
     }
     
     /// <summary>Merges the address fields (city, plz, street, house) one by one instead of swapping the whole address on any single change.</summary>
-    private AddressRequest RebaseAddress(Address original, AddressRequest changeset, Address current) => new()
+    private AddressRequest RebaseAddress(AddressRequest original, AddressRequest changeset, Address current) => new()
     {
         City = RebaseSimpleField(original.City, changeset.City, current.City),
         Plz = RebaseSimpleField(original.Plz, changeset.Plz, current.Plz),
@@ -75,7 +75,7 @@ public class EntryChangeProposalRebase(EntryChangeProposal proposal)
     /// If one side has no contact at all, there is nothing to merge field by field, so the proposal's add-or-remove wins there instead, same
     /// as any other simple field.
     /// </summary>
-    private ContactPersonRequest? RebaseContact(ContactPerson? original, ContactPersonRequest? changeset, ContactPerson? current)
+    private ContactPersonRequest? RebaseContact(ContactPersonRequest? original, ContactPersonRequest? changeset, ContactPerson? current)
     {
         if (original == null || changeset == null)
         {
@@ -99,9 +99,9 @@ public class EntryChangeProposalRebase(EntryChangeProposal proposal)
     /// No contact person means all its fields are null, so we can just compare against empty
     /// stand-ins instead of null-checking every field by hand.
     /// </summary>
-    private bool ContactFieldWasChanged(ContactPerson? original, ContactPersonRequest? changeset)
+    private bool ContactFieldWasChanged(ContactPersonRequest? original, ContactPersonRequest? changeset)
     {
-        var originalOrEmpty = original ?? new ContactPerson();
+        var originalOrEmpty = original ?? new ContactPersonRequest();
         var changesetOrEmpty = changeset ?? new ContactPersonRequest();
 
         return originalOrEmpty.CompareTo(changesetOrEmpty);

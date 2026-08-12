@@ -43,6 +43,14 @@ public class ContactPersonRequest
             LastName = contact.LastName
         };
     }
+    
+    public bool CompareTo(ContactPersonRequest request)
+    {
+        return 
+            this.AcademicTitle != request.AcademicTitle ||
+            this.FirstName != request.FirstName ||
+            this.LastName != request.LastName;
+    }
 }
 
 /// <summary>

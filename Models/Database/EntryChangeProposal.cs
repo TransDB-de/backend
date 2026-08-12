@@ -26,7 +26,7 @@ public class EntryChangeProposal
     public EntryChangeProposal(Entry entry, EditEntryRequest changeProposal, EDataOrigin origin, string? userId)
     {
         this.EntryId = entry.Id;
-        this.OriginalEntryState = entry;
+        this.OriginalEntryState = new CreateEntryRequest(entry);
         this.ChangeProposal = changeProposal;
         this.Origin = origin;
         this.Timestamp = DateTime.UtcNow;
@@ -38,7 +38,7 @@ public class EntryChangeProposal
     
     public ObjectId EntryId { get; set; }
     
-    public Entry OriginalEntryState { get; set; }
+    public CreateEntryRequest OriginalEntryState { get; set; }
 
     public EditEntryRequest ChangeProposal { get; set; }
     

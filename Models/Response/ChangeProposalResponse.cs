@@ -53,3 +53,9 @@ public class ChangeProposalDetailResponse(EntryChangeProposal proposal, Entry cu
     public Entry CurrentEntry { get; set; } = current;
     public EditEntryRequest RebasedProposal { get; set; } = rebased;
 }
+
+public class ChangeProposalCreatedResponse(EntryChangeProposal proposal, string token)
+{
+    public string RevocationToken { get; } = token;
+    public ObjectId ProposalId { get; } = proposal.Id;
+}

@@ -91,7 +91,7 @@ public class EntriesController(
     /// Propose a change to an entry
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> ProposeChange(ObjectId id, [FromBody] EditEntryRequest request)
+    public async Task<ActionResult<ChangeProposalCreatedResponse>> ProposeChange(ObjectId id, [FromBody] EditEntryRequest request)
     {
         var existingResult = await entryService.GetEntryByIdAsync(id);
         if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
@@ -108,7 +108,10 @@ public class EntriesController(
 
         await activityService.LogAsync(EntryActivity.ChangeProposed(existing.Id, null, request.Comment, proposal.Id, proposal.SnowflakeId));
 
-        return Ok();
+        var userAgent = Request.Headers.UserAgent.ToString();
+        var revocationToken = await revocationService.GenerateTokenAsync(EActionTokenPurpose.ChangeProposalRevocation, proposal.Id, userAgent);
+        
+        return new ChangeProposalCreatedResponse(proposal, revocationToken);
     }
 
     /// <summary>Permanently deletes a newly created entry using a single-use revocation token.</summary>
@@ -130,6 +133,47 @@ public class EntriesController(
 
         // revoking is meant to leave no trace, as if the entry was never submitted.
         await activityService.PurgeAsync(id);
+        await revocationService.InvalidateTokenAsync(token);
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// get a change proposal by using an action token for authentication, meant for the user to view their own submitted change proposal
+    /// </summary>
+    [HttpGet("{id}/proposals/{proposalId}/{token}")]
+    public async Task<ActionResult<EntryChangeProposal>> GetPublicEntryChangeProposal(ObjectId id, ObjectId proposalId, string token)
+    {
+        var userAgent = Request.Headers.UserAgent.ToString();
+        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.ChangeProposalRevocation, id, userAgent))
+        {
+            return new InvalidRequestApiError("action token not found or already used");
+        }
+        
+        var proposal = await databaseService.GetEntryChangeProposalByIdAsync(proposalId);
+        if (proposal == null) return new NotFoundApiError("proposal not found");
+
+        return proposal;
+    }
+    
+    /// <summary>
+    /// delete a change proposal by revoking it with an action token
+    /// </summary>
+    [HttpDelete("{id}/proposals/{proposalId}/{token}")]
+    public async Task<ActionResult<PublicChangeProposal>> RevokeEntryChangeProposal(ObjectId id, ObjectId proposalId, string token)
+    {
+        var userAgent = Request.Headers.UserAgent.ToString();
+        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.ChangeProposalRevocation, id, userAgent))
+        {
+            return new InvalidRequestApiError("revocation token not found or already used");
+        }
+
+        var result = await databaseService.DeleteEntryChangeProposalAsync(proposalId);
+        if (!result)
+        {
+            return new InvalidRequestApiError();
+        }
+        
         await revocationService.InvalidateTokenAsync(token);
 
         return Ok();
