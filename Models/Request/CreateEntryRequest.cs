@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using MongoDB.Bson.Serialization.Attributes;
 using PhoneNumbers;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Schema;
@@ -57,6 +58,7 @@ public class ContactPersonRequest
 /// Payload for submitting a new entry. Implements <see cref="IValidatableObject"/> to enforce
 /// that the supplied offers and attributes are valid for the chosen <see cref="EEntryType"/>.
 /// </summary>
+[BsonIgnoreExtraElements(Inherited = true)]
 public class CreateEntryRequest : IValidatableObject
 {
     public CreateEntryRequest() { }
