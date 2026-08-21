@@ -19,6 +19,7 @@ public class PublicChangeProposal
         this.Timestamp = proposal.Timestamp;
         this.Comment = proposal.ChangeProposal.Comment;
         this.SnowflakeId = proposal.SnowflakeId;
+        this.EntryName = proposal.OriginalEntryState.Name;
     }
 
     [BsonId]
@@ -37,6 +38,8 @@ public class PublicChangeProposal
     public EEntryChangeProposalStatus Status { get; set; } = EEntryChangeProposalStatus.Open;
     
     public EDataOrigin Origin { get; set; }
+    
+    public string EntryName { get; set; }
 }
 
 /// <summary>

@@ -25,6 +25,8 @@ public class EntryChangeProposalFilterRequest
             filters.Add(Builders<EntryChangeProposal>.Filter.Eq(p => p.EntryId, this.EntryId));
         }
         
-        return Builders<EntryChangeProposal>.Filter.And(filters);
+        return filters.Count == 0
+            ? Builders<EntryChangeProposal>.Filter.Empty
+            : Builders<EntryChangeProposal>.Filter.And(filters);
     }
 }
