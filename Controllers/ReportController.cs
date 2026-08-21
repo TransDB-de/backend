@@ -29,12 +29,11 @@ public class ReportController(IEntryService entryService, ICmsService cms, IEntr
 
         var cmsType = request.Type switch
         {
-            ReportType.Edit => CmsTicketType.Edit,
             ReportType.Other => CmsTicketType.Other,
             _ => CmsTicketType.Report,
         };
 
-        var ticketResult = await cms.CreateTicketAsync(entryResult.Value!.Name, request.Id.ToString(), cmsType, request.Message);
+        var ticketResult = await cms.CreateTicketAsync(entryResult.Value!.Name, request.Id.ToString(), cmsType, request.Message, null);
         if (ticketResult.IsFailed)
         {
             return new OperationFailedApiError(ticketResult.FailureDetails);

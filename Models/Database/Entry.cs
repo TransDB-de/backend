@@ -21,6 +21,14 @@ public class ContactPerson
         FirstName = request.FirstName;
         LastName = request.LastName;
     }
+
+    public bool CompareTo(ContactPersonRequest request)
+    {
+        return 
+            this.AcademicTitle != request.AcademicTitle ||
+            this.FirstName != request.FirstName ||
+            this.LastName != request.LastName;
+    }
 }
 
 /// <summary>Physical address of an entry. Only <see cref="City"/> is required.</summary>
@@ -39,6 +47,15 @@ public class Address
         Plz = request.Plz;
         Street = request.Street;
         House = request.House;
+    }
+
+    public bool CompareTo(AddressRequest request)
+    {
+        return
+            this.City != request.City ||
+            this.Plz != request.Plz ||
+            this.Street != request.Street ||
+            this.House != request.House;
     }
 }
 

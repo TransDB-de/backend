@@ -24,21 +24,9 @@ public class EntriesFilterRequest
     public bool IsGeolocatedQuery => !string.IsNullOrWhiteSpace(Location) || (Lat.HasValue && Long.HasValue);
 
     /// <summary>
-    /// Constructs a <see cref="GeoJsonPoint"/> from <see cref="Lat"/> and <see cref="Long"/> when both are provided.
-    /// GeoJSON coordinates are [longitude, latitude] — note the reversed order.
+    /// Constructs a <see cref="GeoJsonPoint"/> from <see cref="Lat"/> and <see cref="Long"/> needed for later database querying
     /// </summary>
-    public GeoJsonPoint? GeoLocation
-    {
-        get
-        {
-            if (this.Lat.HasValue && this.Long.HasValue)
-            {
-                return new GeoJsonPoint { Coordinates = [this.Long.Value, this.Lat.Value] };
-            }
-
-            return null;
-        }
-    }
+    public GeoJsonPoint? GeoLocation => this.Lat.HasValue && this.Long.HasValue ?  new GeoJsonPoint(this.Lat.Value, this.Long.Value) : null;
 
     public List<EEntryOffer>? Offers { get; set; }
     public List<EEntryAttribute>? Attributes { get; set; }

@@ -22,7 +22,11 @@ public enum EntryActivityType
     Reported,
     Deleted,
     Restored,
-    GeoLocationFailed
+    GeoLocationFailed,
+    ChangeProposal,
+    ChangeAccepted,
+    ChangeRejected,
+    ProposalDeleted
 }
 
 /// <summary>Keys for the <see cref="EntryActivity.Attachments"/> dictionary.</summary>
@@ -33,7 +37,9 @@ public enum EntryActivityAttachment
     OriginalEntryState,
     EntryChangeState,
     PossibleDuplicate,
-    RevertedActivityId
+    RevertedActivityId,
+    ProposalId,
+    ProposalSnowflakeId
 }
 
 /// <summary>An immutable audit record describing a single state change on an entry.</summary>
@@ -114,7 +120,7 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow
     };
 
-    public static EntryActivity Edited(ObjectId entryId, string userId, string? comment, Entry original, EditEntryRequest changes) => new()
+    public static EntryActivity Edited(ObjectId entryId, string userId, string? comment, ObjectId changeProposalId, string changeProposalSnowflakeId) => new()
     {
         EntryId = entryId,
         UserId = userId,
@@ -123,8 +129,8 @@ public class EntryActivity
         Timestamp = DateTime.UtcNow,
         Attachments = new Dictionary<EntryActivityAttachment, object>
         {
-            [EntryActivityAttachment.OriginalEntryState] = original,
-            [EntryActivityAttachment.EntryChangeState] = changes
+            [EntryActivityAttachment.ProposalId] = changeProposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = changeProposalSnowflakeId
         }
     };
 
@@ -192,5 +198,55 @@ public class EntryActivity
         Type = EntryActivityType.GeoLocationFailed,
         Timestamp = DateTime.UtcNow,
         Comment = comment
+    };
+    
+    public static EntryActivity ChangeProposed(ObjectId entryId, string? userId, string? comment, ObjectId proposalId, string proposalSnowflakeId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Comment = comment,
+        Type = EntryActivityType.ChangeProposal,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] = proposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = proposalSnowflakeId
+        }
+    };
+
+    public static EntryActivity ChangeAccepted(ObjectId entryId, string userId, ObjectId proposalId, string proposalSnowflakeId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Type = EntryActivityType.ChangeAccepted,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] = proposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = proposalSnowflakeId
+        }
+    };
+
+    public static EntryActivity ChangeRejected(ObjectId entryId, string userId, string? comment, ObjectId proposalId, string proposalSnowflakeId) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Comment = comment,
+        Type = EntryActivityType.ChangeRejected,
+        Timestamp = DateTime.UtcNow,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.ProposalId] = proposalId,
+            [EntryActivityAttachment.ProposalSnowflakeId] = proposalSnowflakeId
+        }
+    };
+
+    public static EntryActivity ProposalDeleted(ObjectId entryId, string userId, string? comment) => new()
+    {
+        EntryId = entryId,
+        UserId = userId,
+        Comment = comment,
+        Type = EntryActivityType.ProposalDeleted,
+        Timestamp = DateTime.UtcNow
     };
 }

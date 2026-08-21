@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -47,6 +48,24 @@ public interface IEntryService
     Task<Result<Entry>> EditEntryAsync(ObjectId id, EditEntryRequest request);
 
     /// <summary>
+    /// Accepts a change proposal: applies it to its entry and marks the proposal as Accepted,
+    /// together with the before/after content snapshots from that moment. If <paramref name="useRebase"/>
+    /// is true (the default), only the fields the proposal actually changed get applied on top of
+    /// the entry's current state, so nothing else gets lost. If false, the proposal's full
+    /// snapshot overwrites the entry as it is - only meant for rare edge cases.
+    /// Returns a failed result if the entry does not exist.
+    /// </summary>
+    Task<Result<Entry>> AcceptChangeProposalAsync(EntryChangeProposal proposal, bool useRebase);
+
+    /// <summary>
+    /// Rejects a change proposal: marks it as Rejected without touching its entry, but still
+    /// saves what accepting it (with rebase) would have looked like at this moment, so its
+    /// history stays useful later on.
+    /// Returns a failed result if the entry does not exist.
+    /// </summary>
+    Task<Result> RejectChangeProposalAsync(EntryChangeProposal proposal);
+
+    /// <summary>
     /// Fetches fresh coordinates for an entry from Nominatim and saves them.
     /// Returns a failed result if the entry does not exist or geocoding fails.
     /// </summary>
@@ -58,6 +77,12 @@ public interface IEntryService
 }
 
 public record FetchFilteredEntriesResponse(IEnumerable<Entry> Entries, string LocationName, bool HasMore);
+
+/// <summary>The entry's content from right before and after a change proposal was decided.</summary>
+public record ChangeProposalDecisionSnapshots(CreateEntryRequest Before, CreateEntryRequest After);
+
+/// <summary>The entry as it was actually saved after applying a change proposal, plus its before/after content snapshots.</summary>
+public record AppliedChangeProposal(Entry Entry, ChangeProposalDecisionSnapshots Snapshots);
 
 public class EntryService(
     IDatabaseService db,
@@ -238,6 +263,91 @@ public class EntryService(
         var existing = await db.GetEntryByIdAsync(id);
         if (existing == null) return Result<Entry>.Failure("entry not found");
 
+        return await ApplyEditRequestAsync(id, existing, request);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<Entry>> AcceptChangeProposalAsync(EntryChangeProposal proposal, bool useRebase)
+    {
+        var applied = await ApplyChangeProposalAsync(proposal, useRebase);
+        if (applied.IsFailed) return Result<Entry>.Failure(applied);
+
+        await db.ResolveEntryChangeProposalAsync(proposal.Id, EEntryChangeProposalStatus.Accepted,
+            applied.Value!.Snapshots.Before, applied.Value.Snapshots.After);
+
+        return Result<Entry>.Success(applied.Value.Entry);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result> RejectChangeProposalAsync(EntryChangeProposal proposal)
+    {
+        var preview = await PreviewChangeProposalRebaseAsync(proposal);
+        if (preview.IsFailed) return Result.Failure(preview);
+
+        await db.ResolveEntryChangeProposalAsync(proposal.Id, EEntryChangeProposalStatus.Rejected,
+            preview.Value!.Before, preview.Value.After);
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Applies a change proposal to its entry. If <paramref name="useRebase"/> is true (the
+    /// default), only the fields the proposal actually changed get applied on top of the entry's
+    /// current state, so nothing else gets lost. If false, the proposal's full snapshot overwrites
+    /// the entry as it is (old behaviour). Also returns the entry's content from right before and
+    /// after the change, so it can be saved on the proposal for history.
+    /// </summary>
+    private async Task<Result<AppliedChangeProposal>> ApplyChangeProposalAsync(EntryChangeProposal proposal, bool useRebase)
+    {
+        var current = await db.GetEntryByIdAsync(proposal.EntryId);
+        if (current == null) return Result<AppliedChangeProposal>.Failure("entry not found");
+
+        // Save the content fields before current gets changed below. This is the only moment we
+        // can still see the real state before the decision, it can't be figured out afterwards.
+        var before = new CreateEntryRequest(current);
+
+        // Rebasing keeps changes from getting lost: it only takes over the fields the proposal
+        // actually wanted to change, on top of the entry's live state, instead of just
+        // overwriting it with the proposal's full snapshot. See EntryChangeProposalRebase.
+        var requestToApply = useRebase
+            ? new EntryChangeProposalRebase(proposal).Rebase(current)
+            : proposal.ChangeProposal;
+
+        var applyResult = await ApplyEditRequestAsync(proposal.EntryId, current, requestToApply);
+        if (applyResult.IsFailed)
+        {
+            return Result<AppliedChangeProposal>.Failure(applyResult);
+        }
+
+        var after = new CreateEntryRequest(applyResult.Value!);
+        return Result<AppliedChangeProposal>.Success(new AppliedChangeProposal(applyResult.Value!, new ChangeProposalDecisionSnapshots(before, after)));
+    }
+
+    /// <summary>
+    /// Works out what accepting <paramref name="proposal"/> right now (with rebase) would turn
+    /// into, without writing anything to the entry. Used to save a "what would have happened"
+    /// record when a proposal gets rejected instead of accepted.
+    /// </summary>
+    private async Task<Result<ChangeProposalDecisionSnapshots>> PreviewChangeProposalRebaseAsync(EntryChangeProposal proposal)
+    {
+        var current = await db.GetEntryByIdAsync(proposal.EntryId);
+        if (current == null) return Result<ChangeProposalDecisionSnapshots>.Failure("entry not found");
+
+        var before = new CreateEntryRequest(current);
+
+        var rebased = new EntryChangeProposalRebase(proposal).Rebase(current);
+
+        // Apply it onto a fresh copy - this is only a preview, the real entry must stay untouched.
+        var previewEntry = JsonSerializer.Deserialize<Entry>(JsonSerializer.Serialize(current))!;
+        rebased.ApplyTo(previewEntry);
+
+        var after = new CreateEntryRequest(previewEntry);
+        return Result<ChangeProposalDecisionSnapshots>.Success(new ChangeProposalDecisionSnapshots(before, after));
+    }
+
+    /// <summary>Applies an edit request onto an already-loaded entry and persists the result.</summary>
+    private async Task<Result<Entry>> ApplyEditRequestAsync(ObjectId id, Entry existing, EditEntryRequest request)
+    {
         var applyResult = request.ApplyTo(existing);
         var replaced = await db.ReplaceEntryAsync(id, existing);
         if (!replaced) return Result<Entry>.Failure("entry not found");

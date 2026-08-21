@@ -6,7 +6,7 @@ namespace transdb_backend_net.Models.Response;
 
 /// <summary>
 /// Projection of an <see cref="Entry"/> that is safe to expose to unauthenticated users.
-/// Strips internal status flags and the duplicate match, keeping only publicly relevant fields.
+/// Strips internal administrative fields, keeping only publicly relevant fields.
 /// </summary>
 public class PublicEntryResponse
 {
@@ -46,24 +46,16 @@ public class PublicEntryResponse
     }
 }
 
-/// <summary>Response returned after a successful entry submission, including the revocation token and any detected duplicate.</summary>
-public class CreateEntryResponse
+public class EntryCreatedResponse(Entry entry, string revocationToken, DuplicateMatch? possibleDuplicate)
 {
-    public PublicEntryResponse Entry { get; set; }
-    public string RevocationToken { get; set; }
-    public DuplicateMatch? PossibleDuplicate { get; set; }
-
-    public CreateEntryResponse(Entry entry, string revocationToken, DuplicateMatch? possibleDuplicate)
-    {
-        Entry = new PublicEntryResponse(entry);
-        RevocationToken = revocationToken;
-        PossibleDuplicate = possibleDuplicate;
-    }
+    public PublicEntryResponse Entry { get; set; } = new(entry);
+    public string RevocationToken { get; set; } = revocationToken;
+    public DuplicateMatch? PossibleDuplicate { get; set; } = possibleDuplicate;
 }
 
 /// <summary>
 /// Generic paginated response wrapper.
-/// <see cref="More"/> is <c>true</c> when the returned page is full, signalling that another page likely exists.
+/// <see cref="More"/> is <c>true</c> when the returned page is full, signaling that another page likely exists.
 /// </summary>
 public class PaginatedResponse<T>
 {

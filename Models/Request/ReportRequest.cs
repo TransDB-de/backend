@@ -7,7 +7,6 @@ namespace transdb_backend_net.Models.Request;
 public enum ReportType
 {
     Report,
-    Edit,
     Other,
 }
 

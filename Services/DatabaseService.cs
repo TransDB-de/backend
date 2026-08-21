@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using transdb_backend_net.Models.Config;
 using transdb_backend_net.Models.Database;
+using transdb_backend_net.Models.Request;
 using transdb_backend_net.Models.Response;
 using transdb_backend_net.Utils;
 
@@ -68,13 +69,30 @@ public interface IDatabaseService
     Task<List<Entry>> GetDuplicateCandidatesAsync(Entry entry);
 
     /// <summary>Inserts a revocation token document.</summary>
-    Task InsertRevocationTokenAsync(EntryRevocationToken token);
+    Task InsertRevocationTokenAsync(ActionToken token);
 
     /// <summary>Finds a revocation token by its token string. Returns null if not found.</summary>
-    Task<EntryRevocationToken?> FindRevocationTokenAsync(string token);
+    Task<ActionToken?> FindRevocationTokenAsync(string token);
 
     /// <summary>Deletes a revocation token by its token string.</summary>
     Task DeleteRevocationTokenAsync(string token);
+
+    Task<EntryChangeProposal> InsertEntryChangeProposal(EntryChangeProposal proposal);
+
+    /// <summary>Finds a change proposal by its ID. Returns null if no document is found.</summary>
+    Task<EntryChangeProposal?> GetEntryChangeProposalByIdAsync(ObjectId id);
+
+    /// <summary>Returns a paginated list of change proposals matching the given filter.</summary>
+    Task<List<EntryChangeProposal>> FindEntryChangeProposalsAsync(FilterDefinition<EntryChangeProposal> filter, PaginationOptions pagination);
+
+    /// <summary>
+    /// Marks a change proposal as decided (accepted or rejected) and records the entry's content
+    /// state from right before and after, in one write. Returns true if a document was modified.
+    /// </summary>
+    Task<bool> ResolveEntryChangeProposalAsync(ObjectId id, EEntryChangeProposalStatus status, CreateEntryRequest before, CreateEntryRequest after);
+
+    /// <summary>Permanently deletes a change proposal. Returns true if a document was deleted.</summary>
+    Task<bool> DeleteEntryChangeProposalAsync(ObjectId id);
 }
 
 public class DatabaseService : IDatabaseService
@@ -82,7 +100,8 @@ public class DatabaseService : IDatabaseService
     private readonly IMongoDatabase _db;
     private readonly IMongoCollection<Entry> _entries;
     private readonly IMongoCollection<EntryActivity> _activities;
-    private readonly IMongoCollection<EntryRevocationToken> _revocationTokens;
+    private readonly IMongoCollection<ActionToken> _revocationTokens;
+    private readonly IMongoCollection<EntryChangeProposal> _changeProposals;
 
     public DatabaseService(IOptions<MongoDbConfig> config, ILogger<DatabaseService> logger)
     {
@@ -90,7 +109,8 @@ public class DatabaseService : IDatabaseService
         _db = client.GetDatabase(GetDatabaseName(config.Value.ConnectionUri));
         _entries = _db.GetCollection<Entry>("entries");
         _activities = _db.GetCollection<EntryActivity>("activities");
-        _revocationTokens = _db.GetCollection<EntryRevocationToken>("revocation_tokens");
+        _revocationTokens = _db.GetCollection<ActionToken>("revocation_tokens");
+        _changeProposals = _db.GetCollection<EntryChangeProposal>("change_proposals");
 
         CreateIndexes();
         logger.LogInformation("MongoDB successfully initialized");
@@ -118,13 +138,16 @@ public class DatabaseService : IDatabaseService
         _activities.Indexes.CreateOne(new CreateIndexModel<EntryActivity>(
             Builders<EntryActivity>.IndexKeys.Descending(a => a.Timestamp)));
 
-        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
-            Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.Token),
+        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
+            Builders<ActionToken>.IndexKeys.Ascending(t => t.Token),
             new CreateIndexOptions { Unique = true }));
 
-        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
-            Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.ExpiresAt),
+        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
+            Builders<ActionToken>.IndexKeys.Ascending(t => t.ExpiresAt),
             new CreateIndexOptions { ExpireAfter = TimeSpan.Zero }));
+        
+        _changeProposals.Indexes.CreateOne(new CreateIndexModel<EntryChangeProposal>(
+            Builders<EntryChangeProposal>.IndexKeys.Ascending(a => a.EntryId)));
     }
 
     /// <inheritdoc/>
@@ -283,16 +306,53 @@ public class DatabaseService : IDatabaseService
     }
 
     /// <inheritdoc/>
-    public async Task InsertRevocationTokenAsync(EntryRevocationToken token) =>
+    public async Task InsertRevocationTokenAsync(ActionToken token) =>
         await _revocationTokens.InsertOneAsync(token);
 
     /// <inheritdoc/>
-    public async Task<EntryRevocationToken?> FindRevocationTokenAsync(string token) =>
+    public async Task<ActionToken?> FindRevocationTokenAsync(string token) =>
         await _revocationTokens.Find(t => t.Token == token).FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public async Task DeleteRevocationTokenAsync(string token) =>
         await _revocationTokens.DeleteOneAsync(t => t.Token == token);
+
+    public async Task<EntryChangeProposal> InsertEntryChangeProposal(EntryChangeProposal proposal)
+    {
+        await _changeProposals.InsertOneAsync(proposal);
+        return proposal;
+    }
+
+    /// <inheritdoc/>
+    public async Task<EntryChangeProposal?> GetEntryChangeProposalByIdAsync(ObjectId id) =>
+        await _changeProposals.Find(p => p.Id == id).FirstOrDefaultAsync();
+
+    /// <inheritdoc/>
+    public async Task<List<EntryChangeProposal>> FindEntryChangeProposalsAsync(FilterDefinition<EntryChangeProposal> filter, PaginationOptions pagination) =>
+        await _changeProposals.Find(filter)
+            .SortByDescending(p => p.Id)
+            .Skip(pagination.Skip)
+            .Limit(pagination.LimitWithOverhead)
+            .ToListAsync();
+
+    /// <inheritdoc/>
+    public async Task<bool> ResolveEntryChangeProposalAsync(ObjectId id, EEntryChangeProposalStatus status, CreateEntryRequest before, CreateEntryRequest after)
+    {
+        var update = Builders<EntryChangeProposal>.Update
+            .Set(p => p.Status, status)
+            .Set(p => p.DecisionEntryStateBefore, before)
+            .Set(p => p.DecisionEntryStateAfter, after);
+        var result = await _changeProposals.UpdateOneAsync(p => p.Id == id, update);
+        return result.ModifiedCount > 0;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> DeleteEntryChangeProposalAsync(ObjectId id)
+    {
+        var result = await _changeProposals.DeleteOneAsync(p => p.Id == id);
+        return result.DeletedCount > 0;
+    }
+
 
     /// <summary>Extracts the database name from a MongoDB connection URI.</summary>
     private static string GetDatabaseName(string uri)
