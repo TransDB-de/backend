@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using System.Security.Claims;
-using System.Text.Json;
 using transdb_backend_net.Exceptions;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Models.Request;
@@ -79,7 +78,6 @@ public class ManageEntriesController(
         if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
         var existing = existingResult.Value!;
 
-        var originalEntry = JsonSerializer.Deserialize<Entry>(JsonSerializer.Serialize(existing));
         var hasChanged = request.HasChanged(existing);
 
         var result = await entryService.EditEntryAsync(id, request);

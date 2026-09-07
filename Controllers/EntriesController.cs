@@ -91,6 +91,8 @@ public class EntriesController(
     /// Propose a change to an entry
     /// </summary>
     [HttpPut("{id}")]
+    [EnableRateLimiting("report")]
+    [ValidateCaptcha]
     public async Task<ActionResult<ChangeProposalCreatedResponse>> ProposeChange(ObjectId id, [FromBody] EditEntryRequest request)
     {
         var existingResult = await entryService.GetEntryByIdAsync(id);
@@ -110,10 +112,13 @@ public class EntriesController(
 
         var userAgent = Request.Headers.UserAgent.ToString();
         var revocationToken = await revocationService.GenerateTokenAsync(EActionTokenPurpose.ChangeProposalRevocation, proposal.Id, userAgent);
-        
-        await cmsService.CreateTicketAsync(existing.Name, existing.Id.ToString(), CmsTicketType.ChangeProposal, request.Comment, proposal.Id.ToString());
 
-        
+        var cmsResult = await cmsService.CreateTicketAsync(existing.Name, existing.Id.ToString(), CmsTicketType.ChangeProposal, request.Comment, proposal.Id.ToString());
+        if (cmsResult.IsFailed)
+        {
+            logger.LogCritical(cmsResult.FailureDetails);
+        }
+
         return new ChangeProposalCreatedResponse(proposal, revocationToken);
     }
 

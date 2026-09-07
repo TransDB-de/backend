@@ -27,7 +27,6 @@ public class EditEntryRequest : CreateEntryRequest
         entry.Telephone = Telephone;
         entry.Website = Website;
         entry.Accessible = Accessible;
-        entry.Telephone = Telephone;
 
         entry.Address.City = Address.City;
         entry.Address.Plz  = Address.Plz;
@@ -59,8 +58,6 @@ public class EditEntryRequest : CreateEntryRequest
         
         if (this.Specials != entry.Specials) return true;
         if (this.Subject != entry.Subject) return true;
-        
-        if (this.Type != entry.Type) return true;
 
         if (AddressChanged(entry.Address)) return true;
         
