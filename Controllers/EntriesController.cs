@@ -148,7 +148,7 @@ public class EntriesController(
     public async Task<ActionResult<EntryChangeProposal>> GetPublicEntryChangeProposal(ObjectId id, ObjectId proposalId, string token)
     {
         var userAgent = Request.Headers.UserAgent.ToString();
-        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.ChangeProposalRevocation, id, userAgent))
+        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.ChangeProposalRevocation, proposalId, userAgent))
         {
             return new InvalidRequestApiError("action token not found or already used");
         }
@@ -166,7 +166,7 @@ public class EntriesController(
     public async Task<ActionResult<PublicChangeProposal>> RevokeEntryChangeProposal(ObjectId id, ObjectId proposalId, string token)
     {
         var userAgent = Request.Headers.UserAgent.ToString();
-        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.ChangeProposalRevocation, id, userAgent))
+        if (!await revocationService.ValidateTokenAsync(token, EActionTokenPurpose.ChangeProposalRevocation, proposalId, userAgent))
         {
             return new InvalidRequestApiError("revocation token not found or already used");
         }

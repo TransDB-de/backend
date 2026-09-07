@@ -12,7 +12,7 @@ public interface IActionTokenService
     /// <summary>Generates a secure single-use token and persists it.</summary>
     Task<string> GenerateTokenAsync(EActionTokenPurpose purpose, ObjectId targetId, string userAgent);
 
-    /// <summary>Returns true if the token exists, maps to the given entry, and the user agent matches.</summary>
+    /// <summary>Returns true if the token exists, is not expired, and its purpose, target and user agent all match.</summary>
     Task<bool> ValidateTokenAsync(string token, EActionTokenPurpose purpose, ObjectId targetId, string userAgent);
 
     /// <summary>Removes the token from the database.</summary>
@@ -42,6 +42,18 @@ public class ActionTokenService(IDatabaseService db, IOptions<EntryConfig> confi
         }
 
         if (revocationToken.Purpose != purpose)
+        {
+            return false;
+        }
+
+        if (revocationToken.TargetId != targetId)
+        {
+            return false;
+        }
+
+        // Expired tokens are swept by a TTL index on ExpiresAt, but that runs on a delay -
+        // reject them here too so a token can't be used in the gap before the sweep.
+        if (revocationToken.ExpiresAt <= DateTime.UtcNow)
         {
             return false;
         }
