@@ -21,14 +21,6 @@ public class ContactPerson
         FirstName = request.FirstName;
         LastName = request.LastName;
     }
-
-    public bool CompareTo(ContactPersonRequest request)
-    {
-        return 
-            this.AcademicTitle != request.AcademicTitle ||
-            this.FirstName != request.FirstName ||
-            this.LastName != request.LastName;
-    }
 }
 
 /// <summary>Physical address of an entry. Only <see cref="City"/> is required.</summary>
@@ -49,14 +41,12 @@ public class Address
         House = request.House;
     }
 
-    public bool CompareTo(AddressRequest request)
-    {
-        return
-            this.City != request.City ||
-            this.Plz != request.Plz ||
-            this.Street != request.Street ||
-            this.House != request.House;
-    }
+    /// <summary>True if any field differs from <paramref name="other"/>.</summary>
+    public bool DiffersFrom(AddressRequest other) =>
+        this.City != other.City ||
+        this.Plz != other.Plz ||
+        this.Street != other.Street ||
+        this.House != other.House;
 }
 
 /// <summary>Moderation flags controlling whether an entry is visible and editable.</summary>

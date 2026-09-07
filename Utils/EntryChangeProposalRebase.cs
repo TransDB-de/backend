@@ -96,16 +96,11 @@ public class EntryChangeProposalRebase(EntryChangeProposal proposal)
     }
 
     /// <summary>
-    /// No contact person means all its fields are null, so we can just compare against empty
-    /// stand-ins instead of null-checking every field by hand.
+    /// Whether the proposal touched any contact field. A null side counts as an all-empty
+    /// contact, adding or removing the contact person entirely also counts as a change.
     /// </summary>
-    private bool ContactFieldWasChanged(ContactPersonRequest? original, ContactPersonRequest? changeset)
-    {
-        var originalOrEmpty = original ?? new ContactPersonRequest();
-        var changesetOrEmpty = changeset ?? new ContactPersonRequest();
-
-        return originalOrEmpty.CompareTo(changesetOrEmpty);
-    }
+    private bool ContactFieldWasChanged(ContactPersonRequest? original, ContactPersonRequest? changeset) =>
+        (original ?? new ContactPersonRequest()).DiffersFrom(changeset);
     
     /// <summary>True if the proposal wants a different value than the entry originally had for this field.</summary>
     private bool FieldWasChanged<T>(T originalValue, T changesetValue) =>

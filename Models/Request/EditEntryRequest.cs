@@ -64,15 +64,12 @@ public class EditEntryRequest : CreateEntryRequest
         return false;
     }
     
-    private bool ContactChanged(ContactPerson? existing) => 
-        existing?.AcademicTitle != this.Contact?.AcademicTitle || 
-        existing?.FirstName != this.Contact?.FirstName || 
-        existing?.LastName != this.Contact?.LastName;
+    private bool ContactChanged(ContactPerson? existing) =>
+        existing == null
+            ? this.Contact != null
+            : ContactPersonRequest.From(existing).DiffersFrom(this.Contact);
     
-    /// <summary>
-    /// Checks if this request intent to update the address compared to an existing address
-    /// </summary>
+    /// <summary>Checks whether this request's address differs from the existing entry's address.</summary>
     /// <param name="existing">Address object from database entry</param>
-    /// <returns>if address has been updated</returns>
-    private bool AddressChanged(Address existing) => existing.CompareTo(this.Address);
+    private bool AddressChanged(Address existing) => existing.DiffersFrom(this.Address);
 }

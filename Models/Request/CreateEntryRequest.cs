@@ -45,13 +45,14 @@ public class ContactPersonRequest
         };
     }
     
-    public bool CompareTo(ContactPersonRequest request)
-    {
-        return 
-            this.AcademicTitle != request.AcademicTitle ||
-            this.FirstName != request.FirstName ||
-            this.LastName != request.LastName;
-    }
+    /// <summary>
+    /// True if any field differs from <paramref name="other"/>. A null <paramref name="other"/>
+    /// counts as an all-empty contact, indicating a contact was added or removed.
+    /// </summary>
+    public bool DiffersFrom(ContactPersonRequest? other) =>
+        this.AcademicTitle != other?.AcademicTitle ||
+        this.FirstName != other?.FirstName ||
+        this.LastName != other?.LastName;
 }
 
 /// <summary>
