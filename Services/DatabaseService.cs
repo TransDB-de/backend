@@ -67,14 +67,14 @@ public interface IDatabaseService
     /// </summary>
     Task<List<Entry>> GetDuplicateCandidatesAsync(Entry entry);
 
-    /// <summary>Inserts a revocation token document.</summary>
-    Task InsertRevocationTokenAsync(EntryRevocationToken token);
+    /// <summary>Inserts an action token document.</summary>
+    Task InsertRevocationTokenAsync(ActionToken token);
 
-    /// <summary>Finds a revocation token by its token string. Returns null if not found.</summary>
-    Task<EntryRevocationToken?> FindRevocationTokenAsync(string token);
+    /// <summary>Finds an action token by its token string. Returns null if not found.</summary>
+    Task<ActionToken?> FindActionTokenAsync(string token);
 
-    /// <summary>Deletes a revocation token by its token string.</summary>
-    Task DeleteRevocationTokenAsync(string token);
+    /// <summary>Deletes an action token by its token string.</summary>
+    Task DeleteActionTokenAsync(string token);
 }
 
 public class DatabaseService : IDatabaseService
@@ -82,7 +82,7 @@ public class DatabaseService : IDatabaseService
     private readonly IMongoDatabase _db;
     private readonly IMongoCollection<Entry> _entries;
     private readonly IMongoCollection<EntryActivity> _activities;
-    private readonly IMongoCollection<EntryRevocationToken> _revocationTokens;
+    private readonly IMongoCollection<ActionToken> _actionTokens;
 
     public DatabaseService(IOptions<MongoDbConfig> config, ILogger<DatabaseService> logger)
     {
@@ -90,7 +90,7 @@ public class DatabaseService : IDatabaseService
         _db = client.GetDatabase(GetDatabaseName(config.Value.ConnectionUri));
         _entries = _db.GetCollection<Entry>("entries");
         _activities = _db.GetCollection<EntryActivity>("activities");
-        _revocationTokens = _db.GetCollection<EntryRevocationToken>("revocation_tokens");
+        _actionTokens = _db.GetCollection<ActionToken>("action_tokens");
 
         CreateIndexes();
         logger.LogInformation("MongoDB successfully initialized");
@@ -118,12 +118,12 @@ public class DatabaseService : IDatabaseService
         _activities.Indexes.CreateOne(new CreateIndexModel<EntryActivity>(
             Builders<EntryActivity>.IndexKeys.Descending(a => a.Timestamp)));
 
-        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
-            Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.Token),
+        _actionTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
+            Builders<ActionToken>.IndexKeys.Ascending(t => t.Token),
             new CreateIndexOptions { Unique = true }));
 
-        _revocationTokens.Indexes.CreateOne(new CreateIndexModel<EntryRevocationToken>(
-            Builders<EntryRevocationToken>.IndexKeys.Ascending(t => t.ExpiresAt),
+        _actionTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
+            Builders<ActionToken>.IndexKeys.Ascending(t => t.ExpiresAt),
             new CreateIndexOptions { ExpireAfter = TimeSpan.Zero }));
     }
 
@@ -283,16 +283,16 @@ public class DatabaseService : IDatabaseService
     }
 
     /// <inheritdoc/>
-    public async Task InsertRevocationTokenAsync(EntryRevocationToken token) =>
-        await _revocationTokens.InsertOneAsync(token);
+    public async Task InsertRevocationTokenAsync(ActionToken token) =>
+        await _actionTokens.InsertOneAsync(token);
 
     /// <inheritdoc/>
-    public async Task<EntryRevocationToken?> FindRevocationTokenAsync(string token) =>
-        await _revocationTokens.Find(t => t.Token == token).FirstOrDefaultAsync();
+    public async Task<ActionToken?> FindActionTokenAsync(string token) =>
+        await _actionTokens.Find(t => t.Token == token).FirstOrDefaultAsync();
 
     /// <inheritdoc/>
-    public async Task DeleteRevocationTokenAsync(string token) =>
-        await _revocationTokens.DeleteOneAsync(t => t.Token == token);
+    public async Task DeleteActionTokenAsync(string token) =>
+        await _actionTokens.DeleteOneAsync(t => t.Token == token);
 
     /// <summary>Extracts the database name from a MongoDB connection URI.</summary>
     private static string GetDatabaseName(string uri)
