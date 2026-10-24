@@ -16,7 +16,7 @@ namespace transdb_backend_net.Controllers;
 [Route("entries")]
 public class EntriesController(
     IEntryService entryService,
-    IEntryRevocationService revocationService,
+    IActionTokenService actionTokenService,
     ICmsService cmsService,
     ILogger<EntriesController> logger,
     IEntryActivityService activityService) : ControllerBase
@@ -61,7 +61,7 @@ public class EntriesController(
         }
 
         var userAgent = Request.Headers.UserAgent.ToString();
-        var revocationToken = await revocationService.GenerateTokenAsync(entry.Id, userAgent);
+        var revocationToken = await actionTokenService.GenerateTokenAsync(EActionTokenPurpose.EntryRevocation, entry.Id, userAgent);
 
         DuplicateMatch? possibleDuplicate = null;
 
@@ -92,7 +92,7 @@ public class EntriesController(
     public async Task<IActionResult> RevokeEntry(ObjectId id, string token)
     {
         var userAgent = Request.Headers.UserAgent.ToString();
-        if (!await revocationService.ValidateTokenAsync(token, id, userAgent))
+        if (!await actionTokenService.ValidateTokenAsync(token, EActionTokenPurpose.EntryRevocation, id, userAgent))
         {
             return new InvalidRequestApiError("revocation token not found or already used");
         }
@@ -105,7 +105,7 @@ public class EntriesController(
 
         // revoking is meant to leave no trace, as if the entry was never submitted.
         await activityService.PurgeAsync(id);
-        await revocationService.InvalidateTokenAsync(token);
+        await actionTokenService.InvalidateTokenAsync(token);
 
         return Ok();
     }

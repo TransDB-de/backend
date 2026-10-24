@@ -43,7 +43,7 @@ public static class MongoDbSetup
         BsonClassMap.RegisterClassMap<DuplicateMatch>(cm => cm.AutoMap());
 
         services.AddSingleton<IDatabaseService, DatabaseService>();
-        services.AddSingleton<IEntryRevocationService, EntryRevocationService>();
+        services.AddSingleton<IActionTokenService, ActionTokenService>();
         services.AddSingleton<IEntryActivityService, EntryActivityService>();
 
         return services;
