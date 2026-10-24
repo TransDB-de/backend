@@ -55,7 +55,10 @@ public class NominatimConfig
 {
     public const string ConfigKey = "Nominatim";
 
+    [Required, Url]
     public string Url { get; set; } = "https://nominatim.openstreetmap.org";
+    
+    [Required]
     public string UserAgent { get; set; } = string.Empty;
 }
 

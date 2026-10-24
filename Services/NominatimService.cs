@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
+using transdb_backend_net.Models.Config;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Utils;
 
@@ -16,8 +18,17 @@ public interface INominatimService
     Task<Result<GeoJsonPoint>> GetCoordinatesAsync(Address address);
 }
 
-public class NominatimService(HttpClient httpClient) : INominatimService
+public class NominatimService : INominatimService
 {
+    private readonly HttpClient _httpClient;
+
+    public NominatimService(HttpClient httpClient, IOptions<NominatimConfig> options)
+    {
+        this._httpClient = httpClient;
+        this._httpClient.BaseAddress = new Uri(options.Value.Url);
+        this._httpClient.DefaultRequestHeaders.Add("User-Agent", options.Value.UserAgent);
+    }
+    
     // Static so the queue and last-request timestamp are shared across all transient instances
     private static readonly SemaphoreSlim _queue = new(1, 1);
     private static DateTime _lastRequestAt = DateTime.MinValue;
@@ -40,7 +51,7 @@ public class NominatimService(HttpClient httpClient) : INominatimService
             _lastRequestAt = DateTime.UtcNow;
 
             var url = BuildSearchUrl(address);
-            var response = await httpClient.GetAsync(url);
+            var response = await this._httpClient.GetAsync(url);
             
             if (!response.IsSuccessStatusCode)
             {

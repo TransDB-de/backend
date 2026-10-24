@@ -23,13 +23,12 @@ public static class HttpClientsSetup
         
         services.AddHttpClient<IGeocodingService, GeocodingApiService>();
 
-        services.Configure<NominatimConfig>(configuration.GetSection(NominatimConfig.ConfigKey));
-        var nominatimConfig = configuration.GetSection(NominatimConfig.ConfigKey).Get<NominatimConfig>()!;
-        services.AddHttpClient<INominatimService, NominatimService>(client =>
-        {
-            client.BaseAddress = new Uri(nominatimConfig.Url);
-            client.DefaultRequestHeaders.Add("User-Agent", nominatimConfig.UserAgent);
-        });
+
+        services.AddOptions<NominatimConfig>()
+            .Bind(configuration.GetSection(NominatimConfig.ConfigKey))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddHttpClient<INominatimService, NominatimService>();
 
         services.Configure<CaptchaConfig>(configuration.GetSection(CaptchaConfig.ConfigKey));
         var captchaConfig = configuration.GetSection(CaptchaConfig.ConfigKey).Get<CaptchaConfig>()!;
