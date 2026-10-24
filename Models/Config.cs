@@ -1,10 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace transdb_backend_net.Models.Config;
 
 public class GeocodingConfig
 {
     public const string ConfigKey = "Geocoding";
 
+    [Required, Url]
     public string Url { get; set; } = string.Empty;
+    
+    [Required]
     public string ApiKey { get; set; } = string.Empty;
 }
 

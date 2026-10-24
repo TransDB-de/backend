@@ -16,13 +16,12 @@ public static class HttpClientsSetup
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", cmsConfig.AccessToken);
         });
 
-        services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.ConfigKey));
-        var geocodingConfig = configuration.GetSection(GeocodingConfig.ConfigKey).Get<GeocodingConfig>()!;
-        services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
-        {
-            client.BaseAddress = new Uri(geocodingConfig.Url);
-            client.DefaultRequestHeaders.Add("X-API-Key", geocodingConfig.ApiKey);
-        });
+        services.AddOptions<GeocodingConfig>()
+            .Bind(configuration.GetSection(GeocodingConfig.ConfigKey))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        services.AddHttpClient<IGeocodingService, GeocodingApiService>();
 
         services.Configure<NominatimConfig>(configuration.GetSection(NominatimConfig.ConfigKey));
         var nominatimConfig = configuration.GetSection(NominatimConfig.ConfigKey).Get<NominatimConfig>()!;
