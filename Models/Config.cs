@@ -27,8 +27,13 @@ public class CmsConfig
 {
     public const string ConfigKey = "Cms";
 
+    [Required, Url]
     public string Url { get; set; } = string.Empty;
+    
+    [Required]
     public string AccessToken { get; set; } = string.Empty;
+    
+    [Required]
     public string TicketCollection { get; set; } = "transdb_tickets";
 }
 

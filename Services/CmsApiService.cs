@@ -78,19 +78,28 @@ public interface ICmsService
     Task<Result<string>> CreateTicketAsync(string title, string? entryId, CmsTicketType type, string? description);
 }
 
-public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICmsService
+public class CmsApiService : ICmsService
 {
-    private readonly CmsConfig _config = config.Value;
+    private readonly HttpClient _httpClient;
+    private readonly CmsConfig _cmsConfig;
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly JsonSerializerOptions CmsPostOptions = new() { Converters = { new JsonStringEnumConverter<CmsTicketType>() } };
+
+    public CmsApiService(HttpClient httpClient, IOptions<CmsConfig> config)
+    {
+        this._httpClient = httpClient;
+        this._cmsConfig = config.Value;
+        this._httpClient.BaseAddress = new Uri(config.Value.Url);
+        this._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config.Value.AccessToken);
+    }
     
     /// <inheritdoc/>
     public async Task<Result<string>> DirectusLoginAsync(LoginRequest credentials)
     {
         try
         {
-            var response = await httpClient.PostAsJsonAsync("/auth/login", credentials);
+            var response = await this._httpClient.PostAsJsonAsync("/auth/login", credentials);
             if (!response.IsSuccessStatusCode) return Result<string>.Failure($"cms login failed with status code {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
@@ -119,7 +128,7 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
 
         try
         {
-            var response = await httpClient.SendAsync(request);
+            var response = await this._httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode) return Result<DirectusUser>.Failure("cms user request failed");
 
             var json = await response.Content.ReadAsStringAsync();
@@ -145,7 +154,7 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
 
         try
         {
-            var response = await httpClient.GetAsync(managementUrl);
+            var response = await this._httpClient.GetAsync(managementUrl);
             if (!response.IsSuccessStatusCode) return Result<DirectusManagementUser>.Failure($"cms management user failed with status code {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
@@ -173,7 +182,7 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
         
         try
         {
-            var response = await httpClient.GetAsync(url);
+            var response = await this._httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
                 return Result<List<DirectusUser>>.Failure($"cms users request failed with status {response.StatusCode}");
 
@@ -199,8 +208,8 @@ public class CmsService(HttpClient httpClient, IOptions<CmsConfig> config) : ICm
     {
         try
         {
-            var url = QueryHelpers.AddQueryString($"/items/{_config.TicketCollection}", "fields", "id");
-            var response = await httpClient.PostAsJsonAsync(url, new { title, description, type, entry_id = entryId }, CmsPostOptions);
+            var url = QueryHelpers.AddQueryString($"/items/{this._cmsConfig.TicketCollection}", "fields", "id");
+            var response = await this._httpClient.PostAsJsonAsync(url, new { title, description, type, entry_id = entryId }, CmsPostOptions);
             if (!response.IsSuccessStatusCode)
             {
                 return Result<string>.Failure($"cms ticket creation failed with status {response.StatusCode}", EFailureType.Unexpected);

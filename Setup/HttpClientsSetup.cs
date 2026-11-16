@@ -8,13 +8,12 @@ public static class HttpClientsSetup
 {
     public static IServiceCollection AddApplicationHttpClients(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<CmsConfig>(configuration.GetSection(CmsConfig.ConfigKey));
-        var cmsConfig = configuration.GetSection(CmsConfig.ConfigKey).Get<CmsConfig>()!;
-        services.AddHttpClient<ICmsService, CmsService>(client =>
-        {
-            client.BaseAddress = new Uri(cmsConfig.Url);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", cmsConfig.AccessToken);
-        });
+        services.AddOptions<CmsConfig>()
+            .Bind(configuration.GetSection(CmsConfig.ConfigKey))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        services.AddHttpClient<ICmsService, CmsApiService>();
 
         services.AddOptions<GeocodingConfig>()
             .Bind(configuration.GetSection(GeocodingConfig.ConfigKey))
