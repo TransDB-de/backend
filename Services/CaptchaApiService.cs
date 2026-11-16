@@ -16,7 +16,7 @@ public interface ICaptchaService
 
 public record CaptchaVerifyResult(bool success);
 
-public class CaptchaService(HttpClient httpClient, IOptions<CaptchaConfig> config) : ICaptchaService
+public class CaptchaApiService(HttpClient httpClient, IOptions<CaptchaConfig> config) : ICaptchaService
 {
     private readonly CaptchaConfig _config = config.Value;
 

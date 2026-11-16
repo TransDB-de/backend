@@ -1,10 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace transdb_backend_net.Models.Config;
 
 public class GeocodingConfig
 {
     public const string ConfigKey = "Geocoding";
 
+    [Required, Url]
     public string Url { get; set; } = string.Empty;
+    
+    [Required]
     public string ApiKey { get; set; } = string.Empty;
 }
 
@@ -12,9 +17,15 @@ public class CaptchaConfig
 {
     public const string ConfigKey = "Captcha";
 
+    [Required, Url]
     public string InstanceUrl { get; set; } = string.Empty;
+    
+    [Required]
     public string SiteKey { get; set; } = string.Empty;
+    
+    [Required]
     public string Secret { get; set; } = string.Empty;
+    
     public bool Enabled { get; set; } = true;
 }
 
@@ -22,8 +33,13 @@ public class CmsConfig
 {
     public const string ConfigKey = "Cms";
 
+    [Required, Url]
     public string Url { get; set; } = string.Empty;
+    
+    [Required]
     public string AccessToken { get; set; } = string.Empty;
+    
+    [Required]
     public string TicketCollection { get; set; } = "transdb_tickets";
 }
 
@@ -50,7 +66,10 @@ public class NominatimConfig
 {
     public const string ConfigKey = "Nominatim";
 
+    [Required, Url]
     public string Url { get; set; } = "https://nominatim.openstreetmap.org";
+    
+    [Required]
     public string UserAgent { get; set; } = string.Empty;
 }
 
