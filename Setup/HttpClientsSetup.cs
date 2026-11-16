@@ -27,14 +27,14 @@ public static class HttpClientsSetup
             .Bind(configuration.GetSection(NominatimConfig.ConfigKey))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        
         services.AddHttpClient<INominatimService, NominatimService>();
-
-        services.Configure<CaptchaConfig>(configuration.GetSection(CaptchaConfig.ConfigKey));
-        var captchaConfig = configuration.GetSection(CaptchaConfig.ConfigKey).Get<CaptchaConfig>()!;
-        services.AddHttpClient<ICaptchaService, CaptchaService>(client =>
-        {
-            client.BaseAddress = new Uri(captchaConfig.InstanceUrl);
-        });
+        services.AddOptions<CaptchaConfig>()
+            .Bind(configuration.GetSection(CaptchaConfig.ConfigKey))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        services.AddHttpClient<ICaptchaService, CaptchaApiService>();
 
         return services;
     }

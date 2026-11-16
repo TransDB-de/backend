@@ -17,9 +17,15 @@ public class CaptchaConfig
 {
     public const string ConfigKey = "Captcha";
 
+    [Required, Url]
     public string InstanceUrl { get; set; } = string.Empty;
+    
+    [Required]
     public string SiteKey { get; set; } = string.Empty;
+    
+    [Required]
     public string Secret { get; set; } = string.Empty;
+    
     public bool Enabled { get; set; } = true;
 }
 
