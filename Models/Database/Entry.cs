@@ -9,37 +9,30 @@ namespace transdb_backend_net.Models.Database;
 /// <summary>Optional contact person associated with an entry (e.g. a therapist's name).</summary>
 public class ContactPerson
 {
-    public AcademicTitle? AcademicTitle { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
+    public virtual AcademicTitle? AcademicTitle { get; set; }
+    public virtual string? FirstName { get; set; }
+    public virtual string? LastName { get; set; }
 
-    public ContactPerson() { }
-
-    public ContactPerson(ContactPersonRequest request)
-    {
-        AcademicTitle = request.AcademicTitle;
-        FirstName = request.FirstName;
-        LastName = request.LastName;
-    }
+    public bool DiffersFrom(ContactPerson other) =>
+        this.AcademicTitle != other.AcademicTitle ||
+        this.FirstName != other.FirstName ||
+        this.LastName != other.LastName;
 }
 
 /// <summary>Physical address of an entry. Only <see cref="City"/> is required.</summary>
 public class Address
 {
-    public string City { get; set; } = string.Empty;
-    public string? Plz { get; set; }
-    public string? Street { get; set; }
-    public string? House { get; set; }
+    public virtual string City { get; set; } = string.Empty;
+    public virtual string? Plz { get; set; }
+    public virtual string? Street { get; set; }
+    public virtual string? House { get; set; }
 
-    public Address() { }
-
-    public Address(AddressRequest request)
-    {
-        City = request.City;
-        Plz = request.Plz;
-        Street = request.Street;
-        House = request.House;
-    }
+    /// <summary>True if any field differs from <paramref name="other"/>.</summary>
+    public bool DiffersFrom(Address other) =>
+        this.City != other.City ||
+        this.Plz != other.Plz ||
+        this.Street != other.Street ||
+        this.House != other.House;
 }
 
 /// <summary>Moderation flags controlling whether an entry is visible and editable.</summary>
@@ -106,12 +99,12 @@ public class Entry
     {
         Type = request.Type;
         Name = request.Name;
-        Contact = request.Contact != null ? new ContactPerson(request.Contact) : null;
+        Contact = request.Contact;
         Email = request.Email;
         Telephone = request.Telephone;
         Website = request.Website;
         Accessible = request.Accessible;
-        Address = new Address(request.Address);
+        Address = request.Address;
         Attributes = request.Attributes;
         Offers = request.Offers;
         Specials = request.Specials;

@@ -1,37 +1,38 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using PhoneNumbers;
+using transdb_backend_net.Models.Database;
 using transdb_backend_net.Schema;
 
 namespace transdb_backend_net.Models.Request;
 
-public class AddressRequest
+public class AddressRequest : Address
 {
     [Required(ErrorMessage = "required"), StringLength(50, MinimumLength = 2, ErrorMessage = "length")]
-    public string City { get; set; } = string.Empty;
+    public override string City { get; set; } = string.Empty;
 
     [StringLength(10, ErrorMessage = "length")]
-    public string? Plz { get; set; }
+    public override string? Plz { get; set; }
 
     [StringLength(80, ErrorMessage = "length")]
-    public string? Street { get; set; }
+    public override string? Street { get; set; }
 
     [StringLength(10, ErrorMessage = "length")]
-    public string? House { get; set; }
+    public override string? House { get; set; }
 }
 
 
 /// <summary>Optional contact person fields submitted alongside an entry.</summary>
-public class ContactPersonRequest
+public class ContactPersonRequest : ContactPerson
 {
     [EnumDataType(typeof(AcademicTitle), ErrorMessage = "invalid_value")]
-    public AcademicTitle? AcademicTitle { get; set; }
+    public override AcademicTitle? AcademicTitle { get; set; }
 
     [StringLength(50, MinimumLength = 2, ErrorMessage = "length")]
-    public string? FirstName { get; set; }
+    public override string? FirstName { get; set; }
 
     [StringLength(50, MinimumLength = 2, ErrorMessage = "length")]
-    public string? LastName { get; set; }
+    public override string? LastName { get; set; }
 }
 
 /// <summary>

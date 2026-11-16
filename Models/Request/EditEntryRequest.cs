@@ -24,42 +24,55 @@ public class EditEntryRequest : CreateEntryRequest
     {
         entry.Type = Type;
         entry.Name = Name;
-        entry.Contact = Contact != null ? new ContactPerson(Contact) : null;
+        entry.Contact = this.Contact;
         entry.Email = Email;
         entry.Telephone = Telephone;
         entry.Website = Website;
         entry.Accessible = Accessible;
         entry.Telephone = Telephone;
         
-        entry.Address.City = Address.City;
-        entry.Address.Plz  = Address.Plz;
-        entry.Address.Street = Address.Street;
-        entry.Address.House = Address.House;
+        entry.Address =  this.Address;
         
         entry.Attributes = Attributes;
         entry.Offers = Offers;
         entry.Specials = Specials;
         entry.Subject = Subject;
-        entry.Status.Approved = Status.Approved;
-        entry.Status.Blocked = Status.Blocked;
-        entry.Status.Archived = Status.Archived;
+
+        entry.Status = this.Status;
 
         if (RemoveDuplication == true)
         {
             entry.PossibleDuplicate = null;
         }
 
-        return new EditEntryRequestApplyResult(AddressChanged(entry.Address));
+        var addressChanged = this.Address.DiffersFrom(entry.Address);
+        
+        return new EditEntryRequestApplyResult(addressChanged);
     }
-    
+
     /// <summary>
-    /// Checks if this request intent to update the address compared to an existing address
+    /// Checks if the data fields (user generated content, not moderation/status fields) changed
     /// </summary>
-    /// <param name="existing">Address object from database entry</param>
-    /// <returns>if address has been updated</returns>
-    private bool AddressChanged(Address existing) =>
-        existing.City != this.Address.City ||
-        existing.Plz != this.Address.Plz ||
-        existing.Street != this.Address.Street ||
-        existing.House != this.Address.House;
+    /// <param name="original">original entry to compare to</param>
+    /// <returns>true if things changed</returns>
+    public bool DiffersFromDataField(Entry original)
+    {
+        if (this.Type != original.Type) return true;
+        if (this.Name != original.Name) return true;
+        
+        if (this.Contact != null && original.Contact != null && this.Contact.DiffersFrom(original.Contact)) return true;
+        
+        if (this.Website != original.Website) return true;
+        if (this.Email != original.Email) return true;
+        if (this.Telephone != original.Telephone) return true;
+        if (this.Accessible != original.Accessible) return true;
+        
+        if (!this.Offers.All(original.Offers.Contains) || this.Offers.Count != original.Offers.Count) return true;
+        if (!this.Attributes.All(original.Attributes.Contains) || this.Attributes.Count != original.Attributes.Count) return true;
+        
+        if (this.Specials != original.Specials) return true;
+        if (this.Subject != original.Subject) return true;
+        
+        return false;
+    }
 }
