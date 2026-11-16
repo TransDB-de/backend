@@ -28,7 +28,7 @@ public class CaptchaApiService(HttpClient httpClient, IOptions<CaptchaConfig> co
 
         try
         {
-            var uriBuilder = new UriBuilder(httpClient.BaseAddress!)
+            var uriBuilder = new UriBuilder(this._config.InstanceUrl)
             {
                 Path = string.Join("/", string.Empty, _config.SiteKey, "siteverify")
             };
