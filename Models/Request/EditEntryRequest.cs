@@ -12,10 +12,6 @@ public record EditEntryRequestApplyResult(bool IsAddressChanged);
 /// </summary>
 public class EditEntryRequest : CreateEntryRequest
 {
-    public EntryStatus Status { get; set; } = new();
-    
-    public bool? RemoveDuplication { get; set; }
-
     [Required(ErrorMessage = "required"), StringLength(2000, MinimumLength = 1, ErrorMessage = "length")]
     public string Comment { get; set; } = string.Empty;
 
@@ -37,13 +33,6 @@ public class EditEntryRequest : CreateEntryRequest
         entry.Offers = Offers;
         entry.Specials = Specials;
         entry.Subject = Subject;
-
-        entry.Status = this.Status;
-
-        if (RemoveDuplication == true)
-        {
-            entry.PossibleDuplicate = null;
-        }
 
         var addressChanged = this.Address.DiffersFrom(entry.Address);
         

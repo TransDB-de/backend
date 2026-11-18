@@ -68,7 +68,7 @@ public class Entry
     [BsonId]
     public ObjectId Id { get; set; }
 
-    public EntryStatus Status { get; set; } = new();
+    public virtual EntryStatus Status { get; set; } = new();
 
     public EEntryType Type { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -82,7 +82,7 @@ public class Entry
     public bool? Accessible { get; set; }
 
     public Address Address { get; set; } = new();
-    public GeoJsonPoint? Location { get; set; }
+    public virtual GeoJsonPoint? Location { get; set; }
 
     public List<EEntryAttribute> Attributes { get; set; } = [];
     public List<EEntryOffer> Offers { get; set; } = [];
@@ -91,7 +91,7 @@ public class Entry
 
     /// <summary>Set when a likely duplicate is detected on submission. Cleared manually by an admin.</summary>
     [BsonIgnoreIfNull]
-    public DuplicateMatch? PossibleDuplicate { get; set; }
+    public virtual DuplicateMatch? PossibleDuplicate { get; set; }
 
     public Entry() { }
 

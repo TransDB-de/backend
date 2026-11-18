@@ -22,7 +22,14 @@ public enum EntryActivityType
     Reported,
     Deleted,
     Restored,
-    GeoLocationFailed
+    GeoLocationFailed,
+    PatchProposed,
+    PatchRemovalProposed,
+    PatchAccepted,
+    PatchRejected,
+    PatchDeleted,
+    
+    Unknown = 1000
 }
 
 /// <summary>Keys for the <see cref="EntryActivity.Attachments"/> dictionary.</summary>
@@ -33,7 +40,8 @@ public enum EntryActivityAttachment
     OriginalEntryState,
     EntryChangeState,
     PossibleDuplicate,
-    RevertedActivityId
+    RevertedActivityId,
+    EntryPatchId
 }
 
 /// <summary>An immutable audit record describing a single state change on an entry.</summary>
@@ -192,5 +200,32 @@ public class EntryActivity
         Type = EntryActivityType.GeoLocationFailed,
         Timestamp = DateTime.UtcNow,
         Comment = comment
+    };
+
+
+    private static EntryActivityType ComputeEntryPatchActivityType(EntryPatch patch)
+    {
+        if (patch.Type == EEntryPatchType.ProposedRemoval) return EntryActivityType.PatchRemovalProposed;
+
+        return patch.Status switch
+        {
+            EEntryPatchStatus.Open => EntryActivityType.PatchProposed,
+            EEntryPatchStatus.AcceptedFull => EntryActivityType.PatchAccepted,
+            EEntryPatchStatus.AcceptedPartial => EntryActivityType.PatchAccepted,
+            EEntryPatchStatus.Rejected => EntryActivityType.PatchRejected,
+            _ => EntryActivityType.Unknown
+        };
+    }
+
+    public static EntryActivity EntryPatchProposed(EntryPatch patch) => new()
+    {
+        EntryId = patch.EntryId,
+        Comment = patch.Comment,
+        Timestamp = DateTime.UtcNow,
+        Type = ComputeEntryPatchActivityType(patch),
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.EntryPatchId] =  patch.Id
+        }
     };
 }

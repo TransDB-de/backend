@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using MongoDB.Bson;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Schema;
@@ -47,18 +48,11 @@ public class PublicEntryResponse
 }
 
 /// <summary>Response returned after a successful entry submission, including the revocation token and any detected duplicate.</summary>
-public class CreateEntryResponse
+public class CreateEntryResponse(Entry entry, string revocationToken, DuplicateMatch? possibleDuplicate)
 {
-    public PublicEntryResponse Entry { get; set; }
-    public string RevocationToken { get; set; }
-    public DuplicateMatch? PossibleDuplicate { get; set; }
-
-    public CreateEntryResponse(Entry entry, string revocationToken, DuplicateMatch? possibleDuplicate)
-    {
-        Entry = new PublicEntryResponse(entry);
-        RevocationToken = revocationToken;
-        PossibleDuplicate = possibleDuplicate;
-    }
+    public PublicEntryResponse Entry { get; set; } = new(entry);
+    public string RevocationToken { get; set; } = revocationToken;
+    public DuplicateMatch? PossibleDuplicate { get; set; } = possibleDuplicate;
 }
 
 /// <summary>
@@ -67,7 +61,7 @@ public class CreateEntryResponse
 /// </summary>
 public class PaginatedResponse<T>
 {
-    public List<T> Items { get; set; } = [];
+    public List<T> Items { get; set; }
     /// <summary>Indicates that at least one more page of results may be available.</summary>
     public bool More { get; set; }
     public string? LocationName { get; set; }
@@ -81,3 +75,18 @@ public class PaginatedResponse<T>
     }
 }
 
+/// <summary>
+/// Includes the current entry schema configuration and enums
+/// </summary>
+public class EntrySchemaResponse
+{
+    public EEntryType[] AvailableTypes => Enum.GetValues<EEntryType>();
+    
+    public EEntryOffer[] AvailableOffers  => Enum.GetValues<EEntryOffer>();
+    public EEntryAttribute[] AvailableAttributes => Enum.GetValues<EEntryAttribute>();
+
+    public IReadOnlyDictionary<EEntryType, EEntryOffer[]> OfferMapping => EntrySchema.OffersByType;
+    
+    public IReadOnlyDictionary<EEntryType, EEntryAttribute[]> AttributeMapping => EntrySchema.AttributesByType;
+
+}

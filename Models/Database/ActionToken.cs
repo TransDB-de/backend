@@ -9,7 +9,8 @@ namespace transdb_backend_net.Models.Database;
 
 public enum EActionTokenPurpose
 {
-    EntryRevocation
+    EntryRevocation,
+    EntryPatchRevocation
 }
 
 public class ActionToken

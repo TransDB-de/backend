@@ -51,7 +51,7 @@ public class ManageEntriesController(
         if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
         var existing = existingResult.Value!;
 
-        var result = await entryService.PatchEntryAsync(id, request);
+        var result = await entryService.PatchEntryStatusAsync(id, request);
         if (result.IsFailed)
         {
             return result.SelectApiError(
@@ -91,8 +91,6 @@ public class ManageEntriesController(
         }
 
         await activityService.LogAsync(EntryActivity.Edited(id, userId, request.Comment, originalEntry, request));
-        await activityService.LogStatusChangesAsync(id, userId, existing,
-            new EntryStatusChange(request.Status.Approved, request.Status.Blocked, null, request.Comment));
 
         return Ok();
     }

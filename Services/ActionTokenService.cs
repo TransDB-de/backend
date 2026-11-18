@@ -10,10 +10,10 @@ namespace transdb_backend_net.Services;
 public interface IActionTokenService
 {
     /// <summary>Generates a secure single-use token and persists it.</summary>
-    Task<string> GenerateTokenAsync(EActionTokenPurpose purpose, ObjectId targetId, string userAgent);
+    Task<string> GenerateTokenAsync(EActionTokenPurpose purpose, ObjectId targetId, IHeaderDictionary requestHeaders);
 
     /// <summary>Returns true if the token exists, is not expired, and its purpose, target and user agent all match.</summary>
-    Task<bool> ValidateTokenAsync(string token, EActionTokenPurpose purpose, ObjectId targetId, string userAgent);
+    Task<bool> ValidateTokenAsync(string token, EActionTokenPurpose purpose, ObjectId targetId, IHeaderDictionary requestHeaders);
 
     /// <summary>Removes the token from the database.</summary>
     Task InvalidateTokenAsync(string token);
@@ -23,16 +23,16 @@ public class ActionTokenService(IDatabaseService db, IOptions<EntryConfig> confi
 {
     private readonly TimeSpan _tokenTtl = config.Value.RevocationTokenLifetime;
     
-    public async Task<string> GenerateTokenAsync(EActionTokenPurpose purpose, ObjectId targetId, string userAgent)
+    public async Task<string> GenerateTokenAsync(EActionTokenPurpose purpose, ObjectId targetId, IHeaderDictionary requestHeaders)
     {
         var expires = DateTime.UtcNow.Add(_tokenTtl);
-        var token = new ActionToken(purpose, targetId, userAgent, expires);
+        var token = new ActionToken(purpose, targetId, requestHeaders.UserAgent.ToString(), expires);
         await db.InsertRevocationTokenAsync(token);
         return token.Token;
     }
     
     /// <inheritdoc/>
-    public async Task<bool> ValidateTokenAsync(string token, EActionTokenPurpose purpose, ObjectId targetId, string userAgent)
+    public async Task<bool> ValidateTokenAsync(string token, EActionTokenPurpose purpose, ObjectId targetId, IHeaderDictionary requestHeaders)
     {
         var revocationToken = await db.FindActionTokenAsync(token.ToUpperInvariant());
 
@@ -56,7 +56,7 @@ public class ActionTokenService(IDatabaseService db, IOptions<EntryConfig> confi
             return false;
         }
 
-        var uaHash = HashUserAgent(userAgent);
+        var uaHash = HashUserAgent(requestHeaders.UserAgent.ToString());
         
         if (revocationToken.UserAgentHash != uaHash)
         {

@@ -8,7 +8,9 @@ namespace transdb_backend_net.Controllers;
 [Route("/")]
 public class DefaultController(IDatabaseService db) : ControllerBase
 {
-    /// <summary>Returns 200 OK if the server is reachable.</summary>
+    /// <summary>
+    /// Returns 200 OK if the serve and database is reachable.
+    /// </summary>
     [HttpGet("health")]
     public async Task<IActionResult> Healthcheck()
     {

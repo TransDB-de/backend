@@ -6,8 +6,11 @@ public class FieldPatch<T>(T? original, T? newValue)
     public T? NewValue { get; set; } = newValue;
 
     public bool PatchAccepted { get; set; } = true;
-    
-    public static FieldPatch<T>? CompareAndCreate(T? original, T? patch)
+}
+
+public static class FieldPatchHelper
+{
+    public static FieldPatch<T>? CompareAndCreate<T>(T? original, T? patch)
     {
         if (EqualityComparer<T>.Default.Equals(original, patch))
         {
@@ -15,6 +18,40 @@ public class FieldPatch<T>(T? original, T? newValue)
         }
         
         return new FieldPatch<T>(original, patch);
+    }
+
+    public static T? GetDesiredValue<T>(T? referenceValue, FieldPatch<T>? patch)
+    {
+        if (patch == null) return referenceValue;
+        
+        if (!patch.PatchAccepted) return referenceValue;
+        
+        return patch.NewValue;
+        
+    }
+    
+    public static List<T> ApplyToList<T>(List<T> referenceList, ListPatch<T>? patch, bool noDuplicates = true)
+    {
+        if (patch is not { PatchAccepted: true }) return referenceList;
+
+        if (patch.Removed.Count > 0)
+        {
+            referenceList.RemoveAll(item => patch.Removed.Contains(item));
+        }
+
+        if (patch.Added.Count > 0)
+        {
+            if (noDuplicates)
+            {
+                referenceList.AddRange(patch.Added.Where(item => !referenceList.Contains(item)));
+            }
+            else
+            {
+                referenceList.AddRange(patch.Added);
+            }
+        }
+
+        return referenceList;
     }
 }
 

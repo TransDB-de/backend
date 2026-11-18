@@ -37,7 +37,7 @@ public interface IEntryService
     /// On approval, triggers a fire-and-forget geo location update.
     /// Returns a failed result if the entry does not exist.
     /// </summary>
-    Task<Result<Entry>> PatchEntryAsync(ObjectId id, PatchEntryStatusRequest request);
+    Task<Result<Entry>> PatchEntryStatusAsync(ObjectId id, PatchEntryStatusRequest request);
 
     /// <summary>
     /// Fully replaces an entry with the given data. Preserves timestamps and approval metadata.
@@ -54,6 +54,8 @@ public interface IEntryService
 
     /// <summary>Permanently deletes an entry. Returns a failed result if the entry does not exist.</summary>
     Task<Result> DeleteEntryAsync(ObjectId id);
+
+    Task<Result<EntryPatch>> PatchEntryAsync(EntryPatch entryPatch);
 
 }
 
@@ -212,7 +214,7 @@ public class EntryService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Entry>> PatchEntryAsync(ObjectId id, PatchEntryStatusRequest request)
+    public async Task<Result<Entry>> PatchEntryStatusAsync(ObjectId id, PatchEntryStatusRequest request)
     {
         var existing = await db.GetEntryByIdAsync(id);
         if (existing == null) return Result<Entry>.Failure("entry not found");
@@ -265,6 +267,15 @@ public class EntryService(
     {
         var deleted = await db.DeleteEntryAsync(id);
         return deleted ? Result.Ok() : Result.Failure("entry not found");
+    }
+
+    public async Task<Result<EntryPatch>> PatchEntryAsync(EntryPatch entryPatch)
+    {
+        var patch = await db.InsertEntryPatchAsync(entryPatch);
+
+        await activityService.LogAsync(EntryActivity.EntryPatchProposed(patch));
+        
+        return new Result<EntryPatch>(patch);
     }
 
     private async Task UpdateGeoLocationAndLogAsync(ObjectId id)

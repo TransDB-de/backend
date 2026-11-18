@@ -75,6 +75,16 @@ public interface IDatabaseService
 
     /// <summary>Deletes an action token by its token string.</summary>
     Task DeleteActionTokenAsync(string token);
+
+    Task<EntryPatch> InsertEntryPatchAsync(EntryPatch entryPatch);
+    
+    Task<EntryPatch?> GetEntryPatchByIdAsync(ObjectId id);
+    
+    Task<List<EntryPatch>> FindEntryPatchesAsync(FilterDefinition<EntryPatch> filter, PaginationOptions pagination);
+    
+    Task<EntryPatch> UpdateEntryPatchAsync(EntryPatch entryPatch);
+    
+    Task<bool> DeleteEntryPatchAsync(ObjectId id);
 }
 
 public class DatabaseService : IDatabaseService
@@ -83,6 +93,7 @@ public class DatabaseService : IDatabaseService
     private readonly IMongoCollection<Entry> _entries;
     private readonly IMongoCollection<EntryActivity> _activities;
     private readonly IMongoCollection<ActionToken> _actionTokens;
+    private readonly IMongoCollection<EntryPatch> _entryPatches;
 
     public DatabaseService(IOptions<MongoDbConfig> config, ILogger<DatabaseService> logger)
     {
@@ -91,6 +102,8 @@ public class DatabaseService : IDatabaseService
         _entries = _db.GetCollection<Entry>("entries");
         _activities = _db.GetCollection<EntryActivity>("activities");
         _actionTokens = _db.GetCollection<ActionToken>("action_tokens");
+        
+        _entryPatches = _db.GetCollection<EntryPatch>("entry_patches");
 
         CreateIndexes();
         logger.LogInformation("MongoDB successfully initialized");
@@ -125,6 +138,12 @@ public class DatabaseService : IDatabaseService
         _actionTokens.Indexes.CreateOne(new CreateIndexModel<ActionToken>(
             Builders<ActionToken>.IndexKeys.Ascending(t => t.ExpiresAt),
             new CreateIndexOptions { ExpireAfter = TimeSpan.Zero }));
+        
+        _entryPatches.Indexes.CreateOne(new CreateIndexModel<EntryPatch>(
+            Builders<EntryPatch>.IndexKeys.Ascending(e => e.EntryId)));
+        _entryPatches.Indexes.CreateOne(new CreateIndexModel<EntryPatch>(
+            Builders<EntryPatch>.IndexKeys.Descending(e => e.Timestamp)));
+
     }
 
     /// <inheritdoc/>
@@ -293,6 +312,31 @@ public class DatabaseService : IDatabaseService
     /// <inheritdoc/>
     public async Task DeleteActionTokenAsync(string token) =>
         await _actionTokens.DeleteOneAsync(t => t.Token == token);
+
+    public async Task<EntryPatch> InsertEntryPatchAsync(EntryPatch entryPatch)
+    {
+        await _entryPatches.InsertOneAsync(entryPatch);
+        return entryPatch;
+    }
+
+    public async Task<EntryPatch?> GetEntryPatchByIdAsync(ObjectId id) => await _entryPatches.Find(e => e.Id == id).FirstOrDefaultAsync();
+    public Task<List<EntryPatch>> FindEntryPatchesAsync(FilterDefinition<EntryPatch> filter, PaginationOptions pagination) =>
+        _entryPatches.Find(filter)
+            .SortByDescending(a => a.Timestamp)
+            .Skip(pagination.Skip)
+            .Limit(pagination.LimitWithOverhead)
+            .ToListAsync();
+
+    public Task<EntryPatch> UpdateEntryPatchAsync(EntryPatch entryPatch)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<bool> DeleteEntryPatchAsync(ObjectId id)
+    {
+        var result = await _entryPatches.DeleteOneAsync(e => e.Id == id);
+        return result.DeletedCount > 0;
+    }
 
     /// <summary>Extracts the database name from a MongoDB connection URI.</summary>
     private static string GetDatabaseName(string uri)

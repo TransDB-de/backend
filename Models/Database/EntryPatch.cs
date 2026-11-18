@@ -25,13 +25,11 @@ public class EntryPatch
 {
     public EntryPatch() {}
 
-    public EntryPatch(EEntryPatchType type, string comment, Entry original, EditEntryRequest? request, string? userId = null)
+    public EntryPatch(string comment, Entry original, EditEntryRequest? request, string? userId = null)
     {
         this.EntryId = original.Id;
 
         this.Comment = comment;
-
-        this.Type = type;
         
         this.UserId = userId;
 
@@ -48,7 +46,12 @@ public class EntryPatch
     
     public EEntryPatchStatus Status { get; set; } =  EEntryPatchStatus.Open;
     
-    public EEntryPatchType Type  { get; set; } = EEntryPatchType.ProposedPatch;
+    [BsonIgnore]
+    public EEntryPatchType Type => this switch {
+        { UserId: not null } => EEntryPatchType.DirectEdit,
+        { Patch: null } => EEntryPatchType.ProposedRemoval,
+        _ => EEntryPatchType.ProposedPatch
+    };
     
     public string Comment { get; set; } = string.Empty;
     
@@ -65,16 +68,31 @@ public class EntryPatchDataAddress
     
     public EntryPatchDataAddress(Address original, AddressRequest request)
     {
-        this.City = FieldPatch<string>.CompareAndCreate(original.City, request.City);
-        this.Plz = FieldPatch<string>.CompareAndCreate(original.Plz, request.Plz);
-        this.Street = FieldPatch<string>.CompareAndCreate(original.Street, request.Street);
-        this.House = FieldPatch<string>.CompareAndCreate(original.House, request.House);
+        this.City = FieldPatchHelper.CompareAndCreate(original.City, request.City);
+        this.Plz = FieldPatchHelper.CompareAndCreate(original.Plz, request.Plz);
+        this.Street = FieldPatchHelper.CompareAndCreate(original.Street, request.Street);
+        this.House = FieldPatchHelper.CompareAndCreate(original.House, request.House);
     }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? City { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Plz { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Street { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? House { get; set; }
+
+    public void ApplyTo(Address target)
+    {
+        target.City = FieldPatchHelper.GetDesiredValue(target.City, this.City)!;
+        target.Plz = FieldPatchHelper.GetDesiredValue(target.City, this.City);
+        target.Street = FieldPatchHelper.GetDesiredValue(target.Street, this.Street);
+        target.House = FieldPatchHelper.GetDesiredValue(target.House, this.House);
+    }
 }
 
 public class EntryPatchDataContactPerson
@@ -83,14 +101,26 @@ public class EntryPatchDataContactPerson
     
     public EntryPatchDataContactPerson(ContactPerson original, ContactPerson request)
     {
-        this.AcademicTitle = FieldPatch<AcademicTitle?>.CompareAndCreate(original.AcademicTitle, request.AcademicTitle);
-        this.FirstName = FieldPatch<string>.CompareAndCreate(original.FirstName, request.FirstName);
-        this.LastName = FieldPatch<string>.CompareAndCreate(original.LastName, request.LastName);
+        this.AcademicTitle = FieldPatchHelper.CompareAndCreate(original.AcademicTitle, request.AcademicTitle);
+        this.FirstName = FieldPatchHelper.CompareAndCreate(original.FirstName, request.FirstName);
+        this.LastName = FieldPatchHelper.CompareAndCreate(original.LastName, request.LastName);
     }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<AcademicTitle?>? AcademicTitle { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? FirstName { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? LastName { get; set; }
+    
+    public void ApplyTo(ContactPerson target)
+    {
+        target.AcademicTitle = FieldPatchHelper.GetDesiredValue(target.AcademicTitle, this.AcademicTitle);
+        target.FirstName = FieldPatchHelper.GetDesiredValue(target.FirstName, this.FirstName);
+        target.LastName = FieldPatchHelper.GetDesiredValue(target.LastName, this.LastName);
+    }
 }
 
 /// <summary>
@@ -100,11 +130,16 @@ public class EntryPatchData
 {
     public EntryPatchData() { }
     
+    /// <summary>
+    /// Creates an EntryPatchData object automatically containing only the changes wanted by the diff between the original and the request
+    /// </summary>
+    /// <param name="original">The original full dataset</param>
+    /// <param name="request">the put request with the new values</param>
     public EntryPatchData(Entry original, EditEntryRequest request)
     {
-        this.Type = FieldPatch<EEntryType>.CompareAndCreate(original.Type, request.Type);
+        this.Type = FieldPatchHelper.CompareAndCreate(original.Type, request.Type);
             
-        this.Name = FieldPatch<string>.CompareAndCreate(original.Name, request.Name);
+        this.Name = FieldPatchHelper.CompareAndCreate(original.Name, request.Name);
 
         if (original.Address.DiffersFrom(request.Address))
         {
@@ -116,38 +151,83 @@ public class EntryPatchData
             this.Contact = new EntryPatchDataContactPerson(original.Contact, request.Contact);
         }
         
-        this.Website = FieldPatch<string>.CompareAndCreate(original.Website, request.Website);
-        this.Email = FieldPatch<string>.CompareAndCreate(original.Email, request.Email);
-        this.Telephone = FieldPatch<string>.CompareAndCreate(original.Telephone, request.Telephone);
+        this.Website = FieldPatchHelper.CompareAndCreate(original.Website, request.Website);
+        this.Email = FieldPatchHelper.CompareAndCreate(original.Email, request.Email);
+        this.Telephone = FieldPatchHelper.CompareAndCreate(original.Telephone, request.Telephone);
         
-        this.Accessible = FieldPatch<bool?>.CompareAndCreate(original.Accessible, request.Accessible);
+        this.Accessible = FieldPatchHelper.CompareAndCreate(original.Accessible, request.Accessible);
         
         this.Offers = ListPatch<EEntryOffer>.CompareAndCreate(original.Offers, request.Offers);
         this.Attributes = ListPatch<EEntryAttribute>.CompareAndCreate(original.Attributes, request.Attributes);
         
-        this.Subject = FieldPatch<TherapistSubject?>.CompareAndCreate(original.Subject, request.Subject);
+        this.Subject = FieldPatchHelper.CompareAndCreate(original.Subject, request.Subject);
         
-        this.Specials = FieldPatch<string>.CompareAndCreate(original.Specials, request.Specials);
+        this.Specials = FieldPatchHelper.CompareAndCreate(original.Specials, request.Specials);
     }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<EEntryType>? Type { get; set; }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Name { get; set; }
     
+    [BsonIgnoreIfNull]
     public EntryPatchDataAddress? Address { get; set; }
     
+    [BsonIgnoreIfNull]
     public EntryPatchDataContactPerson? Contact { get; set; }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Website { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Email { get; set; }
+    
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Telephone { get; set; }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<bool?>? Accessible { get; set; }
     
+    [BsonIgnoreIfNull]
     public ListPatch<EEntryOffer>? Offers { get; set; }
+    
+    [BsonIgnoreIfNull]
     public ListPatch<EEntryAttribute>? Attributes { get; set; }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<TherapistSubject?>? Subject { get; set; }
     
+    [BsonIgnoreIfNull]
     public FieldPatch<string>? Specials { get; set; }
+    
+    public void ApplyTo(Entry target)
+    {
+        target.Name = FieldPatchHelper.GetDesiredValue(target.Name, this.Name)!;
+        target.Type = FieldPatchHelper.GetDesiredValue(target.Type, this.Type);
+        
+        if (this.Contact != null)
+        {
+            if (target.Contact == null)
+            {
+                target.Contact = new ContactPerson();
+            }
+            
+            this.Contact?.ApplyTo(target.Contact);
+        }
+        
+        this.Address?.ApplyTo(target.Address);
+        
+        target.Website = FieldPatchHelper.GetDesiredValue(target.Website, this.Website);
+        target.Email = FieldPatchHelper.GetDesiredValue(target.Email, this.Email);
+        target.Telephone = FieldPatchHelper.GetDesiredValue(target.Telephone, this.Telephone);
+        
+        target.Accessible = FieldPatchHelper.GetDesiredValue(target.Accessible, this.Accessible);
+        
+        target.Offers = FieldPatchHelper.ApplyToList(target.Offers, this.Offers);
+        target.Attributes = FieldPatchHelper.ApplyToList(target.Attributes, this.Attributes);
+        
+        target.Subject = FieldPatchHelper.GetDesiredValue(target.Subject, this.Subject);
+        target.Specials = FieldPatchHelper.GetDesiredValue(target.Specials, this.Specials);
+    }
 }

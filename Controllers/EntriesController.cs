@@ -19,8 +19,19 @@ public class EntriesController(
     IActionTokenService actionTokenService,
     ICmsService cmsService,
     ILogger<EntriesController> logger,
+    IDatabaseService db,
     IEntryActivityService activityService) : ControllerBase
 {
+    /// <summary>
+    /// Returns the current entry schema configuration and enums
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("schema")]
+    public ActionResult<EntrySchemaResponse> GetEntrySchema()
+    {
+        return Ok(new EntrySchemaResponse());
+    }
+    
     /// <summary>
     /// Returns a paginated list of approved entries matching the given filters.
     /// Supports full-text search, type/offer/attribute filtering, and optional location-based sorting.
@@ -61,7 +72,7 @@ public class EntriesController(
         }
 
         var userAgent = Request.Headers.UserAgent.ToString();
-        var revocationToken = await actionTokenService.GenerateTokenAsync(EActionTokenPurpose.EntryRevocation, entry.Id, userAgent);
+        var revocationToken = await actionTokenService.GenerateTokenAsync(EActionTokenPurpose.EntryRevocation, entry.Id, Request.Headers);
 
         DuplicateMatch? possibleDuplicate = null;
 
@@ -92,7 +103,7 @@ public class EntriesController(
     public async Task<IActionResult> RevokeEntry(ObjectId id, string token)
     {
         var userAgent = Request.Headers.UserAgent.ToString();
-        if (!await actionTokenService.ValidateTokenAsync(token, EActionTokenPurpose.EntryRevocation, id, userAgent))
+        if (!await actionTokenService.ValidateTokenAsync(token, EActionTokenPurpose.EntryRevocation, id, Request.Headers))
         {
             return new InvalidRequestApiError("revocation token not found or already used");
         }
@@ -105,6 +116,73 @@ public class EntriesController(
 
         // revoking is meant to leave no trace, as if the entry was never submitted.
         await activityService.PurgeAsync(id);
+        await actionTokenService.InvalidateTokenAsync(token);
+
+        return Ok();
+    }
+    
+    [HttpPut("{id}")]
+    [EnableRateLimiting("report")]
+    [ValidateCaptcha]
+    public async Task<ActionResult<EntryPatchResponse>> ProposeEntryPatch(ObjectId id,
+        [FromBody] EditEntryRequest request)
+    {
+        var existingResult = await entryService.GetEntryByIdAsync(id);
+        if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
+        var existing = existingResult.Value!;
+
+        if (!request.DiffersFromDataField(existing))
+        {
+            return new NoChangesError();
+        }
+
+        var patch = new EntryPatch(request.Comment, existing, request);
+
+        var patchResult = await entryService.PatchEntryAsync(patch);
+
+        if (patchResult.IsFailed)
+        {
+            return new OperationFailedApiError(patchResult.FailureDetails);
+        }
+
+        patch = patchResult.Value!;
+        
+        var revocationToken = await actionTokenService.GenerateTokenAsync(EActionTokenPurpose.EntryPatchRevocation, patch.Id, Request.Headers);
+        
+        return new EntryPatchResponse(patch, revocationToken);
+    }
+    
+    [HttpGet("{id}/patches/{patchId}/{token}")]
+    public async Task<ActionResult<EntryPatch>> GetPublicEntryChangeProposal(ObjectId id, ObjectId patchId, string token)
+    {
+        if (!await actionTokenService.ValidateTokenAsync(token, EActionTokenPurpose.EntryPatchRevocation, patchId, Request.Headers))
+        {
+            return new InvalidRequestApiError("action token not found or already used");
+        }
+        
+        var patch = await db.GetEntryPatchByIdAsync(patchId);
+        if (patch == null)
+        {
+            return new NotFoundApiError("patch not found");
+        }
+
+        return patch;
+    }
+    
+    [HttpDelete("{id}/patches/{patchId}/{token}")]
+    public async Task<ActionResult> RevokeEntryPatch(ObjectId id, ObjectId patchId, string token)
+    {
+        if (!await actionTokenService.ValidateTokenAsync(token, EActionTokenPurpose.EntryPatchRevocation, patchId, Request.Headers))
+        {
+            return new InvalidRequestApiError("revocation token not found or already used");
+        }
+
+        var result = await db.DeleteEntryPatchAsync(patchId);
+        if (!result)
+        {
+            return new InvalidRequestApiError();
+        }
+        
         await actionTokenService.InvalidateTokenAsync(token);
 
         return Ok();
