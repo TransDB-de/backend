@@ -9,9 +9,8 @@ namespace transdb_backend_net.Models.Database;
 public enum EEntryPatchStatus
 {
     Open = 0,
-    AcceptedFull = 1,
-    AcceptedPartial = 2,
-    Rejected = 3,
+    Accepted = 1,
+    Rejected = 2,
 }
 
 public enum EEntryPatchType
@@ -89,38 +88,24 @@ public class EntryPatchDataAddress
     public void ApplyTo(Address target)
     {
         target.City = FieldPatchHelper.GetDesiredValue(target.City, this.City)!;
-        target.Plz = FieldPatchHelper.GetDesiredValue(target.City, this.City);
+        target.Plz = FieldPatchHelper.GetDesiredValue(target.Plz, this.Plz);
         target.Street = FieldPatchHelper.GetDesiredValue(target.Street, this.Street);
         target.House = FieldPatchHelper.GetDesiredValue(target.House, this.House);
     }
-}
 
-public class EntryPatchDataContactPerson
-{
-    public EntryPatchDataContactPerson() {}
-    
-    public EntryPatchDataContactPerson(ContactPerson original, ContactPerson request)
+    /// <summary>Copies per-field decisions — flags only, never values. Absent field = rejected.</summary>
+    public void ApplyDecisions(EntryPatchDataAddress? decisions)
     {
-        this.AcademicTitle = FieldPatchHelper.CompareAndCreate(original.AcademicTitle, request.AcademicTitle);
-        this.FirstName = FieldPatchHelper.CompareAndCreate(original.FirstName, request.FirstName);
-        this.LastName = FieldPatchHelper.CompareAndCreate(original.LastName, request.LastName);
+        this.City?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.City);
+        this.Plz?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Plz);
+        this.Street?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Street);
+        this.House?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.House);
     }
-    
-    [BsonIgnoreIfNull]
-    public FieldPatch<AcademicTitle?>? AcademicTitle { get; set; }
-    
-    [BsonIgnoreIfNull]
-    public FieldPatch<string>? FirstName { get; set; }
-    
-    [BsonIgnoreIfNull]
-    public FieldPatch<string>? LastName { get; set; }
-    
-    public void ApplyTo(ContactPerson target)
-    {
-        target.AcademicTitle = FieldPatchHelper.GetDesiredValue(target.AcademicTitle, this.AcademicTitle);
-        target.FirstName = FieldPatchHelper.GetDesiredValue(target.FirstName, this.FirstName);
-        target.LastName = FieldPatchHelper.GetDesiredValue(target.LastName, this.LastName);
-    }
+
+    /// <summary>True if any accepted address field changed — geo location needs updating.</summary>
+    public bool AnyAcceptedField =>
+        City?.PatchAccepted == true || Plz?.PatchAccepted == true ||
+        Street?.PatchAccepted == true || House?.PatchAccepted == true;
 }
 
 /// <summary>
@@ -146,11 +131,9 @@ public class EntryPatchData
             this.Address = new EntryPatchDataAddress(original.Address, request.Address);
         }
 
-        if (original.Contact != null && request.Contact != null && original.Contact.DiffersFrom(request.Contact))
-        {
-            this.Contact = new EntryPatchDataContactPerson(original.Contact, request.Contact);
-        }
-        
+        // whole-object, not field-wise: keeps add/remove expressible
+        this.Contact = FieldPatchHelper.CompareAndCreate(original.Contact, request.Contact);
+
         this.Website = FieldPatchHelper.CompareAndCreate(original.Website, request.Website);
         this.Email = FieldPatchHelper.CompareAndCreate(original.Email, request.Email);
         this.Telephone = FieldPatchHelper.CompareAndCreate(original.Telephone, request.Telephone);
@@ -173,10 +156,13 @@ public class EntryPatchData
     
     [BsonIgnoreIfNull]
     public EntryPatchDataAddress? Address { get; set; }
-    
+
+    /// <summary>
+    /// whole object patch, there is no reason any of the fields would change independently
+    /// </summary>
     [BsonIgnoreIfNull]
-    public EntryPatchDataContactPerson? Contact { get; set; }
-    
+    public FieldPatch<ContactPerson?>? Contact { get; set; }
+
     [BsonIgnoreIfNull]
     public FieldPatch<string>? Website { get; set; }
     
@@ -206,16 +192,9 @@ public class EntryPatchData
         target.Name = FieldPatchHelper.GetDesiredValue(target.Name, this.Name)!;
         target.Type = FieldPatchHelper.GetDesiredValue(target.Type, this.Type);
         
-        if (this.Contact != null)
-        {
-            if (target.Contact == null)
-            {
-                target.Contact = new ContactPerson();
-            }
-            
-            this.Contact?.ApplyTo(target.Contact);
-        }
-        
+        // whole-object apply, no per-field decisions for contacts
+        target.Contact = FieldPatchHelper.GetDesiredValue(target.Contact, this.Contact);
+
         this.Address?.ApplyTo(target.Address);
         
         target.Website = FieldPatchHelper.GetDesiredValue(target.Website, this.Website);
@@ -229,5 +208,26 @@ public class EntryPatchData
         
         target.Subject = FieldPatchHelper.GetDesiredValue(target.Subject, this.Subject);
         target.Specials = FieldPatchHelper.GetDesiredValue(target.Specials, this.Specials);
+    }
+
+    /// <summary>
+    /// Copies per-field accept/reject decisions from the client onto this patch.
+    /// Flags only, values are never taken from the client. Absent field = rejected.
+    /// No value matching needed: patch values are immutable while Status == Open.
+    /// </summary>
+    public void ApplyDecisions(EntryPatchData? decisions)
+    {
+        this.Type?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Type);
+        this.Name?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Name);
+        this.Address?.ApplyDecisions(decisions?.Address);
+        this.Contact?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Contact);
+        this.Website?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Website);
+        this.Email?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Email);
+        this.Telephone?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Telephone);
+        this.Accessible?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Accessible);
+        this.Offers?.ApplyDecisions(decisions?.Offers);
+        this.Attributes?.ApplyDecisions(decisions?.Attributes);
+        this.Subject?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Subject);
+        this.Specials?.PatchAccepted = FieldPatchHelper.IsAccepted(decisions?.Specials);
     }
 }

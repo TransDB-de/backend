@@ -83,6 +83,11 @@ public interface IDatabaseService
     Task<List<EntryPatch>> FindEntryPatchesAsync(FilterDefinition<EntryPatch> filter, PaginationOptions pagination);
     
     Task<EntryPatch> UpdateEntryPatchAsync(EntryPatch entryPatch);
+
+    /// <summary>
+    /// Persists a decision on a patch, guarded by status to prevent double decisions.
+    /// </summary>
+    Task<bool> ResolveEntryPatchAsync(ObjectId id, EEntryPatchStatus newStatus, EntryPatchData? decidedPatch);
     
     Task<bool> DeleteEntryPatchAsync(ObjectId id);
 }
@@ -330,6 +335,23 @@ public class DatabaseService : IDatabaseService
     public Task<EntryPatch> UpdateEntryPatchAsync(EntryPatch entryPatch)
     {
         throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ResolveEntryPatchAsync(ObjectId id, EEntryPatchStatus newStatus, EntryPatchData? decidedPatch)
+    {
+        var update = Builders<EntryPatch>.Update.Set(p => p.Status, newStatus);
+
+        if (decidedPatch != null)
+        {
+            update = update.Set(p => p.Patch, decidedPatch);
+        }
+
+        var result = await _entryPatches.UpdateOneAsync(
+            p => p.Id == id && p.Status == EEntryPatchStatus.Open,
+            update);
+
+        return result.ModifiedCount > 0;
     }
 
     public async Task<bool> DeleteEntryPatchAsync(ObjectId id)

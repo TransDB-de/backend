@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using System.Security.Claims;
 using transdb_backend_net.Exceptions;
 using transdb_backend_net.Models.Config;
 using transdb_backend_net.Models.Database;
@@ -15,7 +16,7 @@ namespace transdb_backend_net.Controllers;
 [ApiController]
 [Route("manage/entry-patches")]
 [Authorize]
-public class EntryPatchController(IDatabaseService db, IOptions<EntryConfig> config) : ControllerBase
+public class EntryPatchController(IEntryPatchService entryPatchService, IDatabaseService db, IOptions<EntryConfig> config) : ControllerBase
 {
     private readonly int _itemsPerPage = config.Value.ItemsPerPage;
     
@@ -31,7 +32,7 @@ public class EntryPatchController(IDatabaseService db, IOptions<EntryConfig> con
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<EntryPatch>> GetEntryPatchById(ObjectId id)
+    public async Task<ActionResult<EntryPatchDetailResponse>> GetEntryPatchById(ObjectId id)
     {
         var patch = await db.GetEntryPatchByIdAsync(id);
 
@@ -39,12 +40,20 @@ public class EntryPatchController(IDatabaseService db, IOptions<EntryConfig> con
         {
             return new NotFoundApiError();
         }
-        
-        return patch;
+
+        var currentEntry = await db.GetEntryByIdAsync(patch.EntryId);
+
+        if (currentEntry == null)
+        {
+            return new NotFoundApiError("entry for patch not found");
+        }
+
+        return new EntryPatchDetailResponse(patch, currentEntry);
     }
-    
-    
+
+
     [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<EntryPatch>> DeleteEntryPatch(ObjectId id)
     {
         var patch = await db.DeleteEntryPatchAsync(id);
@@ -53,7 +62,55 @@ public class EntryPatchController(IDatabaseService db, IOptions<EntryConfig> con
         {
             return new InvalidRequestApiError("Failed to delete entry patch");
         }
-        
+
+        return Ok();
+    }
+    
+    [HttpPost("{id}/accept")]
+    public async Task<IActionResult> AcceptEntryPatch(ObjectId id, [FromBody] AcceptEntryPatchRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var patch = await db.GetEntryPatchByIdAsync(id);
+        if (patch == null) return new NotFoundApiError();
+
+        if (patch.Status != EEntryPatchStatus.Open)
+        {
+            return new InvalidRequestApiError("patch already decided");
+        }
+
+        var result = await entryPatchService.AcceptEntryPatchAsync(patch, request, userId);
+        if (result.IsFailed)
+        {
+            return result.SelectApiError(
+                expected: new InvalidRequestApiError(result.FailureDetails),
+                unexpected: new OperationFailedApiError(result.FailureDetails));
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("{id}/reject")]
+    public async Task<IActionResult> RejectEntryPatch(ObjectId id, [FromBody] CommentedRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var patch = await db.GetEntryPatchByIdAsync(id);
+        if (patch == null) return new NotFoundApiError();
+
+        if (patch.Status != EEntryPatchStatus.Open)
+        {
+            return new InvalidRequestApiError("patch already decided");
+        }
+
+        var result = await entryPatchService.RejectEntryPatchAsync(patch, request, userId);
+        if (result.IsFailed)
+        {
+            return result.SelectApiError(
+                expected: new InvalidRequestApiError(result.FailureDetails),
+                unexpected: new OperationFailedApiError(result.FailureDetails));
+        }
+
         return Ok();
     }
 }

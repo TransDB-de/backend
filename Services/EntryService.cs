@@ -55,8 +55,6 @@ public interface IEntryService
     /// <summary>Permanently deletes an entry. Returns a failed result if the entry does not exist.</summary>
     Task<Result> DeleteEntryAsync(ObjectId id);
 
-    Task<Result<EntryPatch>> PatchEntryAsync(EntryPatch entryPatch);
-
 }
 
 public record FetchFilteredEntriesResponse(IEnumerable<Entry> Entries, string LocationName, bool HasMore);
@@ -267,15 +265,6 @@ public class EntryService(
     {
         var deleted = await db.DeleteEntryAsync(id);
         return deleted ? Result.Ok() : Result.Failure("entry not found");
-    }
-
-    public async Task<Result<EntryPatch>> PatchEntryAsync(EntryPatch entryPatch)
-    {
-        var patch = await db.InsertEntryPatchAsync(entryPatch);
-
-        await activityService.LogAsync(EntryActivity.EntryPatchProposed(patch));
-        
-        return new Result<EntryPatch>(patch);
     }
 
     private async Task UpdateGeoLocationAndLogAsync(ObjectId id)

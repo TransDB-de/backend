@@ -48,8 +48,10 @@ public class EditEntryRequest : CreateEntryRequest
     {
         if (this.Type != original.Type) return true;
         if (this.Name != original.Name) return true;
-        
-        if (this.Contact != null && original.Contact != null && this.Contact.DiffersFrom(original.Contact)) return true;
+
+        // add/remove is a change too
+        if ((this.Contact == null) != (original.Contact == null)) return true;
+        if (this.Contact != null && this.Contact.DiffersFrom(original.Contact)) return true;
         
         if (this.Website != original.Website) return true;
         if (this.Email != original.Email) return true;

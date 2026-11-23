@@ -20,7 +20,8 @@ public class EntriesController(
     ICmsService cmsService,
     ILogger<EntriesController> logger,
     IDatabaseService db,
-    IEntryActivityService activityService) : ControllerBase
+    IEntryActivityService activityService,
+    IEntryPatchService entryPatchService) : ControllerBase
 {
     /// <summary>
     /// Returns the current entry schema configuration and enums
@@ -138,7 +139,7 @@ public class EntriesController(
 
         var patch = new EntryPatch(request.Comment, existing, request);
 
-        var patchResult = await entryService.PatchEntryAsync(patch);
+        var patchResult = await entryPatchService.ProposePatchAsync(patch);
 
         if (patchResult.IsFailed)
         {

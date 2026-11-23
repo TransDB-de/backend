@@ -210,8 +210,7 @@ public class EntryActivity
         return patch.Status switch
         {
             EEntryPatchStatus.Open => EntryActivityType.PatchProposed,
-            EEntryPatchStatus.AcceptedFull => EntryActivityType.PatchAccepted,
-            EEntryPatchStatus.AcceptedPartial => EntryActivityType.PatchAccepted,
+            EEntryPatchStatus.Accepted => EntryActivityType.PatchAccepted,
             EEntryPatchStatus.Rejected => EntryActivityType.PatchRejected,
             _ => EntryActivityType.Unknown
         };
@@ -226,6 +225,32 @@ public class EntryActivity
         Attachments = new Dictionary<EntryActivityAttachment, object>
         {
             [EntryActivityAttachment.EntryPatchId] =  patch.Id
+        }
+    };
+
+    public static EntryActivity EntryPatchAccepted(EntryPatch patch, string userId, string comment) => new()
+    {
+        EntryId = patch.EntryId,
+        UserId = userId,
+        Comment = comment,
+        Timestamp = DateTime.UtcNow,
+        Type = EntryActivityType.PatchAccepted,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.EntryPatchId] = patch.Id
+        }
+    };
+
+    public static EntryActivity EntryPatchRejected(EntryPatch patch, string userId, string comment) => new()
+    {
+        EntryId = patch.EntryId,
+        UserId = userId,
+        Comment = comment,
+        Timestamp = DateTime.UtcNow,
+        Type = EntryActivityType.PatchRejected,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.EntryPatchId] = patch.Id
         }
     };
 }

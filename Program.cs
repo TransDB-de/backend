@@ -36,6 +36,7 @@ builder.Services.AddApplicationHttpClients(builder.Configuration);
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEntryService, EntryService>();
+builder.Services.AddScoped<IEntryPatchService, EntryPatchService>();
 
 // Cookie authentication (session-only, no persistent cookie)
 builder.Services.ConfigureOptions<ConfigureCookieOptions>();
