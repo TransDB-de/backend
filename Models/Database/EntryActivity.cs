@@ -50,6 +50,7 @@ public class EntryActivity
     [BsonId]
     public ObjectId Id { get; set; }
     public ObjectId EntryId { get; set; }
+    public ObjectId? RelatedId  { get; set; }
     public EntryActivityType Type { get; set; }
     public DateTime? Timestamp { get; set; } = null;
 
@@ -206,26 +207,20 @@ public class EntryActivity
     public static EntryActivity EntryPatchProposed(EntryPatch patch) => new()
     {
         EntryId = patch.EntryId,
+        RelatedId = patch.Id,
         Comment = patch.Comment,
         Timestamp = DateTime.UtcNow,
         Type = ComputeEntryPatchActivityType(patch),
-        Attachments = new Dictionary<EntryActivityAttachment, object>
-        {
-            [EntryActivityAttachment.EntryPatchId] =  patch.Id
-        }
     };
 
     public static EntryActivity EntryPatchAccepted(EntryPatch patch, string userId, string comment) => new()
     {
         EntryId = patch.EntryId,
         UserId = userId,
+        RelatedId = patch.Id,
         Comment = comment,
         Timestamp = DateTime.UtcNow,
-        Type = EntryActivityType.PatchAccepted,
-        Attachments = new Dictionary<EntryActivityAttachment, object>
-        {
-            [EntryActivityAttachment.EntryPatchId] = patch.Id
-        }
+        Type = EntryActivityType.PatchAccepted
     };
 
     public static EntryActivity EntryPatchRejected(EntryPatch patch, string userId, string comment) => new()
@@ -233,24 +228,19 @@ public class EntryActivity
         EntryId = patch.EntryId,
         UserId = userId,
         Comment = comment,
+        RelatedId = patch.Id,
         Timestamp = DateTime.UtcNow,
-        Type = EntryActivityType.PatchRejected,
-        Attachments = new Dictionary<EntryActivityAttachment, object>
-        {
-            [EntryActivityAttachment.EntryPatchId] = patch.Id
-        }
+        Type = EntryActivityType.PatchRejected
     };
 
     public static EntryActivity EntryPatchDeleted(EntryPatch patch, string userId, string comment) => new()
     {
         EntryId = patch.EntryId,
         UserId = userId,
+        RelatedId = patch.Id,
         Comment = comment,
         Timestamp = DateTime.UtcNow,
         Type = EntryActivityType.PatchDeleted,
-        Attachments = new Dictionary<EntryActivityAttachment, object>
-        {
-            [EntryActivityAttachment.EntryPatchId] = patch.Id
-        }
+        Attachments = new Dictionary<EntryActivityAttachment, object>()
     };
 }

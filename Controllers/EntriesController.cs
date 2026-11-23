@@ -196,6 +196,8 @@ public class EntriesController(
             return new InvalidRequestApiError();
         }
 
+        // revoking leaves no trace: remove the patch's activities too
+        await db.DeleteActivitiesByRelatedIdAsync(patchId);
         await actionTokenService.InvalidateTokenAsync(token);
 
         return Ok();

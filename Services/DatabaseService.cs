@@ -49,6 +49,9 @@ public interface IDatabaseService
     /// <summary>Deletes all activity documents for a given entry. Used when a submission is revoked, to leave no trace.</summary>
     Task DeleteActivitiesByEntryAsync(ObjectId entryId);
 
+    /// <summary>Deletes all activity documents for a given related id. Used when a patch is revoked, to leave no trace.</summary>
+    Task DeleteActivitiesByRelatedIdAsync(ObjectId relatedId);
+
     /// <summary>Returns a paginated list of all activity documents as enriched responses, sorted by descending timestamp.</summary>
     Task<List<EntryActivityResponse>> FindActivitiesAsync(PaginationOptions pagination);
 
@@ -131,6 +134,8 @@ public class DatabaseService : IDatabaseService
 
         _activities.Indexes.CreateOne(new CreateIndexModel<EntryActivity>(
             Builders<EntryActivity>.IndexKeys.Ascending(a => a.EntryId)));
+        _activities.Indexes.CreateOne(new CreateIndexModel<EntryActivity>(
+            Builders<EntryActivity>.IndexKeys.Ascending(a => a.RelatedId)));
         _activities.Indexes.CreateOne(new CreateIndexModel<EntryActivity>(
             Builders<EntryActivity>.IndexKeys.Descending(a => a.Timestamp)));
 
@@ -243,6 +248,9 @@ public class DatabaseService : IDatabaseService
     /// <inheritdoc/>
     public async Task DeleteActivitiesByEntryAsync(ObjectId entryId) =>
         await _activities.DeleteManyAsync(a => a.EntryId == entryId);
+
+    public async Task DeleteActivitiesByRelatedIdAsync(ObjectId relatedId) =>
+        await _activities.DeleteManyAsync(a => a.RelatedId == relatedId);
 
     /// <inheritdoc/>
     public async Task<List<EntryActivityResponse>> FindActivitiesAsync(PaginationOptions pagination) =>
