@@ -40,13 +40,6 @@ public interface IEntryService
     Task<Result<Entry>> PatchEntryStatusAsync(ObjectId id, PatchEntryStatusRequest request);
 
     /// <summary>
-    /// Fully replaces an entry with the given data. Preserves timestamps and approval metadata.
-    /// Triggers a fire-and-forget geo location update only if the address changed.
-    /// Returns a failed result if the entry does not exist.
-    /// </summary>
-    Task<Result<Entry>> EditEntryAsync(ObjectId id, EditEntryRequest request);
-
-    /// <summary>
     /// Fetches fresh coordinates for an entry from Nominatim and saves them.
     /// Returns a failed result if the entry does not exist or geocoding fails.
     /// </summary>
@@ -228,21 +221,6 @@ public class EntryService(
         {
             _ = UpdateGeoLocationAndLogAsync(id);
         }
-
-        return Result<Entry>.Success(existing);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result<Entry>> EditEntryAsync(ObjectId id, EditEntryRequest request)
-    {
-        var existing = await db.GetEntryByIdAsync(id);
-        if (existing == null) return Result<Entry>.Failure("entry not found");
-
-        var applyResult = request.ApplyTo(existing);
-        var replaced = await db.ReplaceEntryAsync(id, existing);
-        if (!replaced) return Result<Entry>.Failure("entry not found");
-
-        if (applyResult.IsAddressChanged) _ = UpdateGeoLocationAndLogAsync(id);
 
         return Result<Entry>.Success(existing);
     }

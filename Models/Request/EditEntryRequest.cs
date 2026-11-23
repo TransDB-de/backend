@@ -3,41 +3,14 @@ using transdb_backend_net.Models.Database;
 
 namespace transdb_backend_net.Models.Request;
 
-/// <summary>Carries the result of applying an edit request, indicating whether downstream side-effects are needed.</summary>
-public record EditEntryRequestApplyResult(bool IsAddressChanged);
-
 /// <summary>
-/// Extends <see cref="CreateEntryRequest"/> with status flags and a mandatory comment for auditing.
-/// Used by admins to fully replace an entry's content while preserving its identity.
+/// Extends <see cref="CreateEntryRequest"/> with a mandatory comment for auditing.
+/// Used for proposing entry patches (public) and direct edits by admins.
 /// </summary>
 public class EditEntryRequest : CreateEntryRequest
 {
     [Required(ErrorMessage = "required"), StringLength(2000, MinimumLength = 1, ErrorMessage = "length")]
     public string Comment { get; set; } = string.Empty;
-
-    /// <summary>Applies all request fields onto an existing entry, preserving identity and audit metadata.</summary>
-    public EditEntryRequestApplyResult ApplyTo(Entry entry)
-    {
-        entry.Type = Type;
-        entry.Name = Name;
-        entry.Contact = this.Contact;
-        entry.Email = Email;
-        entry.Telephone = Telephone;
-        entry.Website = Website;
-        entry.Accessible = Accessible;
-        entry.Telephone = Telephone;
-        
-        entry.Address =  this.Address;
-        
-        entry.Attributes = Attributes;
-        entry.Offers = Offers;
-        entry.Specials = Specials;
-        entry.Subject = Subject;
-
-        var addressChanged = this.Address.DiffersFrom(entry.Address);
-        
-        return new EditEntryRequestApplyResult(addressChanged);
-    }
 
     /// <summary>
     /// Checks if the data fields (user generated content, not moderation/status fields) changed

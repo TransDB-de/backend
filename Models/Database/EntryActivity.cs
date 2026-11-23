@@ -66,6 +66,7 @@ public class EntryActivity
 
     private static readonly HashSet<EntryActivityAttachment> HiddenAttachments =
     [
+        // legacy entry state snapshots, patches are the version truth now
         EntryActivityAttachment.OriginalEntryState,
         EntryActivityAttachment.EntryChangeState
     ];
@@ -120,20 +121,6 @@ public class EntryActivity
         Comment = comment,
         Type = EntryActivityType.Archived,
         Timestamp = DateTime.UtcNow
-    };
-
-    public static EntryActivity Edited(ObjectId entryId, string userId, string? comment, Entry original, EditEntryRequest changes) => new()
-    {
-        EntryId = entryId,
-        UserId = userId,
-        Comment = comment,
-        Type = EntryActivityType.Edited,
-        Timestamp = DateTime.UtcNow,
-        Attachments = new Dictionary<EntryActivityAttachment, object>
-        {
-            [EntryActivityAttachment.OriginalEntryState] = original,
-            [EntryActivityAttachment.EntryChangeState] = changes
-        }
     };
 
     public static EntryActivity Blocked(ObjectId entryId, string userId, string? comment) => new()

@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using System.Security.Claims;
-using System.Text.Json;
-using MongoDB.Bson.IO;
 using transdb_backend_net.Exceptions;
 using transdb_backend_net.Models.Database;
 using transdb_backend_net.Models.Request;
@@ -17,6 +15,7 @@ namespace transdb_backend_net.Controllers;
 [Authorize]
 public class ManageEntriesController(
     IEntryService entryService,
+    IEntryPatchService entryPatchService,
     IEntryActivityService activityService) : ControllerBase
 {
     /// <summary>
@@ -67,8 +66,8 @@ public class ManageEntriesController(
     }
 
     /// <summary>
-    /// Fully replaces an entry with the submitted data.
-    /// A geo location update is triggered in the background if the address changed.
+    /// Fully replaces an entry's data: routes through an entry patch (direct edit) so the
+    /// change is versioned. A geo location update is triggered if an address field changed.
     /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> EditEntry(ObjectId id, [FromBody] EditEntryRequest request)
@@ -79,18 +78,22 @@ public class ManageEntriesController(
         if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
         var existing = existingResult.Value!;
 
-        var originalEntry = JsonSerializer.Deserialize<Entry>(JsonSerializer.Serialize(existing));
+        if (!request.DiffersFromDataField(existing))
+        {
+            return new NoChangesError();
+        }
 
-        var result = await entryService.EditEntryAsync(id, request);
+        // direct edit: patch + accept in one step
+        var patch = new EntryPatch(request.Comment, existing, request, userId);
+
+        var result = await entryPatchService.ApplyDirectEditAsync(patch, userId);
         if (result.IsFailed)
         {
             return result.SelectApiError(
-                expected: new NotFoundApiError(result.FailureDetails),
+                expected: new InvalidRequestApiError(result.FailureDetails),
                 unexpected: new OperationFailedApiError(result.FailureDetails)
             );
         }
-
-        await activityService.LogAsync(EntryActivity.Edited(id, userId, request.Comment, originalEntry, request));
 
         return Ok();
     }
