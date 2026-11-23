@@ -178,12 +178,24 @@ public class EntriesController(
             return new InvalidRequestApiError("revocation token not found or already used");
         }
 
-        var result = await db.DeleteEntryPatchAsync(patchId);
-        if (!result)
+        // only open patches can be revoked, resolved patches are part of the version history
+        var patch = await db.GetEntryPatchByIdAsync(patchId);
+        if (patch == null)
+        {
+            return new NotFoundApiError("patch not found");
+        }
+
+        if (patch.Status != EEntryPatchStatus.Open)
+        {
+            return new InvalidRequestApiError("patch already decided and cannot be revoked");
+        }
+
+        var deleted = await db.DeleteEntryPatchAsync(patchId);
+        if (!deleted)
         {
             return new InvalidRequestApiError();
         }
-        
+
         await actionTokenService.InvalidateTokenAsync(token);
 
         return Ok();

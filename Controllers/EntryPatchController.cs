@@ -16,7 +16,11 @@ namespace transdb_backend_net.Controllers;
 [ApiController]
 [Route("manage/entry-patches")]
 [Authorize]
-public class EntryPatchController(IEntryPatchService entryPatchService, IDatabaseService db, IOptions<EntryConfig> config) : ControllerBase
+public class EntryPatchController(
+    IEntryPatchService entryPatchService,
+    IEntryActivityService activityService,
+    IDatabaseService db,
+    IOptions<EntryConfig> config) : ControllerBase
 {
     private readonly int _itemsPerPage = config.Value.ItemsPerPage;
     
@@ -54,14 +58,17 @@ public class EntryPatchController(IEntryPatchService entryPatchService, IDatabas
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<EntryPatch>> DeleteEntryPatch(ObjectId id)
+    public async Task<ActionResult> DeleteEntryPatch(ObjectId id, [FromBody] CommentedRequest request)
     {
-        var patch = await db.DeleteEntryPatchAsync(id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-        if (!patch)
-        {
-            return new InvalidRequestApiError("Failed to delete entry patch");
-        }
+        var patch = await db.GetEntryPatchByIdAsync(id);
+        if (patch == null) return new NotFoundApiError();
+
+        var deleted = await db.DeleteEntryPatchAsync(id);
+        if (!deleted) return new InvalidRequestApiError("failed to delete entry patch");
+
+        await activityService.LogAsync(EntryActivity.EntryPatchDeleted(patch, userId, request.Comment));
 
         return Ok();
     }

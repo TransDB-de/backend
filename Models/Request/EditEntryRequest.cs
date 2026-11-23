@@ -30,7 +30,9 @@ public class EditEntryRequest : CreateEntryRequest
         if (this.Email != original.Email) return true;
         if (this.Telephone != original.Telephone) return true;
         if (this.Accessible != original.Accessible) return true;
-        
+
+        if (this.Address.DiffersFrom(original.Address)) return true;
+
         if (!this.Offers.All(original.Offers.Contains) || this.Offers.Count != original.Offers.Count) return true;
         if (!this.Attributes.All(original.Attributes.Contains) || this.Attributes.Count != original.Attributes.Count) return true;
         

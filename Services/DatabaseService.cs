@@ -77,18 +77,16 @@ public interface IDatabaseService
     Task DeleteActionTokenAsync(string token);
 
     Task<EntryPatch> InsertEntryPatchAsync(EntryPatch entryPatch);
-    
+
     Task<EntryPatch?> GetEntryPatchByIdAsync(ObjectId id);
-    
+
     Task<List<EntryPatch>> FindEntryPatchesAsync(FilterDefinition<EntryPatch> filter, PaginationOptions pagination);
-    
-    Task<EntryPatch> UpdateEntryPatchAsync(EntryPatch entryPatch);
 
     /// <summary>
     /// Persists a decision on a patch, guarded by status to prevent double decisions.
     /// </summary>
     Task<bool> ResolveEntryPatchAsync(ObjectId id, EEntryPatchStatus newStatus, EntryPatchData? decidedPatch);
-    
+
     Task<bool> DeleteEntryPatchAsync(ObjectId id);
 }
 
@@ -331,11 +329,6 @@ public class DatabaseService : IDatabaseService
             .Skip(pagination.Skip)
             .Limit(pagination.LimitWithOverhead)
             .ToListAsync();
-
-    public Task<EntryPatch> UpdateEntryPatchAsync(EntryPatch entryPatch)
-    {
-        throw new NotImplementedException();
-    }
 
     /// <inheritdoc />
     public async Task<bool> ResolveEntryPatchAsync(ObjectId id, EEntryPatchStatus newStatus, EntryPatchData? decidedPatch)

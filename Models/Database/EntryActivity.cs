@@ -240,4 +240,17 @@ public class EntryActivity
             [EntryActivityAttachment.EntryPatchId] = patch.Id
         }
     };
+
+    public static EntryActivity EntryPatchDeleted(EntryPatch patch, string userId, string comment) => new()
+    {
+        EntryId = patch.EntryId,
+        UserId = userId,
+        Comment = comment,
+        Timestamp = DateTime.UtcNow,
+        Type = EntryActivityType.PatchDeleted,
+        Attachments = new Dictionary<EntryActivityAttachment, object>
+        {
+            [EntryActivityAttachment.EntryPatchId] = patch.Id
+        }
+    };
 }

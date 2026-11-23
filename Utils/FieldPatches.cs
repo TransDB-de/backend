@@ -2,6 +2,9 @@ namespace transdb_backend_net.Utils;
 
 public class FieldPatch<T>(T? original, T? newValue)
 {
+    // parameterless ctor for json deserialization — primary ctor params don't match property names
+    public FieldPatch() : this(default, default) { }
+
     public T? OriginalValue { get; set; } = original;
     public T? NewValue { get; set; } = newValue;
 
@@ -10,6 +13,9 @@ public class FieldPatch<T>(T? original, T? newValue)
 
 public class ListPatchItem<T>(T value)
 {
+    // parameterless ctor for json deserialization — primary ctor params don't match property names
+    public ListPatchItem() : this(default!) { }
+
     public T Value { get; set; } = value;
 
     public bool PatchAccepted { get; set; } = true;
