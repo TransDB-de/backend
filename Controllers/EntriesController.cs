@@ -147,12 +147,36 @@ public class EntriesController(
         }
 
         patch = patchResult.Value!;
-        
+
         var revocationToken = await actionTokenService.GenerateTokenAsync(EActionTokenPurpose.EntryPatchRevocation, patch.Id, Request.Headers);
-        
+
         return new EntryPatchResponse(patch, revocationToken);
     }
-    
+
+    /// <summary>
+    /// Proposes removing (archiving) an entry: creates a removal patch with no data.
+    /// </summary>
+    [HttpPost("{id}/archive")]
+    [EnableRateLimiting("report")]
+    [ValidateCaptcha]
+    public async Task<ActionResult<EntryPatchResponse>> ProposeEntryRemoval(ObjectId id, [FromBody] CommentedRequest request)
+    {
+        var existingResult = await entryService.GetEntryByIdAsync(id);
+        if (existingResult.IsFailed) return new NotFoundApiError(existingResult.FailureDetails);
+        
+        var patch = new EntryPatch(request.Comment, existingResult.Value!, null); // patch with null as request means removal request
+
+        var patchResult = await entryPatchService.ProposePatchAsync(patch);
+        if (patchResult.IsFailed)
+        {
+            return new OperationFailedApiError(patchResult.FailureDetails);
+        }
+
+        var revocationToken = await actionTokenService.GenerateTokenAsync(EActionTokenPurpose.EntryPatchRevocation, patchResult.Value!.Id, Request.Headers);
+
+        return new EntryPatchResponse(patchResult.Value!, revocationToken);
+    }
+
     [HttpGet("{id}/patches/{patchId}/{token}")]
     public async Task<ActionResult<EntryPatch>> GetPublicEntryChangeProposal(ObjectId id, ObjectId patchId, string token)
     {
